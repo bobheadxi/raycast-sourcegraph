@@ -6,7 +6,12 @@
   "icon": "command-icon.png",
   "author": "bobheadxi",
   "license": "MIT",
-  "keywords": ["search", "code", "sourcegraph", "codesearch"],
+  "keywords": [
+    "search",
+    "code",
+    "sourcegraph",
+    "codesearch"
+  ],
   "preferences": [
     {
       "name": "cloudToken",
@@ -32,10 +37,12 @@
     }
   ],
   "dependencies": {
-    "@raycast/api": "^1.27.0",
     "@bobheadxi/node-eventsource-http2": "^1.1.1",
+    "@raycast/api": "^1.27.0",
     "node-fetch": "^3.0.0",
-    "sourcegraph": "^25.4.0"
+    "remark": "^14.0.2",
+    "sourcegraph": "^25.4.0",
+    "strip-markdown": "^5.0.0"
   },
   "devDependencies": {
     "@types/node": "~16.10.0",

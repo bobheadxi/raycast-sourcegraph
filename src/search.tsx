@@ -11,8 +11,10 @@ import {
   Color,
   Icon,
   ImageLike,
+  copyTextToClipboard,
+  ActionPanelItem,
 } from "@raycast/api";
-import { useState, useRef } from "react";
+import { useState, useRef, Fragment } from "react";
 
 import sourcegraph from "./sourcegraph";
 import { performSearch, SearchResult, Suggestion } from "./stream-search";
@@ -22,11 +24,18 @@ export default function Command() {
 
   return (
     <List isLoading={state.isLoading} onSearchTextChange={search} searchBarPlaceholder={"Search..."} throttle>
-      {/* <List.Section title="Suggestions">
-        {state.suggestions.slice(0, 3).map((suggestion) => (
-          <SuggestionItem key={randomId()} suggestion={suggestion} />
-        ))}
-      </List.Section> */}
+      {/* show suggestions IFF no results */}
+      {!state.isLoading && state.results.length === 0 ? (
+        <List.Section title="Suggestions" subtitle={state.summary || "No results found"}>
+          {state.suggestions.slice(0, 3).map((suggestion) => (
+            <SuggestionItem key={randomId()} suggestion={suggestion} />
+          ))}
+        </List.Section>
+      ) : (
+        <Fragment />
+      )}
+
+      {/* results */}
       <List.Section title="Results" subtitle={state.summary || ""}>
         {state.results.map((searchResult) => (
           <SearchResultItem key={randomId()} searchResult={searchResult} searchText={state.searchText} />
@@ -37,19 +46,20 @@ export default function Command() {
 }
 
 function resultActions(searchResult: SearchResult, extraActions?: JSX.Element[]) {
-  let actions = [
-    <OpenInBrowserAction key={randomId()} title="Open Result" url={searchResult.url} />,
-    // Can't seem to override the shortcut on this thing?
-    // (<CopyToClipboardAction
-    //   key={randomId()}
-    //   title="Copy Link to Result"
-    //   content={searchResult.url}
-    //   shortcut={{ modifiers: ["opt"], key: "c" }}
-    // />),
-  ];
+  const actions: JSX.Element[] = [<OpenInBrowserAction key={randomId()} title="Open Result" url={searchResult.url} />];
   if (extraActions) {
-    actions = actions.concat(...extraActions);
+    actions.push(...extraActions);
   }
+  actions.push(
+    // Can't seem to override the shortcut on this thing if it's the second action, so
+    // add it as the third action instead.
+    <CopyToClipboardAction
+      key={randomId()}
+      title="Copy Link to Result"
+      content={searchResult.url}
+      shortcut={{ modifiers: ["cmd"], key: "c" }}
+    />
+  );
   return (
     <ActionPanel.Section key={randomId()} title="Result Actions">
       {...actions}
@@ -61,29 +71,45 @@ function SearchResultItem({ searchResult, searchText }: { searchResult: SearchRe
   const src = sourcegraph();
   const { match } = searchResult;
   let title = "";
-  let subtitle = match.repository;
+  let subtitle = "";
+  let context = match.repository;
+
   const icon: ImageLike = { source: Icon.Dot, tintColor: Color.Blue };
   switch (match.type) {
     case "repo":
+      if (match.fork) {
+        icon.source = Icon.Circle;
+      }
+      if (match.archived) {
+        icon.source = Icon.XmarkCircle;
+      }
+      // TODO color results of all matches based on repo privacy
+      if (match.private) {
+        icon.tintColor = Color.Yellow;
+      }
       title = match.repository;
       subtitle = match.description || "Repository match";
-      icon.tintColor = match.private ? Color.Yellow : icon.tintColor;
+      context = match.repoStars ? `${match.repoStars} stars` : "";
       break;
     case "commit":
       icon.source = Icon.Message;
-      title = match.content;
-      break;
-    case "content":
-      icon.source = Icon.Text;
-      title = match.lineMatches.map((l) => l.line.trim()).join(" ... ");
+      title = match.label;
+      // just get the date
+      subtitle = match.detail.split(" ").slice(1).join(" ");
       break;
     case "path":
       icon.source = Icon.TextDocument;
       title = match.path;
       break;
+    case "content":
+      icon.source = Icon.Text;
+      title = match.lineMatches.map((l) => l.line.trim()).join(" ... ");
+      subtitle = match.path;
+      break;
     case "symbol":
       icon.source = Icon.Link;
       title = match.symbols.map((s) => s.name).join(", ");
+      subtitle = match.path;
       break;
   }
 
@@ -92,7 +118,7 @@ function SearchResultItem({ searchResult, searchText }: { searchResult: SearchRe
     <List.Item
       title={title}
       subtitle={subtitle}
-      accessoryTitle={searchResult.match.type}
+      accessoryTitle={context}
       icon={icon}
       actions={
         <ActionPanel>
@@ -132,13 +158,15 @@ function PeekSearchResult({ searchResult }: { searchResult: SearchResult }) {
     case "repo":
       body = `# ${match.repository}
 
+> ${match.type} match on repository with ${match.repoStars ? `with ${match.repoStars} stars` : ""}
+
 ${match.description}`;
       break;
 
     case "content":
       body = `# ${match.repository}
 
-## \`${match.path}\`
+> ${match.type} match in \`${match.path}\` ${match.repoStars ? `in repository with ${match.repoStars} stars` : ""}
 
 ${match.lineMatches
   .map(
@@ -152,11 +180,31 @@ ${l.line}
     case "symbol":
       body = `# ${match.repository}
 
-## \`${match.path}\`
+> ${match.type} match in \`${match.path}\` ${match.repoStars ? `in repository with ${match.repoStars} stars` : ""}
 
 ${match.symbols
-  .map((s) => `- [\`${s.containerName ? `${s.containerName} ` : "" + s.name}\`](${src.instance}${s.url})`)
+  .map((s) => `- [\`${s.containerName ? `${s.containerName} > ` : ""}${s.name}\`](${src.instance}${s.url})`)
   .join("\n")}`;
+      break;
+
+    case "path":
+      body = `# ${match.repository}
+      
+> ${match.type} match
+
+\`${match.path}\`
+`;
+      break;
+
+    case "commit":
+      body = `# ${match.repository}
+      
+> ${match.type} match in ${match.detail} ${match.repoStars ? `in repository with ${match.repoStars} stars` : ""}
+
+${match.label}
+
+${match.content}
+`;
       break;
 
     default:
@@ -176,23 +224,41 @@ ${JSON.stringify(match, null, "  ")}
   );
 }
 
-// function SuggestionItem({ suggestion } : { suggestion: Suggestion }) {
-//   return (
-//     <List.Item
-//       title={suggestion.title}
-//       subtitle={suggestion.description}
-//       actions={(
-//         <ActionPanel>
-//         <ActionPanelItem
-//           title="Copy suggestion"
-//           onAction={async () => {
-//             await copyTextToClipboard(` ${suggestion.query}`)
-//             showToast(ToastStyle.Success, "Suggestion copied - paste it to continue searching!");
-//           }} />
-//       </ActionPanel>
-//       )} />
-//   )
-// }
+function SuggestionItem({ suggestion }: { suggestion: Suggestion }) {
+  return (
+    <List.Item
+      title={suggestion.title}
+      subtitle={suggestion.description}
+      actions={
+        suggestion.query ? (
+          <ActionPanel>
+            <ActionPanelItem
+              title="Copy Suggestion"
+              onAction={async () => {
+                await copyTextToClipboard(` ${suggestion.query}`);
+                showToast(ToastStyle.Success, "Suggestion copied - paste it to continue searching!");
+              }}
+            />
+          </ActionPanel>
+        ) : (
+          <ActionPanel>
+            <PushAction
+              key={randomId()}
+              title="View Suggestion"
+              target={
+                <Detail
+                  markdown={`${suggestion.title}${suggestion.description ? `\n\n${suggestion.description}` : ""}`}
+                  navigationTitle="Suggestion"
+                />
+              }
+              icon={{ source: Icon.MagnifyingGlass }}
+            />
+          </ActionPanel>
+        )
+      }
+    />
+  );
+}
 
 interface SearchState {
   searchText: string;
@@ -231,14 +297,13 @@ function useSearch() {
             results: oldState.results.concat(results),
           }));
         },
-        onSuggestions: () => {
-          // TODO suggestions are not great, re-evaluate whether or not to have them
-          // setState((oldState) => ({
-          //   ...oldState,
-          //   suggestions: pushToTop
-          //     ? suggestions.concat(oldState.suggestions)
-          //     : oldState.suggestions.concat(suggestions),
-          // }));
+        onSuggestions: (suggestions, pushToTop) => {
+          setState((oldState) => ({
+            ...oldState,
+            suggestions: pushToTop
+              ? suggestions.concat(oldState.suggestions)
+              : oldState.suggestions.concat(suggestions),
+          }));
         },
         onAlert: (alert) => {
           showToast(ToastStyle.Failure, alert.title, alert.description);

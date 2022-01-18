@@ -1,8 +1,12 @@
 import EventSource from "@bobheadxi/node-eventsource-http2";
 import { AbortSignal } from "node-fetch";
+import { remark } from "remark";
+import strip from "strip-markdown";
 
 import { getMatchUrl, SearchEvent, SearchMatch } from "./stream";
 import { Sourcegraph } from "../sourcegraph";
+
+const stripMarkdown = remark().use(strip);
 
 export interface SearchResult {
   url: string;
@@ -11,8 +15,8 @@ export interface SearchResult {
 
 export interface Suggestion {
   title: string;
-  description: string;
-  query: string;
+  description?: string;
+  query?: string;
 }
 
 export interface Alert {
@@ -80,6 +84,11 @@ export async function performSearch(
         event.data.map(
           (match): SearchResult => {
             const url = `${src.instance}${getMatchUrl(match)}`;
+            if (match.type === "commit") {
+              // Commit stuff comes already markdown-formatted?? so strip formatting
+              match.label = stripMarkdown.processSync(match.label)?.value.toString().split(`› `).pop() || "";
+              match.detail = stripMarkdown.processSync(match.detail)?.value.toString();
+            }
             return { url, match };
           }
         )
@@ -116,17 +125,31 @@ export async function performSearch(
 
       handlers.onAlert({
         title: event.data.title,
-        description: event.data.description || "",
+        description: event.data.description || undefined,
       });
+
       if (event.data.proposedQueries) {
+        // Add proposed queries as suggestions. I've never seen the API return a proposed
+        // query yet, but just in case!
         handlers.onSuggestions(
           event.data.proposedQueries.map((p) => {
             return {
-              title: p.description || p.query,
-              description: event.data.title,
+              title: p.description || event.data.title,
+              description: !p.description ? event.data.title : "",
               query: p.query,
             };
           }),
+          true
+        );
+      } else if (event.data.description) {
+        // Alert description often contains a suggestion, hopefully it's useful if no
+        // proposed queries are provided.
+        handlers.onSuggestions(
+          [
+            {
+              title: event.data.description,
+            },
+          ],
           true
         );
       }
