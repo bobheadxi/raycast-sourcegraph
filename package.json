@@ -19,6 +19,14 @@
       "description": "Available under 'Profile' -> 'Access token'",
       "required": false,
       "type": "password"
+    },
+    {
+      "name": "cloudDefaultContext",
+      "title": "Sourcegraph Cloud default context",
+      "description": "Default context to set on all queries",
+      "placeholder": "global",
+      "required": false,
+      "type": "textfield"
     }
   ],
   "commands": [

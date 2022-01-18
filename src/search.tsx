@@ -18,13 +18,12 @@ import {
 } from "@raycast/api";
 import { useState, useRef, Fragment } from "react";
 
-import sourcegraph, { Sourcegraph } from "./sourcegraph";
+import sourcegraphCloud, { Sourcegraph } from "./sourcegraph";
 import { performSearch, SearchResult, Suggestion } from "./stream-search";
 
 export default function Command() {
-  const { state, search } = useSearch();
-  const src = sourcegraph();
-  const queryURL = getQueryURL(src, state.searchText);
+  const src = sourcegraphCloud();
+  const { state, search } = useSearch(src);
 
   return (
     <List
@@ -40,35 +39,28 @@ export default function Command() {
             <SuggestionItem key={randomId()} suggestion={suggestion} />
           ))}
 
-          {
-            /* add a link to query syntax reference alongside other suggestions */
-            state.suggestions.length > 0 ? (
-              <Fragment>
-                <List.Item
-                  title="View search query syntax reference"
-                  icon={{ source: Icon.Globe }}
-                  subtitle="https://docs.sourcegraph.com"
-                  actions={
-                    <ActionPanel>
-                      <OpenInBrowserAction url="https://docs.sourcegraph.com/code_search/reference/queries"></OpenInBrowserAction>
-                    </ActionPanel>
-                  }
-                />
-                <List.Item
-                  title="Continue query in browser"
-                  subtitle={src.instance}
-                  icon={{ source: Icon.MagnifyingGlass }}
-                  actions={
-                    <ActionPanel>
-                      <OpenInBrowserAction url={queryURL}></OpenInBrowserAction>
-                    </ActionPanel>
-                  }
-                />
-              </Fragment>
-            ) : (
-              <Fragment />
-            )
-          }
+          <Fragment>
+            <List.Item
+              title="View search query syntax reference"
+              icon={{ source: Icon.Globe }}
+              subtitle="https://docs.sourcegraph.com"
+              actions={
+                <ActionPanel>
+                  <OpenInBrowserAction url="https://docs.sourcegraph.com/code_search/reference/queries" />
+                </ActionPanel>
+              }
+            />
+            <List.Item
+              title={`${state.searchText.length > 0 ? 'Continue' : 'Compose'} query in browser`}
+              subtitle={src.instance}
+              icon={{ source: Icon.MagnifyingGlass }}
+              actions={
+                <ActionPanel>
+                  <OpenInBrowserAction url={getQueryURL(src, state.searchText)} />
+                </ActionPanel>
+              }
+            />
+          </Fragment>
         </List.Section>
       ) : (
         <Fragment />
@@ -77,7 +69,7 @@ export default function Command() {
       {/* results */}
       <List.Section title="Results" subtitle={state.summary || ""}>
         {state.results.map((searchResult) => (
-          <SearchResultItem key={randomId()} searchResult={searchResult} searchText={state.searchText} />
+          <SearchResultItem key={randomId()} searchResult={searchResult} searchText={state.searchText} src={src} />
         ))}
       </List.Section>
     </List>
@@ -110,8 +102,16 @@ function getQueryURL(src: Sourcegraph, query: string) {
   return `${src.instance}?q=${encodeURIComponent(query)}`;
 }
 
-function SearchResultItem({ searchResult, searchText }: { searchResult: SearchResult; searchText: string }) {
-  const queryURL = getQueryURL(sourcegraph(), searchText);
+function SearchResultItem({
+  searchResult,
+  searchText,
+  src,
+}: {
+  searchResult: SearchResult;
+  searchText: string;
+  src: Sourcegraph;
+}) {
+  const queryURL = getQueryURL(src, searchText);
 
   const { match } = searchResult;
   let title = "";
@@ -169,7 +169,7 @@ function SearchResultItem({ searchResult, searchText }: { searchResult: SearchRe
             <PushAction
               key={randomId()}
               title="Peek Result Details"
-              target={<PeekSearchResult searchResult={searchResult} />}
+              target={<PeekSearchResult searchResult={searchResult} src={src} />}
               icon={{ source: Icon.MagnifyingGlass }}
               shortcut={{ modifiers: ["cmd"], key: "enter" }}
             />,
@@ -178,7 +178,7 @@ function SearchResultItem({ searchResult, searchText }: { searchResult: SearchRe
             <OpenInBrowserAction
               title="Open Query"
               url={queryURL}
-              shortcut={{ modifiers: ["cmd", "shift"], key: "enter" }}
+              shortcut={{ modifiers: ["ctrl", "shift"], key: "enter" }}
             />
             <CopyToClipboardAction title="Copy Link to Query" content={queryURL} />
           </ActionPanel.Section>
@@ -188,8 +188,7 @@ function SearchResultItem({ searchResult, searchText }: { searchResult: SearchRe
   );
 }
 
-function PeekSearchResult({ searchResult }: { searchResult: SearchResult }) {
-  const src = sourcegraph();
+function PeekSearchResult({ searchResult, src }: { searchResult: SearchResult; src: Sourcegraph }) {
   const { match } = searchResult;
   const title = `**${match.repository}** ${match.repoStars ? `| ${match.repoStars} stars` : ""}`;
 
@@ -320,7 +319,9 @@ interface SearchState {
   isLoading: boolean;
 }
 
-function useSearch() {
+const containsFilterRegex = new RegExp(/context:\S+/);
+
+function useSearch(src: Sourcegraph) {
   const [state, setState] = useState<SearchState>({
     searchText: "",
     results: [],
@@ -335,16 +336,22 @@ function useSearch() {
   async function search(searchText: string) {
     cancelRef.current?.abort();
     cancelRef.current = new AbortController();
+
+    // inject context if not overwridden
+    if (src.defaultContext && !containsFilterRegex.test(searchText)) {
+      searchText = `context:${src.defaultContext} ${searchText}`;
+    }
+
     try {
       setState((oldState) => ({
         ...oldState,
-        searchText: searchText,
+        searchText,
         results: [],
         suggestions: [],
         summary: null,
         isLoading: true,
       }));
-      await performSearch(searchText, sourcegraph(), cancelRef.current.signal, {
+      await performSearch(searchText, src, cancelRef.current.signal, {
         onResults: (results) => {
           setState((oldState) => ({
             ...oldState,
