@@ -104,7 +104,7 @@ export async function performSearch(
       handlers.onSuggestions(
         event.data
           // rough heuristic to get rid of some less-than-stellar suggestions
-          .filter((s) => s.kind != "repo" && s.count > 1)
+          .filter((s) => s.count > 1)
           .map((f) => {
             return {
               title: `Filter for '${f.label}'`,

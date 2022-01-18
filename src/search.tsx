@@ -30,6 +30,23 @@ export default function Command() {
           {state.suggestions.slice(0, 3).map((suggestion) => (
             <SuggestionItem key={randomId()} suggestion={suggestion} />
           ))}
+
+          {
+            /* add a link to query syntax reference alongside other suggestions */
+            state.suggestions.length > 0 ? (
+              <List.Item
+                title="View search query syntax reference"
+                icon={{ source: Icon.Globe }}
+                actions={
+                  <ActionPanel>
+                    <OpenInBrowserAction url="https://docs.sourcegraph.com/code_search/reference/queries"></OpenInBrowserAction>
+                  </ActionPanel>
+                }
+              />
+            ) : (
+              <Fragment />
+            )
+          }
         </List.Section>
       ) : (
         <Fragment />
@@ -229,6 +246,7 @@ function SuggestionItem({ suggestion }: { suggestion: Suggestion }) {
     <List.Item
       title={suggestion.title}
       subtitle={suggestion.description}
+      icon={{ source: suggestion.query ? Icon.Clipboard : Icon.ExclamationMark }}
       actions={
         suggestion.query ? (
           <ActionPanel>
