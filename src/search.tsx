@@ -13,6 +13,8 @@ import {
   ImageLike,
   copyTextToClipboard,
   ActionPanelItem,
+  Toast,
+  useNavigation,
 } from "@raycast/api";
 import { useState, useRef, Fragment } from "react";
 
@@ -23,7 +25,7 @@ export default function Command() {
   const { state, search } = useSearch();
 
   return (
-    <List isLoading={state.isLoading} onSearchTextChange={search} searchBarPlaceholder={"Search..."} throttle>
+    <List isLoading={state.isLoading} onSearchTextChange={search} searchBarPlaceholder={"Search (e.g. 'fmt.Sprintf lang:go')"} throttle>
       {/* show suggestions IFF no results */}
       {!state.isLoading && state.results.length === 0 ? (
         <List.Section title="Suggestions" subtitle={state.summary || "No results found"}>
@@ -74,7 +76,7 @@ function resultActions(searchResult: SearchResult, extraActions?: JSX.Element[])
       key={randomId()}
       title="Copy Link to Result"
       content={searchResult.url}
-      shortcut={{ modifiers: ["cmd"], key: "c" }}
+      shortcut={{ modifiers: ["cmd", "shift"], key: "c" }}
     />
   );
   return (
@@ -157,7 +159,6 @@ function SearchResultItem({ searchResult, searchText }: { searchResult: SearchRe
             <CopyToClipboardAction
               title="Copy Link to Query"
               content={queryURL}
-              // shortcut={{ modifiers: ["cmd", "shift"], key: "l" }}
             />
           </ActionPanel.Section>
         </ActionPanel>
@@ -177,7 +178,7 @@ function PeekSearchResult({ searchResult }: { searchResult: SearchResult }) {
 
 > ${match.type} match on repository with ${match.repoStars ? `with ${match.repoStars} stars` : ""}
 
-${match.description}`;
+${match.description || ''}`;
       break;
 
     case "content":
@@ -296,6 +297,8 @@ function useSearch() {
   });
   const cancelRef = useRef<AbortController | null>(null);
 
+  const { push } = useNavigation();
+
   async function search(searchText: string) {
     cancelRef.current?.abort();
     cancelRef.current = new AbortController();
@@ -324,7 +327,16 @@ function useSearch() {
           }));
         },
         onAlert: (alert) => {
-          showToast(ToastStyle.Failure, alert.title, alert.description);
+          new Toast({
+            style: ToastStyle.Failure,
+            title: alert.title,
+            primaryAction: {
+              title: "View details",
+              onAction: () => {
+                push(<Detail markdown={`**${alert.title}**\n\n${alert.description}`} navigationTitle="Alert" />);
+              },
+            },
+          }).show();
         },
         onProgress: (progress) => {
           setState((oldState) => ({
