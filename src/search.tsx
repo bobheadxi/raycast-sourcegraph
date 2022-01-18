@@ -18,14 +18,21 @@ import {
 } from "@raycast/api";
 import { useState, useRef, Fragment } from "react";
 
-import sourcegraph from "./sourcegraph";
+import sourcegraph, { Sourcegraph } from "./sourcegraph";
 import { performSearch, SearchResult, Suggestion } from "./stream-search";
 
 export default function Command() {
   const { state, search } = useSearch();
+  const src = sourcegraph();
+  const queryURL = getQueryURL(src, state.searchText);
 
   return (
-    <List isLoading={state.isLoading} onSearchTextChange={search} searchBarPlaceholder={"Search (e.g. 'fmt.Sprintf lang:go')"} throttle>
+    <List
+      isLoading={state.isLoading}
+      onSearchTextChange={search}
+      searchBarPlaceholder={"Search (e.g. 'fmt.Sprintf lang:go')"}
+      throttle
+    >
       {/* show suggestions IFF no results */}
       {!state.isLoading && state.results.length === 0 ? (
         <List.Section title="Suggestions" subtitle={state.summary || "No results found"}>
@@ -36,15 +43,28 @@ export default function Command() {
           {
             /* add a link to query syntax reference alongside other suggestions */
             state.suggestions.length > 0 ? (
-              <List.Item
-                title="View search query syntax reference"
-                icon={{ source: Icon.Globe }}
-                actions={
-                  <ActionPanel>
-                    <OpenInBrowserAction url="https://docs.sourcegraph.com/code_search/reference/queries"></OpenInBrowserAction>
-                  </ActionPanel>
-                }
-              />
+              <Fragment>
+                <List.Item
+                  title="View search query syntax reference"
+                  icon={{ source: Icon.Globe }}
+                  subtitle="https://docs.sourcegraph.com"
+                  actions={
+                    <ActionPanel>
+                      <OpenInBrowserAction url="https://docs.sourcegraph.com/code_search/reference/queries"></OpenInBrowserAction>
+                    </ActionPanel>
+                  }
+                />
+                <List.Item
+                  title="Continue query in browser"
+                  subtitle={src.instance}
+                  icon={{ source: Icon.MagnifyingGlass }}
+                  actions={
+                    <ActionPanel>
+                      <OpenInBrowserAction url={queryURL}></OpenInBrowserAction>
+                    </ActionPanel>
+                  }
+                />
+              </Fragment>
             ) : (
               <Fragment />
             )
@@ -86,8 +106,13 @@ function resultActions(searchResult: SearchResult, extraActions?: JSX.Element[])
   );
 }
 
+function getQueryURL(src: Sourcegraph, query: string) {
+  return `${src.instance}?q=${encodeURIComponent(query)}`;
+}
+
 function SearchResultItem({ searchResult, searchText }: { searchResult: SearchResult; searchText: string }) {
-  const src = sourcegraph();
+  const queryURL = getQueryURL(sourcegraph(), searchText);
+
   const { match } = searchResult;
   let title = "";
   let subtitle = "";
@@ -111,7 +136,7 @@ function SearchResultItem({ searchResult, searchText }: { searchResult: SearchRe
       context = match.repoStars ? `${match.repoStars} stars` : "";
       break;
     case "commit":
-      icon.source = Icon.Message;
+      icon.source = Icon.MemoryChip;
       title = match.label;
       // just get the date
       subtitle = match.detail.split(" ").slice(1).join(" ");
@@ -132,7 +157,6 @@ function SearchResultItem({ searchResult, searchText }: { searchResult: SearchRe
       break;
   }
 
-  const queryURL = `${src.instance}?q=${encodeURIComponent(searchText)}`;
   return (
     <List.Item
       title={title}
@@ -156,10 +180,7 @@ function SearchResultItem({ searchResult, searchText }: { searchResult: SearchRe
               url={queryURL}
               shortcut={{ modifiers: ["cmd", "shift"], key: "enter" }}
             />
-            <CopyToClipboardAction
-              title="Copy Link to Query"
-              content={queryURL}
-            />
+            <CopyToClipboardAction title="Copy Link to Query" content={queryURL} />
           </ActionPanel.Section>
         </ActionPanel>
       }
@@ -170,25 +191,30 @@ function SearchResultItem({ searchResult, searchText }: { searchResult: SearchRe
 function PeekSearchResult({ searchResult }: { searchResult: SearchResult }) {
   const src = sourcegraph();
   const { match } = searchResult;
+  const title = `**${match.repository}** ${match.repoStars ? `| ${match.repoStars} stars` : ""}`;
 
   let body = "";
   switch (match.type) {
     case "repo":
-      body = `# ${match.repository}
+      body = `${title}
 
-> ${match.type} match on repository with ${match.repoStars ? `with ${match.repoStars} stars` : ""}
+> ${match.private ? "Private" : "Public"} ${match.type} match
 
-${match.description || ''}`;
+---
+
+${match.description || ""}`;
       break;
 
     case "content":
-      body = `# ${match.repository}
+      body = `${title}
 
-> ${match.type} match in \`${match.path}\` ${match.repoStars ? `in repository with ${match.repoStars} stars` : ""}
+> ${match.type} match in \`${match.path}\`
+
+---
 
 ${match.lineMatches
   .map(
-    (l) => `\`\`\`
+    (l) => `[Line ${l.lineNumber}](${searchResult.url}?${l.lineNumber})\n\`\`\`
 ${l.line}
 \`\`\``
   )
@@ -196,9 +222,11 @@ ${l.line}
       break;
 
     case "symbol":
-      body = `# ${match.repository}
+      body = `${title}
 
-> ${match.type} match in \`${match.path}\` ${match.repoStars ? `in repository with ${match.repoStars} stars` : ""}
+> ${match.type} match in \`${match.path}\`
+
+---
 
 ${match.symbols
   .map((s) => `- [\`${s.containerName ? `${s.containerName} > ` : ""}${s.name}\`](${src.instance}${s.url})`)
@@ -206,18 +234,22 @@ ${match.symbols
       break;
 
     case "path":
-      body = `# ${match.repository}
+      body = `${title}
       
 > ${match.type} match
+
+---
 
 \`${match.path}\`
 `;
       break;
 
     case "commit":
-      body = `# ${match.repository}
-      
-> ${match.type} match in ${match.detail} ${match.repoStars ? `in repository with ${match.repoStars} stars` : ""}
+      body = `${title}
+
+> ${match.type} match in ${match.detail}
+
+---
 
 ${match.label}
 
@@ -226,7 +258,8 @@ ${match.content}
       break;
 
     default:
-      body = `
+      body = `Unsupported result type - full data:
+
 \`\`\`
 ${JSON.stringify(match, null, "  ")}
 \`\`\`
