@@ -2,17 +2,24 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "sourcegraph",
   "title": "Sourcegraph",
-  "description": "Universal Code Search - move fast, even in big codebases.",
+  "description": "Search your code and 2M+ public repositories on Sourcegraph.",
   "icon": "command-icon.png",
   "author": "bobheadxi",
   "license": "MIT",
-  "keywords": ["search", "code", "sourcegrpah", "codesearch"],
+  "keywords": ["search", "code", "sourcegraph", "codesearch"],
   "commands": [
     {
       "name": "search",
-      "title": "Search Sourcegraph",
+      "title": "Search Code",
+      "subtitle": "Sourcegraph",
       "description": "Search your code and 2M+ public repositories.",
-      "mode": "view"
+      "mode": "view",
+      "keywords": [
+        "search",
+        "code",
+        "sourcegraph",
+        "src"
+      ]
     }
   ],
   "dependencies": {
