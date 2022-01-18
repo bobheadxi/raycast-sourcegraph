@@ -38,11 +38,11 @@ export default function Command() {
 
 function resultActions(searchResult: SearchResult, extraActions?: JSX.Element[]) {
   let actions = [
-    <OpenInBrowserAction key={randomId()} title="Open result in Sourcegraph" url={searchResult.url} />,
+    <OpenInBrowserAction key={randomId()} title="Open Result" url={searchResult.url} />,
     // Can't seem to override the shortcut on this thing?
     // (<CopyToClipboardAction
     //   key={randomId()}
-    //   title="Copy link to result"
+    //   title="Copy Link to Result"
     //   content={searchResult.url}
     //   shortcut={{ modifiers: ["opt"], key: "c" }}
     // />),
@@ -51,7 +51,7 @@ function resultActions(searchResult: SearchResult, extraActions?: JSX.Element[])
     actions = actions.concat(...extraActions);
   }
   return (
-    <ActionPanel.Section key={randomId()} title="Result actions">
+    <ActionPanel.Section key={randomId()} title="Result Actions">
       {...actions}
     </ActionPanel.Section>
   );
@@ -98,20 +98,20 @@ function SearchResultItem({ searchResult, searchText }: { searchResult: SearchRe
           {resultActions(searchResult, [
             <PushAction
               key={randomId()}
-              title="Peek result details"
+              title="Peek Result Details"
               target={<PeekSearchResult searchResult={searchResult} />}
               icon={{ source: Icon.MagnifyingGlass }}
               shortcut={{ modifiers: ["cmd"], key: "enter" }}
             />,
           ])}
-          <ActionPanel.Section key={randomId()} title="Query actions">
+          <ActionPanel.Section key={randomId()} title="Query Actions">
             <OpenInBrowserAction
-              title="Open query in Sourcegraph"
+              title="Open Query"
               url={queryURL}
               shortcut={{ modifiers: ["cmd", "shift"], key: "enter" }}
             />
             <CopyToClipboardAction
-              title="Copy link to query in Sourcegraph"
+              title="Copy Link to Query"
               content={queryURL}
               // shortcut={{ modifiers: ["cmd", "shift"], key: "l" }}
             />
