@@ -21,18 +21,13 @@ export default function Command() {
   const { state, search } = useSearch();
 
   return (
-    <List
-      isLoading={state.isLoading}
-      onSearchTextChange={search}
-      searchBarPlaceholder={"Search..."}
-      throttle
-    >
+    <List isLoading={state.isLoading} onSearchTextChange={search} searchBarPlaceholder={"Search..."} throttle>
       {/* <List.Section title="Suggestions">
         {state.suggestions.slice(0, 3).map((suggestion) => (
           <SuggestionItem key={randomId()} suggestion={suggestion} />
         ))}
       </List.Section> */}
-      <List.Section title="Results" subtitle={state.summary || ""} >
+      <List.Section title="Results" subtitle={state.summary || ""}>
         {state.results.map((searchResult) => (
           <SearchResultItem key={randomId()} searchResult={searchResult} searchText={state.searchText} />
         ))}
@@ -43,11 +38,7 @@ export default function Command() {
 
 function resultActions(searchResult: SearchResult, extraActions?: JSX.Element[]) {
   let actions = [
-    (<OpenInBrowserAction
-      key={randomId()}
-      title="Open result in Sourcegraph"
-      url={searchResult.url}
-    />),
+    <OpenInBrowserAction key={randomId()} title="Open result in Sourcegraph" url={searchResult.url} />,
     // Can't seem to override the shortcut on this thing?
     // (<CopyToClipboardAction
     //   key={randomId()}
@@ -55,47 +46,47 @@ function resultActions(searchResult: SearchResult, extraActions?: JSX.Element[])
     //   content={searchResult.url}
     //   shortcut={{ modifiers: ["opt"], key: "c" }}
     // />),
-  ]
+  ];
   if (extraActions) {
-    actions = actions.concat(...extraActions)
+    actions = actions.concat(...extraActions);
   }
   return (
     <ActionPanel.Section key={randomId()} title="Result actions">
       {...actions}
     </ActionPanel.Section>
-  )
+  );
 }
 
-function SearchResultItem({ searchResult, searchText }: { searchResult: SearchResult, searchText: string }) {
+function SearchResultItem({ searchResult, searchText }: { searchResult: SearchResult; searchText: string }) {
   const { match } = searchResult;
-  let title = '';
+  let title = "";
   let subtitle = match.repository;
-  const icon: ImageLike = { source: Icon.Dot, tintColor: Color.Blue }
+  const icon: ImageLike = { source: Icon.Dot, tintColor: Color.Blue };
   switch (match.type) {
-  case "repo":
-    title = match.repository
-    subtitle = match.description || 'Repository match'
-    icon.tintColor = match.private ? Color.Yellow : icon.tintColor
-    break;
-  case "commit":
-    icon.source = Icon.Message
-    title = match.content
-    break
-  case "content":
-    icon.source = Icon.Text
-    title = match.lineMatches.map((l) => l.line.trim()).join(" ... ")
-    break
-  case "path":
-    icon.source = Icon.TextDocument
-    title = match.path
-    break
-  case "symbol":
-    icon.source = Icon.Link
-    title = match.symbols.map((s) => s.name).join(", ")
-    break
+    case "repo":
+      title = match.repository;
+      subtitle = match.description || "Repository match";
+      icon.tintColor = match.private ? Color.Yellow : icon.tintColor;
+      break;
+    case "commit":
+      icon.source = Icon.Message;
+      title = match.content;
+      break;
+    case "content":
+      icon.source = Icon.Text;
+      title = match.lineMatches.map((l) => l.line.trim()).join(" ... ");
+      break;
+    case "path":
+      icon.source = Icon.TextDocument;
+      title = match.path;
+      break;
+    case "symbol":
+      icon.source = Icon.Link;
+      title = match.symbols.map((s) => s.name).join(", ");
+      break;
   }
 
-  const queryURL = `${sourcegraph().instance}?q=${encodeURIComponent(searchText)}`
+  const queryURL = `${sourcegraph().instance}?q=${encodeURIComponent(searchText)}`;
   return (
     <List.Item
       title={title}
@@ -104,15 +95,15 @@ function SearchResultItem({ searchResult, searchText }: { searchResult: SearchRe
       icon={icon}
       actions={
         <ActionPanel>
-          {resultActions(searchResult, [(
+          {resultActions(searchResult, [
             <PushAction
               key={randomId()}
               title="Peek result details"
               target={<PeekSearchResult searchResult={searchResult} />}
               icon={{ source: Icon.MagnifyingGlass }}
               shortcut={{ modifiers: ["cmd"], key: "enter" }}
-            />
-          )])}
+            />,
+          ])}
           <ActionPanel.Section key={randomId()} title="Query actions">
             <OpenInBrowserAction
               title="Open query in Sourcegraph"
@@ -132,49 +123,55 @@ function SearchResultItem({ searchResult, searchText }: { searchResult: SearchRe
 }
 
 function PeekSearchResult({ searchResult }: { searchResult: SearchResult }) {
-  const { match } = searchResult
+  const { match } = searchResult;
 
-  let body = ''
+  let body = "";
   switch (match.type) {
-  case "repo":
-    body = `# ${match.repository}
+    case "repo":
+      body = `# ${match.repository}
 
-${match.description}`
-    break;
+${match.description}`;
+      break;
 
-  case "content":
-    body = `# ${match.repository}
+    case "content":
+      body = `# ${match.repository}
 
 ## \`${match.path}\`
 
-${match.lineMatches.map(l => `\`\`\`
+${match.lineMatches
+  .map(
+    (l) => `\`\`\`
 ${l.line}
-\`\`\``).join('\n\n')}`
-    break;
+\`\`\``
+  )
+  .join("\n\n")}`;
+      break;
 
-  case "symbol":
-    body = `# ${match.repository}
+    case "symbol":
+      body = `# ${match.repository}
 
 ## \`${match.path}\`
 
-${match.symbols.map((s) => `- [\`${s.containerName ? `${s.containerName}::` : '' + s.name}\`](${sourcegraph().instance}${s.url})`).join('\n')}`
-    break;
+${match.symbols
+  .map((s) => `- [\`${s.containerName ? `${s.containerName}::` : "" + s.name}\`](${sourcegraph().instance}${s.url})`)
+  .join("\n")}`;
+      break;
 
-  default:
-    body = `
+    default:
+      body = `
 \`\`\`
 ${JSON.stringify(match, null, "  ")}
 \`\`\`
-`
+`;
   }
 
   return (
     <Detail
       navigationTitle={`Peek ${match.type} result`}
       markdown={body}
-      actions={<ActionPanel>{resultActions(searchResult)}</ActionPanel>}>
-    </Detail>
-  )
+      actions={<ActionPanel>{resultActions(searchResult)}</ActionPanel>}
+    ></Detail>
+  );
 }
 
 // function SuggestionItem({ suggestion } : { suggestion: Suggestion }) {
@@ -205,10 +202,10 @@ interface SearchState {
 
 function useSearch() {
   const [state, setState] = useState<SearchState>({
-    searchText: '',
+    searchText: "",
     results: [],
     suggestions: [],
-    summary: '',
+    summary: "",
     isLoading: false,
   });
   const cancelRef = useRef<AbortController | null>(null);
@@ -236,7 +233,7 @@ function useSearch() {
           // TODO suggestions are not great, re-evaluate whether or not to have them
           // setState((oldState) => ({
           //   ...oldState,
-          //   suggestions: pushToTop 
+          //   suggestions: pushToTop
           //     ? suggestions.concat(oldState.suggestions)
           //     : oldState.suggestions.concat(suggestions),
           // }));
@@ -248,8 +245,8 @@ function useSearch() {
           setState((oldState) => ({
             ...oldState,
             summary: `${progress.matchCount} results in ${progress.duration}`,
-          }))
-        }
+          }));
+        },
       });
       setState((oldState) => ({
         ...oldState,

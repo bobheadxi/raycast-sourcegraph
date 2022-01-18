@@ -77,10 +77,12 @@ export async function performSearch(
       };
 
       handlers.onResults(
-        event.data.map((match): SearchResult => {
-          const url = `${src.instance}${getMatchUrl(match)}`;
-          return { url, match };
-        })
+        event.data.map(
+          (match): SearchResult => {
+            const url = `${src.instance}${getMatchUrl(match)}`;
+            return { url, match };
+          }
+        )
       );
     });
 
