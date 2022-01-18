@@ -58,6 +58,7 @@ function resultActions(searchResult: SearchResult, extraActions?: JSX.Element[])
 }
 
 function SearchResultItem({ searchResult, searchText }: { searchResult: SearchResult; searchText: string }) {
+  const src = sourcegraph();
   const { match } = searchResult;
   let title = "";
   let subtitle = match.repository;
@@ -86,7 +87,7 @@ function SearchResultItem({ searchResult, searchText }: { searchResult: SearchRe
       break;
   }
 
-  const queryURL = `${sourcegraph().instance}?q=${encodeURIComponent(searchText)}`;
+  const queryURL = `${src.instance}?q=${encodeURIComponent(searchText)}`;
   return (
     <List.Item
       title={title}
@@ -123,6 +124,7 @@ function SearchResultItem({ searchResult, searchText }: { searchResult: SearchRe
 }
 
 function PeekSearchResult({ searchResult }: { searchResult: SearchResult }) {
+  const src = sourcegraph();
   const { match } = searchResult;
 
   let body = "";
@@ -153,7 +155,7 @@ ${l.line}
 ## \`${match.path}\`
 
 ${match.symbols
-  .map((s) => `- [\`${s.containerName ? `${s.containerName}::` : "" + s.name}\`](${sourcegraph().instance}${s.url})`)
+  .map((s) => `- [\`${s.containerName ? `${s.containerName} ` : "" + s.name}\`](${src.instance}${s.url})`)
   .join("\n")}`;
       break;
 
