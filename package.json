@@ -7,6 +7,15 @@
   "author": "bobheadxi",
   "license": "MIT",
   "keywords": ["search", "code", "sourcegraph", "codesearch"],
+  "preferences": [
+    {
+      "name": "cloudToken",
+      "title": "Sourcegraph Cloud API token",
+      "description": "Available under 'Profile' -> 'Access token'",
+      "required": false,
+      "type": "password"
+    }
+  ],
   "commands": [
     {
       "name": "search",

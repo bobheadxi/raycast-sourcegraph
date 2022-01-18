@@ -14,7 +14,7 @@ import {
 } from "@raycast/api";
 import { useState, useRef } from "react";
 
-import { instance } from "./sourcegraph";
+import sourcegraph from "./sourcegraph";
 import { performSearch, SearchResult, Suggestion } from "./stream-search";
 
 export default function Command() {
@@ -75,6 +75,7 @@ function SearchResultItem({ searchResult, searchText }: { searchResult: SearchRe
   case "repo":
     title = match.repository
     subtitle = match.description || 'Repository match'
+    icon.tintColor = match.private ? Color.Yellow : icon.tintColor
     break;
   case "commit":
     icon.source = Icon.Message
@@ -94,7 +95,7 @@ function SearchResultItem({ searchResult, searchText }: { searchResult: SearchRe
     break
   }
 
-  const queryURL = `${instance()}?q=${encodeURIComponent(searchText)}`
+  const queryURL = `${sourcegraph().instance}?q=${encodeURIComponent(searchText)}`
   return (
     <List.Item
       title={title}
@@ -156,7 +157,7 @@ ${l.line}
 
 ## \`${match.path}\`
 
-${match.symbols.map((s) => `- [\`${s.containerName ? `${s.containerName}::` : '' + s.name}\`](${instance()}${s.url})`).join('\n')}`
+${match.symbols.map((s) => `- [\`${s.containerName ? `${s.containerName}::` : '' + s.name}\`](${sourcegraph().instance}${s.url})`).join('\n')}`
     break;
 
   default:
@@ -224,7 +225,7 @@ function useSearch() {
         summary: null,
         isLoading: true,
       }));
-      await performSearch(searchText, cancelRef.current.signal, {
+      await performSearch(searchText, sourcegraph(), cancelRef.current.signal, {
         onResults: (results) => {
           setState((oldState) => ({
             ...oldState,

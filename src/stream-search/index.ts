@@ -2,7 +2,7 @@ import EventSource from "@bobheadxi/node-eventsource-http2";
 import { AbortSignal } from "node-fetch";
 
 import { getMatchUrl, SearchEvent, SearchMatch } from "./stream";
-import { instance } from "../sourcegraph";
+import { Sourcegraph } from "../sourcegraph";
 
 export interface SearchResult {
   url: string;
@@ -32,7 +32,12 @@ export interface SearchHandlers {
   onProgress: (progress: Progress) => void;
 }
 
-export async function performSearch(query: string, signal: AbortSignal, handlers: SearchHandlers): Promise<void> {
+export async function performSearch(
+  query: string,
+  src: Sourcegraph,
+  signal: AbortSignal,
+  handlers: SearchHandlers
+): Promise<void> {
   if (query.length === 0) {
     return;
   }
@@ -47,8 +52,10 @@ export async function performSearch(query: string, signal: AbortSignal, handlers
     ["display", "50"],
   ];
   const parameterEncoded = parameters.map(([k, v]) => k + "=" + encodeURIComponent(v)).join("&");
-  const requestURL = `${instance()}/search/stream?${parameterEncoded}`;
-  const stream = new EventSource(requestURL);
+  const requestURL = `${src.instance}/search/stream?${parameterEncoded}`;
+  const stream = src.token
+    ? new EventSource(requestURL, { headers: { Authorization: `token ${src.token}` } })
+    : new EventSource(requestURL);
 
   return new Promise((resolve, reject) => {
     // signal cancelling
@@ -71,7 +78,7 @@ export async function performSearch(query: string, signal: AbortSignal, handlers
 
       handlers.onResults(
         event.data.map((match): SearchResult => {
-          const url = `${instance()}${getMatchUrl(match)}`;
+          const url = `${src.instance}${getMatchUrl(match)}`;
           return { url, match };
         })
       );
