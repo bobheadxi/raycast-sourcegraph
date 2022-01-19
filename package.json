@@ -30,8 +30,8 @@
       "preferences": [
         {
           "name": "cloudToken",
-          "title": "Sourcegraph Cloud API token",
-          "description": "Available under 'Profile' -> 'Access token'",
+          "title": "Sourcegraph Cloud access token",
+          "description": "Available under 'Profile' -> 'Access token' on Sourcegraph Cloud",
           "required": false,
           "type": "password"
         },
@@ -61,15 +61,15 @@
         {
           "name": "customInstance",
           "title": "URL",
-          "description": "Custom Sourcegraph instance URL",
+          "description": "Sourcegraph instance URL",
           "placeholder": "https://sourcegraph.my-company.com",
           "required": true,
           "type": "textfield"
         },
         {
           "name": "customInstanceToken",
-          "title": "API token",
-          "description": "Available under 'Profile' -> 'Access token'",
+          "title": "Access token",
+          "description": "Available under 'Profile' -> 'Access token' on the Sourcegraph instance",
           "required": true,
           "type": "password"
         },
