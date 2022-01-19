@@ -18,7 +18,7 @@ import {
 } from "@raycast/api";
 import { useState, useRef, Fragment } from "react";
 
-import { Sourcegraph } from "../sourcegraph";
+import { Sourcegraph, isCloud } from "../sourcegraph";
 import { performSearch, SearchResult, Suggestion } from "../sourcegraph/stream-search";
 
 export default function SearchCommand(src: Sourcegraph) {
@@ -26,10 +26,10 @@ export default function SearchCommand(src: Sourcegraph) {
 
   return (
     <List
-      navigationTitle={`Search Code (${new URL(src.instance).hostname})`}
+      navigationTitle={`Search Code - ${isCloud(src) ? 'Sourcegraph Cloud' : new URL(src.instance).hostname}`}
       isLoading={state.isLoading}
       onSearchTextChange={search}
-      searchBarPlaceholder={"Search (e.g. 'fmt.Sprintf lang:go')"}
+      searchBarPlaceholder={`Search ${src.defaultContext ? `${src.defaultContext} context` : `(e.g. 'fmt.Sprintf lang:go')`}`}
       throttle
     >
       {/* show suggestions IFF no results */}

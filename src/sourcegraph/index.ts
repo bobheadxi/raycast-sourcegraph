@@ -6,6 +6,12 @@ export interface Sourcegraph {
   defaultContext?: string;
 }
 
+const cloudURL = "https://sourcegraph.com";
+
+export function isCloud(src: Sourcegraph) {
+  return src.instance === cloudURL;
+}
+
 interface Preferences {
   cloudToken?: string;
   cloudDefaultContext?: string;
@@ -18,7 +24,7 @@ interface Preferences {
 export function sourcegraphCloud(): Sourcegraph {
   const prefs: Preferences = getPreferenceValues();
   return {
-    instance: "https://sourcegraph.com",
+    instance: cloudURL,
     token: prefs.cloudToken,
     defaultContext: prefs.cloudDefaultContext,
   };
