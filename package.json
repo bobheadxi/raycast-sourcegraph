@@ -12,35 +12,75 @@
     "sourcegraph",
     "codesearch"
   ],
-  "preferences": [
-    {
-      "name": "cloudToken",
-      "title": "Sourcegraph Cloud API token",
-      "description": "Available under 'Profile' -> 'Access token'",
-      "required": false,
-      "type": "password"
-    },
-    {
-      "name": "cloudDefaultContext",
-      "title": "Sourcegraph Cloud default context",
-      "description": "Default context to set on all queries",
-      "placeholder": "global",
-      "required": false,
-      "type": "textfield"
-    }
-  ],
+  "preferences": [],
   "commands": [
     {
-      "name": "search",
+      "name": "searchCloud",
       "title": "Search Code",
-      "subtitle": "Sourcegraph",
+      "subtitle": "Sourcegraph Cloud",
       "description": "Search your code and 2M+ public repositories.",
       "mode": "view",
       "keywords": [
         "search",
         "code",
         "sourcegraph",
+        "src",
+        "cloud"
+      ],
+      "preferences": [
+        {
+          "name": "cloudToken",
+          "title": "Sourcegraph Cloud API token",
+          "description": "Available under 'Profile' -> 'Access token'",
+          "required": false,
+          "type": "password"
+        },
+        {
+          "name": "cloudDefaultContext",
+          "title": "Sourcegraph Cloud default context",
+          "description": "Default context to set on all queries",
+          "placeholder": "global",
+          "required": false,
+          "type": "textfield"
+        }
+      ]
+    },
+    {
+      "name": "searchInstance",
+      "title": "Search Code",
+      "subtitle": "Sourcegraph Instance",
+      "description": "Search code on a specific Sourcegraph instance.",
+      "mode": "view",
+      "keywords": [
+        "search",
+        "code",
+        "sourcegraph",
         "src"
+      ],
+      "preferences": [
+        {
+          "name": "customInstance",
+          "title": "URL",
+          "description": "Custom Sourcegraph instance URL",
+          "placeholder": "https://sourcegraph.my-company.com",
+          "required": true,
+          "type": "textfield"
+        },
+        {
+          "name": "customInstanceToken",
+          "title": "API token",
+          "description": "Available under 'Profile' -> 'Access token'",
+          "required": true,
+          "type": "password"
+        },
+        {
+          "name": "customInstanceDefaultContext",
+          "title": "Default context",
+          "description": "Default context to set on all queries",
+          "placeholder": "global",
+          "required": false,
+          "type": "textfield"
+        }
       ]
     }
   ],

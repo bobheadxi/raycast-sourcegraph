@@ -18,15 +18,15 @@ import {
 } from "@raycast/api";
 import { useState, useRef, Fragment } from "react";
 
-import sourcegraphCloud, { Sourcegraph } from "./sourcegraph";
-import { performSearch, SearchResult, Suggestion } from "./stream-search";
+import { Sourcegraph } from "../sourcegraph";
+import { performSearch, SearchResult, Suggestion } from "../sourcegraph/stream-search";
 
-export default function Command() {
-  const src = sourcegraphCloud();
+export default function SearchCommand(src: Sourcegraph) {
   const { state, search } = useSearch(src);
 
   return (
     <List
+      navigationTitle={`Search Code (${new URL(src.instance).hostname})`}
       isLoading={state.isLoading}
       onSearchTextChange={search}
       searchBarPlaceholder={"Search (e.g. 'fmt.Sprintf lang:go')"}
@@ -43,7 +43,6 @@ export default function Command() {
             <List.Item
               title="View search query syntax reference"
               icon={{ source: Icon.Globe }}
-              subtitle="https://docs.sourcegraph.com"
               actions={
                 <ActionPanel>
                   <OpenInBrowserAction url="https://docs.sourcegraph.com/code_search/reference/queries" />
@@ -51,8 +50,7 @@ export default function Command() {
               }
             />
             <List.Item
-              title={`${state.searchText.length > 0 ? 'Continue' : 'Compose'} query in browser`}
-              subtitle={src.instance}
+              title={`${state.searchText.length > 0 ? "Continue" : "Compose"} query in browser`}
               icon={{ source: Icon.MagnifyingGlass }}
               actions={
                 <ActionPanel>
@@ -196,73 +194,73 @@ function PeekSearchResult({ searchResult, src }: { searchResult: SearchResult; s
   switch (match.type) {
     case "repo":
       body = `${title}
-
-> ${match.private ? "Private" : "Public"} ${match.type} match
-
----
-
-${match.description || ""}`;
+  
+  > ${match.private ? "Private" : "Public"} ${match.type} match
+  
+  ---
+  
+  ${match.description || ""}`;
       break;
 
     case "content":
       body = `${title}
-
-> ${match.type} match in \`${match.path}\`
-
----
-
-${match.lineMatches
-  .map(
-    (l) => `[Line ${l.lineNumber}](${searchResult.url}?${l.lineNumber})\n\`\`\`
-${l.line}
-\`\`\``
-  )
-  .join("\n\n")}`;
+  
+  > ${match.type} match in \`${match.path}\`
+  
+  ---
+  
+  ${match.lineMatches
+    .map(
+      (l) => `[Line ${l.lineNumber}](${searchResult.url}?${l.lineNumber})\n\`\`\`
+  ${l.line}
+  \`\`\``
+    )
+    .join("\n\n")}`;
       break;
 
     case "symbol":
       body = `${title}
-
-> ${match.type} match in \`${match.path}\`
-
----
-
-${match.symbols
-  .map((s) => `- [\`${s.containerName ? `${s.containerName} > ` : ""}${s.name}\`](${src.instance}${s.url})`)
-  .join("\n")}`;
+  
+  > ${match.type} match in \`${match.path}\`
+  
+  ---
+  
+  ${match.symbols
+    .map((s) => `- [\`${s.containerName ? `${s.containerName} > ` : ""}${s.name}\`](${src.instance}${s.url})`)
+    .join("\n")}`;
       break;
 
     case "path":
       body = `${title}
-      
-> ${match.type} match
-
----
-
-\`${match.path}\`
-`;
+        
+  > ${match.type} match
+  
+  ---
+  
+  \`${match.path}\`
+  `;
       break;
 
     case "commit":
       body = `${title}
-
-> ${match.type} match in ${match.detail}
-
----
-
-${match.label}
-
-${match.content}
-`;
+  
+  > ${match.type} match in ${match.detail}
+  
+  ---
+  
+  ${match.label}
+  
+  ${match.content}
+  `;
       break;
 
     default:
       body = `Unsupported result type - full data:
-
-\`\`\`
-${JSON.stringify(match, null, "  ")}
-\`\`\`
-`;
+  
+  \`\`\`
+  ${JSON.stringify(match, null, "  ")}
+  \`\`\`
+  `;
   }
 
   return (
