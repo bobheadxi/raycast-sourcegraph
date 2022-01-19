@@ -67,17 +67,16 @@ This may be an issue with your configuration - try updating the Sourcegraph exte
 
   return (
     <List
-      navigationTitle={`Search Code - ${srcName}`}
       isLoading={state.isLoading}
       onSearchTextChange={search}
-      searchBarPlaceholder={`Search ${
-        src.defaultContext ? `${src.defaultContext} context` : `(e.g. 'fmt.Sprintf lang:go')`
+      searchBarPlaceholder={`Search ${srcName} ${
+        src.defaultContext ? `context ${src.defaultContext}` : `(e.g. 'fmt.Sprintf lang:go')`
       }`}
       throttle
     >
       {/* show suggestions IFF no results */}
       {!state.isLoading && state.results.length === 0 ? (
-        <List.Section title="Suggestions" subtitle={state.summary || "No results found"}>
+        <List.Section title="Suggestions" subtitle={state.summary || ''}>
           {state.suggestions.slice(0, 3).map((suggestion) => (
             <SuggestionItem key={randomId()} suggestion={suggestion} />
           ))}
@@ -129,7 +128,7 @@ function resultActions(searchResult: SearchResult, extraActions?: JSX.Element[])
       key={randomId()}
       title="Copy Link to Result"
       content={searchResult.url}
-      shortcut={{ modifiers: ["cmd", "shift"], key: "c" }}
+      shortcut={{ modifiers: ["ctrl", "shift"], key: "c" }}
     />
   );
   return (
@@ -173,7 +172,7 @@ function SearchResultItem({
         icon.tintColor = Color.Yellow;
       }
       title = match.repository;
-      subtitle = match.description || "Repository match";
+      subtitle = match.description || '';
       context = match.repoStars ? `${match.repoStars} stars` : "";
       break;
     case "commit":
