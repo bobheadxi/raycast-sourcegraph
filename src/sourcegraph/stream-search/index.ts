@@ -4,7 +4,7 @@ import { remark } from "remark";
 import strip from "strip-markdown";
 
 import { getMatchUrl, SearchEvent, SearchMatch } from "./stream";
-import { Sourcegraph } from "../sourcegraph";
+import { Sourcegraph } from "..";
 
 const stripMarkdown = remark().use(strip);
 

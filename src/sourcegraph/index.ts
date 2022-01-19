@@ -8,8 +8,12 @@ export interface Sourcegraph {
 
 const cloudURL = "https://sourcegraph.com";
 
-export function isCloud(src: Sourcegraph) {
-  return src.instance === cloudURL;
+function isCloud(instance: string) {
+  return instance === cloudURL;
+}
+
+export function instanceName(src: Sourcegraph) {
+  return `${isCloud(src.instance) ? "Sourcegraph Cloud" : new URL(src.instance).hostname}`;
 }
 
 interface Preferences {

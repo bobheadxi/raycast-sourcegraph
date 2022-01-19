@@ -16,20 +16,63 @@ import {
   Toast,
   useNavigation,
 } from "@raycast/api";
-import { useState, useRef, Fragment } from "react";
+import { useState, useRef, Fragment, useEffect } from "react";
 
-import { Sourcegraph, isCloud } from "../sourcegraph";
+import { Sourcegraph, instanceName } from "../sourcegraph";
 import { performSearch, SearchResult, Suggestion } from "../sourcegraph/stream-search";
+import { AuthError, checkAuth } from "../sourcegraph/gql";
 
 export default function SearchCommand(src: Sourcegraph) {
+  const { push } = useNavigation();
   const { state, search } = useSearch(src);
+  const srcName = instanceName(src);
+
+  useEffect(() => {
+    async function checkSrc() {
+      try {
+        if (src.token) {
+          await checkAuth(src);
+        }
+      } catch (err) {
+        const toast =
+          err instanceof AuthError
+            ? new Toast({
+                title: `Failed to authenticate against ${srcName}`,
+                message: err.message,
+                style: ToastStyle.Failure,
+              })
+            : new Toast({
+                title: `Error authenticating against ${srcName}`,
+                message: JSON.stringify(err),
+                style: ToastStyle.Failure,
+              });
+        (toast.primaryAction = {
+          title: "View details",
+          onAction: () => {
+            push(
+              <Detail
+                navigationTitle="Error"
+                markdown={`**${toast.title}:** ${toast.message}.
+
+This may be an issue with your configuration - try updating the Sourcegraph extension settings!`}
+              />
+            );
+          },
+        }),
+          await toast.show();
+      }
+    }
+    checkSrc();
+  });
 
   return (
     <List
-      navigationTitle={`Search Code - ${isCloud(src) ? 'Sourcegraph Cloud' : new URL(src.instance).hostname}`}
+      navigationTitle={`Search Code - ${srcName}`}
       isLoading={state.isLoading}
       onSearchTextChange={search}
-      searchBarPlaceholder={`Search ${src.defaultContext ? `${src.defaultContext} context` : `(e.g. 'fmt.Sprintf lang:go')`}`}
+      searchBarPlaceholder={`Search ${
+        src.defaultContext ? `${src.defaultContext} context` : `(e.g. 'fmt.Sprintf lang:go')`
+      }`}
       throttle
     >
       {/* show suggestions IFF no results */}
