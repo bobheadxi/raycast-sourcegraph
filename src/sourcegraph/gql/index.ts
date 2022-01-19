@@ -52,3 +52,31 @@ export async function checkAuth(src: Sourcegraph) {
   const q = `query CurrentUser { currentUser { username } }`;
   return doRequest<{ CurrentUser: { username: string } }>(src, q);
 }
+
+export interface SearchNotebook {
+  title: string;
+  viewerHasStarred: boolean;
+  public: boolean;
+  creator: {
+    username: string;
+    displayName?: string;
+  };
+}
+
+export async function findNotebooks(src: Sourcegraph, query?: string) {
+  const q = `{
+    notebooks(${query ? `query:"${query}"` : "first:10"}) {
+      nodes {
+        id
+        title
+        viewerHasStarred
+        public
+        creator {
+          username
+          displayName
+        }
+      }
+    }
+  }`;
+  return doRequest<{ notebooks: SearchNotebook[] }>(src, q);
+}
