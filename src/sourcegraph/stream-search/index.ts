@@ -53,7 +53,7 @@ export async function performSearch(
     // ["dl", "0"],
     // ['dk', (decorationKinds || ['html']).join('|')],
     // ['dc', (decorationContextLines || '1').toString()],
-    ["display", "50"],
+    ["display", "1500"],
   ];
   const parameterEncoded = parameters.map(([k, v]) => k + "=" + encodeURIComponent(v)).join("&");
   const requestURL = `${src.instance}/search/stream?${parameterEncoded}`;
@@ -81,17 +81,15 @@ export async function performSearch(
       };
 
       handlers.onResults(
-        event.data.map(
-          (match): SearchResult => {
-            const url = `${src.instance}${getMatchUrl(match)}`;
-            if (match.type === "commit") {
-              // Commit stuff comes already markdown-formatted?? so strip formatting
-              match.label = stripMarkdown.processSync(match.label)?.value.toString().split(`› `).pop() || "";
-              match.detail = stripMarkdown.processSync(match.detail)?.value.toString();
-            }
-            return { url, match };
+        event.data.map((match): SearchResult => {
+          const url = `${src.instance}${getMatchUrl(match)}`;
+          if (match.type === "commit") {
+            // Commit stuff comes already markdown-formatted?? so strip formatting
+            match.label = stripMarkdown.processSync(match.label)?.value.toString().split(`› `).pop() || "";
+            match.detail = stripMarkdown.processSync(match.detail)?.value.toString();
           }
-        )
+          return { url, match };
+        })
       );
     });
 
