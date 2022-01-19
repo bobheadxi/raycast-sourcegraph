@@ -1,0 +1,22 @@
+name: Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check:
+    # Raycast library downloads what seems to be a proprietary binary that doesn't work
+    # (not out-of-the-box at least) on ubuntu machines, so use macos
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+      with:
+        node-version: 16.x
+    - run: npm install
+    - run: npm run lint
+    - run: npm run build
