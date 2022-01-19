@@ -8,7 +8,10 @@ on:
 
 jobs:
   check:
+    # Raycast library downloads what seems to be a proprietary binary that doesn't work
+    # (not out-of-the-box at least) on ubuntu machines, so use macos
     runs-on: macos-latest
+
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v2

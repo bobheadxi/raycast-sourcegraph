@@ -7,7 +7,12 @@ echo "Publish $EXTENSION_VERSION to $RAYCAST_EXTENSIONS_DIR"
 
 cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit
 rm -rf "$RAYCAST_EXTENSIONS_DIR/extensions/sourcegraph"
-rsync -rv --exclude=.git --exclude=.gitignore --exclude=node_modules --exclude=.scripts \
+rsync -rv \
+    --exclude=.git \
+    --exclude=.gitignore \
+    --exclude=node_modules \
+    --exclude=.scripts \
+    --exclude=.github \
     ./ "$RAYCAST_EXTENSIONS_DIR/extensions/sourcegraph"
 
 pushd "$RAYCAST_EXTENSIONS_DIR" || exit
