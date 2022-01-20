@@ -34,12 +34,6 @@ export default function FindNotebooksCommand(src: Sourcegraph) {
       searchBarPlaceholder={`Find search notebooks on ${srcName}`}
       throttle
     >
-      <List.Section title={state.searchText ? "Results" : "Starred"} subtitle={`${state.notebooks.length} results`}>
-        {state.notebooks.map((n) => (
-          <NotebookResultItem key={randomId()} notebook={n} src={src} />
-        ))}
-      </List.Section>
-
       {!state.isLoading && !state.searchText ? (
         <List.Section title={"Suggestions"}>
           <ListItem
@@ -55,6 +49,15 @@ export default function FindNotebooksCommand(src: Sourcegraph) {
       ) : (
         <Fragment />
       )}
+
+      <List.Section
+        title={state.searchText ? "Results" : "Starred"}
+        subtitle={`${state.notebooks.length} ${state.searchText ? "results" : "notebooks"}`}
+      >
+        {state.notebooks.map((n) => (
+          <NotebookResultItem key={randomId()} notebook={n} src={src} />
+        ))}
+      </List.Section>
     </List>
   );
 }
