@@ -8,8 +8,9 @@ import {
   Icon,
   useNavigation,
   randomId,
+  ListItem,
 } from "@raycast/api";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Fragment } from "react";
 import { DateTime } from "luxon";
 
 import { Sourcegraph, instanceName } from "../sourcegraph";
@@ -35,6 +36,22 @@ export default function FindNotebooksCommand(src: Sourcegraph) {
           <NotebookResultItem key={randomId()} notebook={n} src={src} />
         ))}
       </List.Section>
+
+      {!state.isLoading && !state.searchText ? (
+        <List.Section title={"Suggestions"}>
+          <ListItem
+            title="Create a search notebook"
+            icon={{ source: Icon.Plus }}
+            actions={
+              <ActionPanel>
+                <OpenInBrowserAction title="Create in Browser" url={`${src.instance}/notebooks/new`} />
+              </ActionPanel>
+            }
+          />
+        </List.Section>
+      ) : (
+        <Fragment />
+      )}
     </List>
   );
 }
@@ -84,7 +101,7 @@ function useNotebooks(src: Sourcegraph) {
   const [state, setState] = useState<NotebooksState>({
     searchText: "",
     notebooks: [],
-    isLoading: false,
+    isLoading: true,
   });
   const cancelRef = useRef<AbortController | null>(null);
 
