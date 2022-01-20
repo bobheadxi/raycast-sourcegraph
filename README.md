@@ -1,12 +1,19 @@
+<br>
+
+<p align="center">
+  <img src="https://github.com/bobheadxi/raycast-sourcegraph/blob/main/assets/command-icon.png?raw=true" alt="sourcegraph" width="52px" />
+</p>
+
 <h1 align="center">
   Sourcgraph Raycast Extension
 </h1>
 
 <p align="center">
-  Search your code and 2M+ public repositories on <a href="https://about.sourcegraph.com/code-search">Sourcegraph</a> directly within <a href="https://www.raycast.com">Raycast</a>.
+  Search your code and 2M+ public repositories on <a href="https://about.sourcegraph.com">Sourcegraph</a> directly within <a href="https://www.raycast.com">Raycast</a>.
 </p>
 
 <p align="center">
+  <a href="#install"><strong>Install</strong></a> · 
   <a href="#setup"><strong>Setup</strong></a> · 
   <a href="https://github.com/bobheadxi/raycast-sourcegraph/issues"><strong>Issues</strong></a> · 
   <a href="#contributing"><strong>Contributing</strong></a>
@@ -15,6 +22,14 @@
 <p align="center">
   <img src="https://github.com/bobheadxi/raycast-sourcegraph/blob/main/assets/demo.png?raw=true" alt="demo" />
 </p>
+
+<br>
+
+## Install
+
+To get started, install [Raycast](https://www.raycast.com/) and [install this extension from the Raycast extensions store](https://www.raycast.com/bobheadxi/sourcegraph).
+
+Alternatively, you can [install this extension from source](./CONTRIBUTING.md).
 
 <br>
 
@@ -43,6 +58,11 @@ To get started, you can try the [public Sourcegraph Cloud contexts](https://sour
 The Sourcegraph Raycast extension allows you to set a default context for all your searches in the extension preferences.
 To override it for a search, just include a `context:` parameter in your query.
 
+<br>
+
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) if you're interested in contributing to this extension!
+See [CONTRIBUTING.md](CONTRIBUTING.md) if you're interested in 
+contributing to this extension!
+
+<br>

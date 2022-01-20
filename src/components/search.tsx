@@ -182,7 +182,7 @@ function SearchResultItem({
             <OpenInBrowserAction
               title="Open Query"
               url={queryURL}
-              shortcut={{ modifiers: ["ctrl", "shift"], key: "enter" }}
+              shortcut={{ modifiers: ["cmd", "shift"], key: "o" }}
             />
             <CopyToClipboardAction title="Copy Link to Query" content={queryURL} />
           </ActionPanel.Section>
