@@ -2,13 +2,16 @@ import {
   ActionPanel,
   List,
   OpenInBrowserAction,
-  showToast,
   ToastStyle,
   Color,
   Icon,
   useNavigation,
   randomId,
   ListItem,
+  Detail,
+  CopyToClipboardAction,
+  PushAction,
+  Toast,
 } from "@raycast/api";
 import { useState, useRef, useEffect, Fragment } from "react";
 import { DateTime } from "luxon";
@@ -85,6 +88,66 @@ function NotebookResultItem({ notebook, src }: { notebook: SearchNotebook; src: 
       actions={
         <ActionPanel>
           <OpenInBrowserAction key={randomId()} url={`${src.instance}/notebooks/${notebook.id}`} />
+          <PushAction
+            key={randomId()}
+            title="Peek Search Notebook"
+            icon={{ source: Icon.MagnifyingGlass }}
+            target={<NotebookPeek notebook={notebook} src={src} />}
+            shortcut={{ modifiers: ["cmd"], key: "enter" }}
+          />
+        </ActionPanel>
+      }
+    />
+  );
+}
+
+function NotebookPeek({ notebook, src }: { notebook: SearchNotebook; src: Sourcegraph }) {
+  const author = notebook.creator.displayName
+    ? `${notebook.creator.displayName} (@${notebook.creator.username})`
+    : `@${notebook.creator.username}`;
+  let blurb = `Created by ${author}`;
+  try {
+    blurb += ` ${DateTime.fromISO(notebook.createdAt).toRelative()}, last updated ${DateTime.fromISO(
+      notebook.updatedAt
+    ).toRelative()}`;
+  } catch (e) {
+    console.warn(`notebook ${notebook.id}: invalid date: ${e}`);
+  }
+  const preview = `**${notebook.title}** ${notebook.stars?.totalCount ? `| ${notebook.stars.totalCount} stars` : ""}
+
+> ${blurb}
+
+---
+
+${
+  notebook.blocks
+    ? notebook.blocks
+        .map((b) => {
+          let str = "";
+          if (b.markdownInput) {
+            str += `${b.markdownInput}`;
+          } else if (b.queryInput) {
+            str += `\`\`\`\n${b.queryInput}\n\`\`\``;
+          } else if (b.fileInput) {
+            str += `\`\`\`\n${b.fileInput.repositoryName} > ${b.fileInput.filePath}\n\`\`\``;
+          } else {
+            str += `\`\`\`\n${b}\n\`\`\``;
+          }
+          return str;
+        })
+        .join("\n\n")
+    : ""
+}`;
+
+  const notebookURL = `${src.instance}/notebooks/${notebook.id}`;
+  return (
+    <Detail
+      markdown={preview}
+      navigationTitle={"Peek Search Notebook"}
+      actions={
+        <ActionPanel>
+          <OpenInBrowserAction url={notebookURL} />
+          <CopyToClipboardAction title="Copy Link to Notebook" content={notebookURL} />
         </ActionPanel>
       }
     />
@@ -104,6 +167,7 @@ function useNotebooks(src: Sourcegraph) {
     isLoading: true,
   });
   const cancelRef = useRef<AbortController | null>(null);
+  const { push } = useNavigation();
 
   useEffect(() => {
     find(); // initial load
@@ -128,7 +192,19 @@ function useNotebooks(src: Sourcegraph) {
         isLoading: false,
       }));
     } catch (error) {
-      showToast(ToastStyle.Failure, "Find notebooks failed", String(error));
+      new Toast({
+        style: ToastStyle.Failure,
+        title: "Find notebooks failed",
+        message: String(error),
+        primaryAction: {
+          title: "View details",
+          onAction: () => {
+            push(
+              <Detail markdown={`**Find notebooks failed:** ${String(error)}`} navigationTitle="Unexpected error" />
+            );
+          },
+        },
+      }).show();
 
       setState((oldState) => ({
         ...oldState,

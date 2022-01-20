@@ -394,7 +394,17 @@ function useSearch(src: Sourcegraph) {
         isLoading: false,
       }));
     } catch (error) {
-      showToast(ToastStyle.Failure, "Search failed", String(error));
+      new Toast({
+        style: ToastStyle.Failure,
+        title: "Search failed",
+        message: String(error),
+        primaryAction: {
+          title: "View details",
+          onAction: () => {
+            push(<Detail markdown={`**Search failed:** ${String(error)}`} navigationTitle="Unexpected error" />);
+          },
+        },
+      }).show();
 
       setState((oldState) => ({
         ...oldState,

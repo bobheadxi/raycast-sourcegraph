@@ -42,11 +42,13 @@ async function doRequest<T>(abort: AbortSignal, src: Sourcegraph, query: string)
         return r.json();
       })
       .then((data) => {
-        const resp = data as { data: T };
-        if (resp) {
+        const resp = data as { data?: T; errors?: { message: string }[] };
+        if (resp?.data) {
           resolve(resp.data as T);
+        } else if (resp?.errors) {
+          reject(resp.errors.map((e) => e.message).join("\n\n"));
         } else {
-          reject(`No data in response: ${resp}`);
+          reject(`Unknown in response: ${JSON.stringify(resp)}`);
         }
       });
   });
@@ -55,6 +57,21 @@ async function doRequest<T>(abort: AbortSignal, src: Sourcegraph, query: string)
 export async function checkAuth(abort: AbortSignal, src: Sourcegraph) {
   const q = `query currentUser { currentUser { username, id } }`;
   return doRequest<{ currentUser: { username: string; id: string } }>(abort, src, q);
+}
+
+export interface NotebookMarkdownBlock {
+  markdownInput?: string;
+}
+
+export interface NotebookQueryBlock {
+  queryInput?: string;
+}
+
+export interface NotebookFileBlock {
+  fileInput?: {
+    repositoryName: string;
+    filePath: string;
+  };
 }
 
 export interface SearchNotebook {
@@ -67,6 +84,8 @@ export interface SearchNotebook {
     username: string;
     displayName?: string;
   };
+  blocks?: (NotebookMarkdownBlock & NotebookQueryBlock & NotebookFileBlock)[];
+  createdAt: string;
   updatedAt: string;
 }
 
@@ -90,6 +109,22 @@ export async function findNotebooks(abort: AbortSignal, src: Sourcegraph, query?
           username
           displayName
         }
+        blocks {
+          __typename
+          ... on MarkdownBlock {
+            markdownInput
+          }
+          ... on QueryBlock {
+            queryInput
+          }
+          ... on FileBlock {
+            fileInput {
+              repositoryName
+              filePath
+            }
+          }
+        }
+        createdAt
         updatedAt
       }
     }
