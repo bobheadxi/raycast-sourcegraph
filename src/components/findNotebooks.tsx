@@ -16,7 +16,7 @@ import { Sourcegraph, instanceName } from "../sourcegraph";
 import { findNotebooks, SearchNotebook } from "../sourcegraph/gql";
 import checkAuthEffect from "../hooks/checkAuthEffect";
 
-export default function NotebooksCommand(src: Sourcegraph) {
+export default function FindNotebooksCommand(src: Sourcegraph) {
   const { state, find } = useNotebooks(src);
   const srcName = instanceName(src);
   const nav = useNavigation();

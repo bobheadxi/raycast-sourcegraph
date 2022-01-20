@@ -1,7 +1,7 @@
-import NotebooksCommand from "./components/notebooks";
+import FindNotebooksCommand from "./components/findNotebooks";
 import { sourcegraphCloud } from "./sourcegraph";
 
 export default function SearchCloud() {
   const src = sourcegraphCloud();
-  return NotebooksCommand(src);
+  return FindNotebooksCommand(src);
 }

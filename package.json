@@ -85,10 +85,10 @@
       ]
     },
     {
-      "name": "notebooksCloud",
-      "title": "Search Notebooks",
+      "name": "findNotebooksCloud",
+      "title": "Find Search Notebooks",
       "subtitle": "Sourcegraph Cloud",
-      "description": "Browse and create search notebooks.",
+      "description": "Browse search notebooks on Sourcegraph Cloud.",
       "mode": "view",
       "keywords": [
         "search",
