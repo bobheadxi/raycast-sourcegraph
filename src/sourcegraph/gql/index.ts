@@ -10,7 +10,7 @@ export class AuthError extends Error {
   }
 }
 
-async function doRequest<T>(src: Sourcegraph, query: string): Promise<T> {
+async function doRequest<T>(abort: AbortSignal, src: Sourcegraph, query: string): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -23,6 +23,7 @@ async function doRequest<T>(src: Sourcegraph, query: string): Promise<T> {
       method: "POST",
       headers: headers,
       body: JSON.stringify({ query }),
+      signal: abort,
     })
       .then((r) => {
         if (r.status == 401 || r.status == 403) {
@@ -41,42 +42,57 @@ async function doRequest<T>(src: Sourcegraph, query: string): Promise<T> {
         return r.json();
       })
       .then((data) => {
-        if (data) {
-          resolve(data as T);
+        const resp = data as { data: T };
+        if (resp) {
+          resolve(resp.data as T);
+        } else {
+          reject(`No data in response: ${resp}`);
         }
       });
   });
 }
 
-export async function checkAuth(src: Sourcegraph) {
-  const q = `query CurrentUser { currentUser { username } }`;
-  return doRequest<{ CurrentUser: { username: string } }>(src, q);
+export async function checkAuth(abort: AbortSignal, src: Sourcegraph) {
+  const q = `query currentUser { currentUser { username, id } }`;
+  return doRequest<{ currentUser: { username: string; id: string } }>(abort, src, q);
 }
 
 export interface SearchNotebook {
+  id: string;
   title: string;
   viewerHasStarred: boolean;
   public: boolean;
+  stars?: { totalCount: number };
   creator: {
     username: string;
     displayName?: string;
   };
+  updatedAt: string;
 }
 
-export async function findNotebooks(src: Sourcegraph, query?: string) {
+export async function findNotebooks(abort: AbortSignal, src: Sourcegraph, query?: string) {
+  let args = `${query ? `query:"${query}",orderBy:NOTEBOOK_STAR_COUNT,descending:true` : ""}`;
+  if (!query && src.token) {
+    const {
+      currentUser: { id },
+    } = await checkAuth(abort, src);
+    args = `starredByUserID:"${id}"`;
+  }
   const q = `{
-    notebooks(${query ? `query:"${query}"` : "first:10"}) {
+    notebooks(${args}) {
       nodes {
         id
         title
         viewerHasStarred
         public
+        stars { totalCount }
         creator {
           username
           displayName
         }
+        updatedAt
       }
     }
   }`;
-  return doRequest<{ notebooks: SearchNotebook[] }>(src, q);
+  return doRequest<{ notebooks?: { nodes?: SearchNotebook[] } }>(abort, src, q);
 }

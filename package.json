@@ -12,7 +12,15 @@
     "sourcegraph",
     "codesearch"
   ],
-  "preferences": [],
+  "preferences": [
+    {
+      "name": "cloudToken",
+      "title": "Sourcegraph Cloud access token",
+      "description": "Available under 'Profile' -> 'Access token' on Sourcegraph Cloud",
+      "required": false,
+      "type": "password"
+    }
+  ],
   "commands": [
     {
       "name": "searchCloud",
@@ -28,13 +36,6 @@
         "cloud"
       ],
       "preferences": [
-        {
-          "name": "cloudToken",
-          "title": "Sourcegraph Cloud access token",
-          "description": "Available under 'Profile' -> 'Access token' on Sourcegraph Cloud",
-          "required": false,
-          "type": "password"
-        },
         {
           "name": "cloudDefaultContext",
           "title": "Sourcegraph Cloud default context",
@@ -82,17 +83,33 @@
           "type": "textfield"
         }
       ]
+    },
+    {
+      "name": "notebooksCloud",
+      "title": "Search Notebooks",
+      "subtitle": "Sourcegraph Cloud",
+      "description": "Browse and create search notebooks.",
+      "mode": "view",
+      "keywords": [
+        "search",
+        "notebook",
+        "sourcegraph",
+        "cloud"
+      ],
+      "preferences": []
     }
   ],
   "dependencies": {
     "@bobheadxi/node-eventsource-http2": "^1.1.1",
     "@raycast/api": "^1.27.0",
+    "luxon": "^2.3.0",
     "node-fetch": "^3.0.0",
     "remark": "^14.0.2",
     "sourcegraph": "^25.4.0",
     "strip-markdown": "^5.0.0"
   },
   "devDependencies": {
+    "@types/luxon": "^2.0.9",
     "@types/node": "~16.10.0",
     "@types/react": "^17.0.28",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
