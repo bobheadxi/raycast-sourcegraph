@@ -17,53 +17,17 @@ import {
   useNavigation,
 } from "@raycast/api";
 import { useState, useRef, Fragment, useEffect } from "react";
+import checkAuthEffect from "../hooks/checkAuthEffect";
 
 import { Sourcegraph, instanceName } from "../sourcegraph";
 import { performSearch, SearchResult, Suggestion } from "../sourcegraph/stream-search";
-import { AuthError, checkAuth } from "../sourcegraph/gql";
 
 export default function SearchCommand(src: Sourcegraph) {
-  const { push } = useNavigation();
   const { state, search } = useSearch(src);
   const srcName = instanceName(src);
+  const nav = useNavigation();
 
-  useEffect(() => {
-    async function checkSrc() {
-      try {
-        if (src.token) {
-          await checkAuth(src);
-        }
-      } catch (err) {
-        const toast =
-          err instanceof AuthError
-            ? new Toast({
-                title: `Failed to authenticate against ${srcName}`,
-                message: err.message,
-                style: ToastStyle.Failure,
-              })
-            : new Toast({
-                title: `Error authenticating against ${srcName}`,
-                message: JSON.stringify(err),
-                style: ToastStyle.Failure,
-              });
-        (toast.primaryAction = {
-          title: "View details",
-          onAction: () => {
-            push(
-              <Detail
-                navigationTitle="Error"
-                markdown={`**${toast.title}:** ${toast.message}.
-
-This may be an issue with your configuration - try updating the Sourcegraph extension settings!`}
-              />
-            );
-          },
-        }),
-          await toast.show();
-      }
-    }
-    checkSrc();
-  });
+  useEffect(checkAuthEffect(src, nav));
 
   return (
     <List
@@ -391,7 +355,7 @@ function useSearch(src: Sourcegraph) {
         summary: null,
         isLoading: true,
       }));
-      await performSearch(searchText, src, cancelRef.current.signal, {
+      await performSearch(cancelRef.current.signal, src, searchText, {
         onResults: (results) => {
           setState((oldState) => ({
             ...oldState,
@@ -430,7 +394,17 @@ function useSearch(src: Sourcegraph) {
         isLoading: false,
       }));
     } catch (error) {
-      showToast(ToastStyle.Failure, "Search failed", String(error));
+      new Toast({
+        style: ToastStyle.Failure,
+        title: "Search failed",
+        message: String(error),
+        primaryAction: {
+          title: "View details",
+          onAction: () => {
+            push(<Detail markdown={`**Search failed:** ${String(error)}`} navigationTitle="Unexpected error" />);
+          },
+        },
+      }).show();
 
       setState((oldState) => ({
         ...oldState,
