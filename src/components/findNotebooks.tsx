@@ -52,8 +52,8 @@ export default function FindNotebooksCommand(src: Sourcegraph) {
       )}
 
       <List.Section
-        title={showStarred ? "Results" : "Starred"}
-        subtitle={`${state.notebooks.length} ${showStarred ? "results" : "notebooks"}`}
+        title={showStarred ? "Starred" : "Notebooks"}
+        subtitle={`${state.notebooks.length} ${showStarred ? "notebooks" : "results"}`}
       >
         {state.notebooks.map((n) => (
           <NotebookResultItem key={randomId()} notebook={n} src={src} />
