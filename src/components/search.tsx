@@ -17,12 +17,15 @@ import {
   useNavigation,
   ListSection,
   ListItem,
+  KeyboardShortcut,
 } from "@raycast/api";
 import { useState, useRef, Fragment, useEffect } from "react";
 import checkAuthEffect from "../hooks/checkAuthEffect";
+import { copyShortcut, secondaryActionShortcut, tertiaryActionShortcut } from "./shortcuts";
 
 import { Sourcegraph, instanceName } from "../sourcegraph";
 import { performSearch, SearchResult, Suggestion } from "../sourcegraph/stream-search";
+import { ContentMatch, SearchMatch, SymbolMatch } from "../sourcegraph/stream-search/stream";
 
 export default function SearchCommand(src: Sourcegraph) {
   const { state, search } = useSearch(src);
@@ -82,20 +85,24 @@ export default function SearchCommand(src: Sourcegraph) {
   );
 }
 
-function resultActions(url: string, extraActions?: JSX.Element[]) {
-  const actions: JSX.Element[] = [<OpenInBrowserAction key={randomId()} title="Open Result" url={url} />];
-  if (extraActions) {
-    actions.push(...extraActions);
+interface CustomResultActions {
+  openAction?: JSX.Element;
+  extraActions?: JSX.Element[];
+}
+
+function resultActions(url: string, customActions?: CustomResultActions) {
+  const actions: JSX.Element[] = [];
+  if (customActions?.openAction) {
+    actions.push(customActions.openAction);
+  }
+  actions.push(<OpenInBrowserAction key={randomId()} title="Open Result in Browser" url={url} />);
+  if (customActions?.extraActions) {
+    actions.push(...customActions.extraActions);
   }
   actions.push(
     // Can't seem to override the shortcut on this thing if it's the second action, so
     // add it as the third action instead.
-    <CopyToClipboardAction
-      key={randomId()}
-      title="Copy Link to Result"
-      content={url}
-      shortcut={{ modifiers: ["ctrl", "shift"], key: "c" }}
-    />
+    <CopyToClipboardAction key={randomId()} title="Copy Link to Result" content={url} shortcut={copyShortcut} />
   );
   return (
     <ActionPanel.Section key={randomId()} title="Result Actions">
@@ -163,6 +170,25 @@ function SearchResultItem({
       break;
   }
 
+  const peekAction = (target: JSX.Element, shortcut?: KeyboardShortcut) => (
+    <PushAction
+      key={randomId()}
+      title="Peek Result Details"
+      target={target}
+      shortcut={shortcut}
+      icon={{ source: Icon.MagnifyingGlass }}
+    />
+  );
+  const customActions: CustomResultActions = {};
+  switch (searchResult.match.type) {
+    case "symbol":
+    case "content":
+      customActions.openAction = peekAction(<MultiResultPeek searchResult={{ url: searchResult.url, match: searchResult.match }}/>);
+      break;
+    default:
+      customActions.extraActions = [peekAction(<SingleResultPeek searchResult={searchResult} />, secondaryActionShortcut)];
+  }
+
   return (
     <List.Item
       title={title}
@@ -171,21 +197,9 @@ function SearchResultItem({
       icon={icon}
       actions={
         <ActionPanel>
-          {resultActions(searchResult.url, [
-            <PushAction
-              key={randomId()}
-              title="Peek Result Details"
-              target={<PeekSearchResult searchResult={searchResult} />}
-              icon={{ source: Icon.MagnifyingGlass }}
-              shortcut={{ modifiers: ["cmd"], key: "enter" }}
-            />,
-          ])}
+          {resultActions(searchResult.url, customActions)}
           <ActionPanel.Section key={randomId()} title="Query Actions">
-            <OpenInBrowserAction
-              title="Open Query"
-              url={queryURL}
-              shortcut={{ modifiers: ["cmd", "shift"], key: "o" }}
-            />
+            <OpenInBrowserAction title="Open Query" url={queryURL} shortcut={tertiaryActionShortcut} />
             <CopyToClipboardAction title="Copy Link to Query" content={queryURL} />
           </ActionPanel.Section>
         </ActionPanel>
@@ -194,21 +208,18 @@ function SearchResultItem({
   );
 }
 
-function PeekSearchResult({ searchResult }: { searchResult: SearchResult }) {
-  const { match } = searchResult;
+function getPeekFields(match: SearchMatch) {
   const navigationTitle = `Peek ${match.type} result`;
   const matchTitle = `${match.repository} ${match.repoStars ? `(${match.repoStars} stars)` : ""}`;
-  let markdownContent = "";
+  return { navigationTitle, matchTitle }
+}
 
+function MultiResultPeek({ searchResult }: { searchResult: { url: string, match: ContentMatch | SymbolMatch } }) {
+  const { match } = searchResult
+  const { navigationTitle, matchTitle } = getPeekFields(match);
+
+  // Match types with expanded peek support
   switch (match.type) {
-    case "repo":
-      markdownContent = `> ${match.private ? "Private" : "Public"} ${match.type} match
-  
-  ---
-  
-  ${match.description || ""}`;
-      break;
-
     case "content":
       return (
         <List navigationTitle={navigationTitle} searchBarPlaceholder="Filter matches">
@@ -218,7 +229,7 @@ function PeekSearchResult({ searchResult }: { searchResult: SearchResult }) {
                 key={randomId()}
                 title={l.line}
                 accessoryTitle={`L${l.lineNumber}`}
-                actions={<ActionPanel>{resultActions(`${searchResult.url}?${l.lineNumber}`)}</ActionPanel>}
+                actions={<ActionPanel>{resultActions(`${searchResult.url}?L${l.lineNumber}`)}</ActionPanel>}
               />
             ))}
           </ListSection>
@@ -241,6 +252,23 @@ function PeekSearchResult({ searchResult }: { searchResult: SearchResult }) {
           </ListSection>
         </List>
       );
+  }
+}
+
+function SingleResultPeek({ searchResult }: { searchResult: SearchResult }) {
+  const { match } = searchResult
+  const { navigationTitle, matchTitle } = getPeekFields(match);
+
+  // Match types that use markdown view support
+  let markdownContent = "";
+  switch (match.type) {
+    case "repo":
+      markdownContent = `> ${match.private ? "Private" : "Public"} ${match.type} match
+  
+  ---
+  
+  ${match.description || ""}`;
+      break;
 
     case "path":
       markdownContent = `> ${match.type} match

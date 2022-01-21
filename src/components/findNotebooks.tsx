@@ -19,6 +19,7 @@ import { DateTime } from "luxon";
 import { Sourcegraph, instanceName } from "../sourcegraph";
 import { findNotebooks, SearchNotebook } from "../sourcegraph/gql";
 import checkAuthEffect from "../hooks/checkAuthEffect";
+import { copyShortcut, secondaryActionShortcut } from "./shortcuts";
 
 export default function FindNotebooksCommand(src: Sourcegraph) {
   const { state, find } = useNotebooks(src);
@@ -82,6 +83,7 @@ function NotebookResultItem({
   }
   const stars = notebook.stars?.totalCount || 0;
   const author = notebook.creator.displayName || notebook.creator.username;
+  const url = `${src.instance}/notebooks/${notebook.id}`;
   return (
     <List.Item
       id={id}
@@ -101,13 +103,19 @@ function NotebookResultItem({
       }}
       actions={
         <ActionPanel>
-          <OpenInBrowserAction key={randomId()} url={`${src.instance}/notebooks/${notebook.id}`} />
+          <OpenInBrowserAction key={randomId()} url={url} />
           <PushAction
             key={randomId()}
             title="Peek Search Notebook"
             icon={{ source: Icon.MagnifyingGlass }}
             target={<NotebookPeek notebook={notebook} src={src} />}
-            shortcut={{ modifiers: ["cmd"], key: "enter" }}
+            shortcut={secondaryActionShortcut}
+          />
+          <CopyToClipboardAction
+            key={randomId()}
+            title="Copy Search Notebook URL"
+            content={url}
+            shortcut={copyShortcut}
           />
         </ActionPanel>
       }
