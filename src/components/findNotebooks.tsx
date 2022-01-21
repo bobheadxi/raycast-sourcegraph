@@ -33,7 +33,7 @@ export default function FindNotebooksCommand(src: Sourcegraph) {
       isLoading={state.isLoading}
       onSearchTextChange={find}
       searchBarPlaceholder={`Find search notebooks on ${srcName}`}
-      selectedItemId={(state.notebooks?.length > 0) ? 'first-result' : undefined}
+      selectedItemId={state.notebooks?.length > 0 ? "first-result" : undefined}
       throttle
     >
       {!state.isLoading && !state.searchText ? (
@@ -57,14 +57,22 @@ export default function FindNotebooksCommand(src: Sourcegraph) {
         subtitle={`${state.notebooks.length} ${showStarred ? "notebooks" : "results"}`}
       >
         {state.notebooks.map((n, i) => (
-          <NotebookResultItem id={i === 0 ? 'first-result' : undefined} key={randomId()} notebook={n} src={src} />
+          <NotebookResultItem id={i === 0 ? "first-result" : undefined} key={randomId()} notebook={n} src={src} />
         ))}
       </List.Section>
     </List>
   );
 }
 
-function NotebookResultItem({ id, notebook, src }: { id: string | undefined; notebook: SearchNotebook; src: Sourcegraph }) {
+function NotebookResultItem({
+  id,
+  notebook,
+  src,
+}: {
+  id: string | undefined;
+  notebook: SearchNotebook;
+  src: Sourcegraph;
+}) {
   let updated: string | null = null;
   try {
     const d = DateTime.fromISO(notebook.updatedAt);

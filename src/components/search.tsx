@@ -15,6 +15,8 @@ import {
   ActionPanelItem,
   Toast,
   useNavigation,
+  ListSection,
+  ListItem,
 } from "@raycast/api";
 import { useState, useRef, Fragment, useEffect } from "react";
 import checkAuthEffect from "../hooks/checkAuthEffect";
@@ -80,8 +82,8 @@ export default function SearchCommand(src: Sourcegraph) {
   );
 }
 
-function resultActions(searchResult: SearchResult, extraActions?: JSX.Element[]) {
-  const actions: JSX.Element[] = [<OpenInBrowserAction key={randomId()} title="Open Result" url={searchResult.url} />];
+function resultActions(url: string, extraActions?: JSX.Element[]) {
+  const actions: JSX.Element[] = [<OpenInBrowserAction key={randomId()} title="Open Result" url={url} />];
   if (extraActions) {
     actions.push(...extraActions);
   }
@@ -91,7 +93,7 @@ function resultActions(searchResult: SearchResult, extraActions?: JSX.Element[])
     <CopyToClipboardAction
       key={randomId()}
       title="Copy Link to Result"
-      content={searchResult.url}
+      content={url}
       shortcut={{ modifiers: ["ctrl", "shift"], key: "c" }}
     />
   );
@@ -169,11 +171,11 @@ function SearchResultItem({
       icon={icon}
       actions={
         <ActionPanel>
-          {resultActions(searchResult, [
+          {resultActions(searchResult.url, [
             <PushAction
               key={randomId()}
               title="Peek Result Details"
-              target={<PeekSearchResult searchResult={searchResult} src={src} />}
+              target={<PeekSearchResult searchResult={searchResult} />}
               icon={{ source: Icon.MagnifyingGlass }}
               shortcut={{ modifiers: ["cmd"], key: "enter" }}
             />,
@@ -192,16 +194,15 @@ function SearchResultItem({
   );
 }
 
-function PeekSearchResult({ searchResult, src }: { searchResult: SearchResult; src: Sourcegraph }) {
+function PeekSearchResult({ searchResult }: { searchResult: SearchResult }) {
   const { match } = searchResult;
-  const title = `**${match.repository}** ${match.repoStars ? `| ${match.repoStars} stars` : ""}`;
+  const navigationTitle = `Peek ${match.type} result`;
+  const matchTitle = `${match.repository} ${match.repoStars ? `(${match.repoStars} stars)` : ""}`;
+  let markdownContent = "";
 
-  let body = "";
   switch (match.type) {
     case "repo":
-      body = `${title}
-  
-  > ${match.private ? "Private" : "Public"} ${match.type} match
+      markdownContent = `> ${match.private ? "Private" : "Public"} ${match.type} match
   
   ---
   
@@ -209,37 +210,40 @@ function PeekSearchResult({ searchResult, src }: { searchResult: SearchResult; s
       break;
 
     case "content":
-      body = `${title}
-  
-  > ${match.type} match in \`${match.path}\`
-  
-  ---
-  
-  ${match.lineMatches
-    .map(
-      (l) => `[Line ${l.lineNumber}](${searchResult.url}?${l.lineNumber})\n\`\`\`
-  ${l.line}
-  \`\`\``
-    )
-    .join("\n\n")}`;
-      break;
+      return (
+        <List navigationTitle={navigationTitle} searchBarPlaceholder="Filter matches">
+          <ListSection title={match.path} subtitle={matchTitle}>
+            {match.lineMatches.map((l) => (
+              <ListItem
+                key={randomId()}
+                title={l.line}
+                accessoryTitle={`L${l.lineNumber}`}
+                actions={<ActionPanel>{resultActions(`${searchResult.url}?${l.lineNumber}`)}</ActionPanel>}
+              />
+            ))}
+          </ListSection>
+        </List>
+      );
 
     case "symbol":
-      body = `${title}
-  
-  > ${match.type} match in \`${match.path}\`
-  
-  ---
-  
-  ${match.symbols
-    .map((s) => `- [\`${s.containerName ? `${s.containerName} > ` : ""}${s.name}\`](${src.instance}${s.url})`)
-    .join("\n")}`;
-      break;
+      return (
+        <List navigationTitle={navigationTitle} searchBarPlaceholder="Filter symbols">
+          <ListSection title={match.path} subtitle={matchTitle}>
+            {match.symbols.map((s) => (
+              <ListItem
+                key={randomId()}
+                title={s.name}
+                subtitle={s.containerName}
+                accessoryTitle={s.kind.toLowerCase()}
+                actions={<ActionPanel>{resultActions(`${searchResult.url}?${s.url}`)}</ActionPanel>}
+              />
+            ))}
+          </ListSection>
+        </List>
+      );
 
     case "path":
-      body = `${title}
-        
-  > ${match.type} match
+      markdownContent = `> ${match.type} match
   
   ---
   
@@ -248,9 +252,7 @@ function PeekSearchResult({ searchResult, src }: { searchResult: SearchResult; s
       break;
 
     case "commit":
-      body = `${title}
-  
-  > ${match.type} match in ${match.detail}
+      markdownContent = `> ${match.type} match in ${match.detail}
   
   ---
   
@@ -261,7 +263,7 @@ function PeekSearchResult({ searchResult, src }: { searchResult: SearchResult; s
       break;
 
     default:
-      body = `Unsupported result type - full data:
+      markdownContent = `Unsupported result type - full data:
   
   \`\`\`
   ${JSON.stringify(match, null, "  ")}
@@ -271,9 +273,9 @@ function PeekSearchResult({ searchResult, src }: { searchResult: SearchResult; s
 
   return (
     <Detail
-      navigationTitle={`Peek ${match.type} result`}
-      markdown={body}
-      actions={<ActionPanel>{resultActions(searchResult)}</ActionPanel>}
+      navigationTitle={navigationTitle}
+      markdown={`## ${matchTitle}\n\n${markdownContent}`}
+      actions={<ActionPanel>{resultActions(searchResult.url)}</ActionPanel>}
     ></Detail>
   );
 }
