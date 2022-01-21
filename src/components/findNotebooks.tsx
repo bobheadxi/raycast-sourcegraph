@@ -33,6 +33,7 @@ export default function FindNotebooksCommand(src: Sourcegraph) {
       isLoading={state.isLoading}
       onSearchTextChange={find}
       searchBarPlaceholder={`Find search notebooks on ${srcName}`}
+      selectedItemId={(state.notebooks?.length > 0) ? 'first-result' : undefined}
       throttle
     >
       {!state.isLoading && !state.searchText ? (
@@ -55,15 +56,15 @@ export default function FindNotebooksCommand(src: Sourcegraph) {
         title={showStarred ? "Starred" : "Notebooks"}
         subtitle={`${state.notebooks.length} ${showStarred ? "notebooks" : "results"}`}
       >
-        {state.notebooks.map((n) => (
-          <NotebookResultItem key={randomId()} notebook={n} src={src} />
+        {state.notebooks.map((n, i) => (
+          <NotebookResultItem id={i === 0 ? 'first-result' : undefined} key={randomId()} notebook={n} src={src} />
         ))}
       </List.Section>
     </List>
   );
 }
 
-function NotebookResultItem({ notebook, src }: { notebook: SearchNotebook; src: Sourcegraph }) {
+function NotebookResultItem({ id, notebook, src }: { id: string | undefined; notebook: SearchNotebook; src: Sourcegraph }) {
   let updated: string | null = null;
   try {
     const d = DateTime.fromISO(notebook.updatedAt);
@@ -75,6 +76,7 @@ function NotebookResultItem({ notebook, src }: { notebook: SearchNotebook; src: 
   const author = notebook.creator.displayName || notebook.creator.username;
   return (
     <List.Item
+      id={id}
       title={notebook.title}
       subtitle={updated ? `${author}, updated ${updated}` : author}
       accessoryTitle={stars ? `${stars}` : ""}
