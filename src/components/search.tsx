@@ -130,6 +130,8 @@ function SearchResultItem({
   let title = "";
   let subtitle = "";
   let context = match.repository;
+  let url = searchResult.url;
+  let multiResult = false;
 
   const icon: ImageLike = { source: Icon.Dot, tintColor: Color.Blue };
   switch (match.type) {
@@ -162,31 +164,38 @@ function SearchResultItem({
       icon.source = Icon.Text;
       title = match.lineMatches.map((l) => l.line.trim()).join(" ... ");
       subtitle = match.path;
+      if (match.lineMatches.length === 1) {
+        url = `${searchResult.url}?L${match.lineMatches[0].lineNumber}`;
+      } else {
+        multiResult = true;
+      }
       break;
     case "symbol":
       icon.source = Icon.Link;
       title = match.symbols.map((s) => s.name).join(", ");
       subtitle = match.path;
+      if (match.symbols.length === 1) {
+        url = `${searchResult.url}${match.symbols[0].url}`;
+      } else {
+        multiResult = true;
+      }
       break;
   }
 
-  const peekAction = (target: JSX.Element, shortcut?: KeyboardShortcut) => (
+  const peekAction = (shortcut?: KeyboardShortcut) => (
     <PushAction
       key={randomId()}
       title="Peek Result Details"
-      target={target}
+      target={<PeekSearchResult searchResult={searchResult} />}
       shortcut={shortcut}
       icon={{ source: Icon.MagnifyingGlass }}
     />
   );
   const customActions: CustomResultActions = {};
-  switch (searchResult.match.type) {
-    case "symbol":
-    case "content":
-      customActions.openAction = peekAction(<MultiResultPeek searchResult={{ url: searchResult.url, match: searchResult.match }}/>);
-      break;
-    default:
-      customActions.extraActions = [peekAction(<SingleResultPeek searchResult={searchResult} />, secondaryActionShortcut)];
+  if (multiResult) {
+    customActions.openAction = peekAction();
+  } else {
+    customActions.extraActions = [peekAction(secondaryActionShortcut)];
   }
 
   return (
@@ -197,7 +206,7 @@ function SearchResultItem({
       icon={icon}
       actions={
         <ActionPanel>
-          {resultActions(searchResult.url, customActions)}
+          {resultActions(url, customActions)}
           <ActionPanel.Section key={randomId()} title="Query Actions">
             <OpenInBrowserAction title="Open Query" url={queryURL} shortcut={tertiaryActionShortcut} />
             <CopyToClipboardAction title="Copy Link to Query" content={queryURL} />
@@ -211,11 +220,11 @@ function SearchResultItem({
 function getPeekFields(match: SearchMatch) {
   const navigationTitle = `Peek ${match.type} result`;
   const matchTitle = `${match.repository} ${match.repoStars ? `(${match.repoStars} stars)` : ""}`;
-  return { navigationTitle, matchTitle }
+  return { navigationTitle, matchTitle };
 }
 
-function MultiResultPeek({ searchResult }: { searchResult: { url: string, match: ContentMatch | SymbolMatch } }) {
-  const { match } = searchResult
+function MultiResultPeek({ searchResult }: { searchResult: { url: string; match: ContentMatch | SymbolMatch } }) {
+  const { match } = searchResult;
   const { navigationTitle, matchTitle } = getPeekFields(match);
 
   // Match types with expanded peek support
@@ -246,7 +255,7 @@ function MultiResultPeek({ searchResult }: { searchResult: { url: string, match:
                 title={s.name}
                 subtitle={s.containerName}
                 accessoryTitle={s.kind.toLowerCase()}
-                actions={<ActionPanel>{resultActions(`${searchResult.url}?${s.url}`)}</ActionPanel>}
+                actions={<ActionPanel>{resultActions(`${searchResult.url}${s.url}`)}</ActionPanel>}
               />
             ))}
           </ListSection>
@@ -255,13 +264,17 @@ function MultiResultPeek({ searchResult }: { searchResult: { url: string, match:
   }
 }
 
-function SingleResultPeek({ searchResult }: { searchResult: SearchResult }) {
-  const { match } = searchResult
+function PeekSearchResult({ searchResult }: { searchResult: SearchResult }) {
+  const { match } = searchResult;
   const { navigationTitle, matchTitle } = getPeekFields(match);
 
   // Match types that use markdown view support
   let markdownContent = "";
   switch (match.type) {
+    case "content":
+    case "symbol":
+      return <MultiResultPeek searchResult={{ url: searchResult.url, match }} />;
+
     case "repo":
       markdownContent = `> ${match.private ? "Private" : "Public"} ${match.type} match
   
@@ -292,10 +305,10 @@ function SingleResultPeek({ searchResult }: { searchResult: SearchResult }) {
 
     default:
       markdownContent = `Unsupported result type - full data:
-  
-  \`\`\`
-  ${JSON.stringify(match, null, "  ")}
-  \`\`\`
+
+\`\`\`
+${JSON.stringify(match, null, "  ")}
+\`\`\`
   `;
   }
 
