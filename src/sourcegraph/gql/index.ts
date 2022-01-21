@@ -90,16 +90,17 @@ export interface SearchNotebook {
 }
 
 export async function findNotebooks(abort: AbortSignal, src: Sourcegraph, query?: string) {
-  let args = `${
-    query
-      ? `query:"${query}",orderBy:NOTEBOOK_STAR_COUNT,descending:true`
-      : "orderBy:NOTEBOOK_UPDATED_AT,descending:true"
-  }`;
-  if (!query && src.token) {
-    const {
-      currentUser: { id },
-    } = await checkAuth(abort, src);
-    args = `starredByUserID:"${id}"`;
+  let args = "";
+  if (query) {
+    args = `query:"${query}",orderBy:NOTEBOOK_STAR_COUNT,descending:true`;
+  } else {
+    args = "orderBy:NOTEBOOK_UPDATED_AT,descending:true";
+    if (src.token) {
+      const {
+        currentUser: { id },
+      } = await checkAuth(abort, src);
+      args = `starredByUserID:"${id}",${args}`;
+    }
   }
   const q = `{
     notebooks(${args}) {
