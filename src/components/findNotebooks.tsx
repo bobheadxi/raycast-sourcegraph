@@ -27,6 +27,7 @@ export default function FindNotebooksCommand(src: Sourcegraph) {
 
   useEffect(checkAuthEffect(src, nav));
 
+  const showStarred = src.token && state.searchText;
   return (
     <List
       isLoading={state.isLoading}
@@ -51,8 +52,8 @@ export default function FindNotebooksCommand(src: Sourcegraph) {
       )}
 
       <List.Section
-        title={state.searchText ? "Results" : "Starred"}
-        subtitle={`${state.notebooks.length} ${state.searchText ? "results" : "notebooks"}`}
+        title={showStarred ? "Results" : "Starred"}
+        subtitle={`${state.notebooks.length} ${showStarred ? "results" : "notebooks"}`}
       >
         {state.notebooks.map((n) => (
           <NotebookResultItem key={randomId()} notebook={n} src={src} />
