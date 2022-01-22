@@ -7,22 +7,22 @@
   "author": "bobheadxi",
   "license": "MIT",
   "keywords": [
+    "sourcegraph",
     "search",
     "code",
-    "sourcegraph",
     "codesearch"
   ],
   "preferences": [
     {
       "name": "cloudToken",
-      "title": "Sourcegraph Cloud access token",
+      "title": "Sourcegraph Cloud: Access token",
       "description": "Available under 'Profile' -> 'Access token' on Sourcegraph Cloud",
       "required": false,
       "type": "password"
     },
     {
       "name": "customInstance",
-      "title": "Sourcegraph self-hosted URL",
+      "title": "Sourcegraph Self-Hosted: Instance URL",
       "description": "Required to use the Sourcegraph Self-Hosted commands - URL of the Sourcegraph instance you want to connect to",
       "placeholder": "https://sourcegraph.my-company.com",
       "required": false,
@@ -30,7 +30,7 @@
     },
     {
       "name": "customInstanceToken",
-      "title": "Sourcegraph self-hosted access token",
+      "title": "Sourcegraph Self-Hosted: Access token",
       "description": "Required to use the Sourcegraph Self-Hosted commands - available under 'Profile' -> 'Access token' on the Sourcegraph instance",
       "required": false,
       "type": "password"
@@ -44,17 +44,17 @@
       "description": "Search your code and 2M+ public repositories.",
       "mode": "view",
       "keywords": [
+        "sourcegraph",
         "search",
         "code",
-        "sourcegraph",
         "src",
         "cloud"
       ],
       "preferences": [
         {
           "name": "cloudDefaultContext",
-          "title": "Sourcegraph Cloud default context",
-          "description": "Default context to set on all queries",
+          "title": "Default search context",
+          "description": "Default search context to set on all queries",
           "placeholder": "global",
           "required": false,
           "type": "textfield"
@@ -68,16 +68,17 @@
       "description": "Search code on a self-hosted Sourcegraph instance.",
       "mode": "view",
       "keywords": [
+        "sourcegraph",
         "search",
         "code",
-        "sourcegraph",
-        "src"
+        "src",
+        "selfhosted"
       ],
       "preferences": [
         {
           "name": "customInstanceDefaultContext",
           "title": "Default context",
-          "description": "Default context to set on all queries",
+          "description": "Default search context to set on all queries",
           "placeholder": "global",
           "required": false,
           "type": "textfield"
@@ -91,9 +92,9 @@
       "description": "Browse search notebooks on Sourcegraph Cloud.",
       "mode": "view",
       "keywords": [
+        "sourcegraph",
         "search",
         "notebook",
-        "sourcegraph",
         "cloud"
       ],
       "preferences": []
@@ -105,9 +106,10 @@
       "description": "Browse search notebooks a Sourcegraph Self-Hosted instance.",
       "mode": "view",
       "keywords": [
+        "sourcegraph",
         "search",
         "notebook",
-        "sourcegraph"
+        "selfhosted"
       ],
       "preferences": []
     }
