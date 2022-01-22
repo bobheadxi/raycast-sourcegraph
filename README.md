@@ -15,6 +15,7 @@
 <p align="center">
   <a href="#install"><strong>Install</strong></a> · 
   <a href="#setup"><strong>Setup</strong></a> · 
+  <a href="#commands"><strong>Commands</strong></a> · 
   <a href="https://github.com/bobheadxi/raycast-sourcegraph/issues"><strong>Issues</strong></a> · 
   <a href="#changelog"><strong>Changelog</strong></a> · 
   <a href="#contributing"><strong>Contributing</strong></a>
