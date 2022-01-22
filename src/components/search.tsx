@@ -52,20 +52,20 @@ export default function SearchCommand(src: Sourcegraph) {
 
           <Fragment>
             <List.Item
-              title="View search query syntax reference"
-              icon={{ source: Icon.Globe }}
-              actions={
-                <ActionPanel>
-                  <OpenInBrowserAction url="https://docs.sourcegraph.com/code_search/reference/queries" />
-                </ActionPanel>
-              }
-            />
-            <List.Item
               title={`${state.searchText.length > 0 ? "Continue" : "Compose"} query in browser`}
               icon={{ source: Icon.MagnifyingGlass }}
               actions={
                 <ActionPanel>
                   <OpenInBrowserAction url={getQueryURL(src, state.searchText)} />
+                </ActionPanel>
+              }
+            />
+            <List.Item
+              title="View search query syntax reference"
+              icon={{ source: Icon.Globe }}
+              actions={
+                <ActionPanel>
+                  <OpenInBrowserAction url="https://docs.sourcegraph.com/code_search/reference/queries" />
                 </ActionPanel>
               }
             />
