@@ -28,7 +28,7 @@ export default function FindNotebooksCommand(src: Sourcegraph) {
 
   useEffect(checkAuthEffect(src, nav));
 
-  const showStarred = src.token && state.searchText;
+  const showStarred = src.token && !state.searchText;
   return (
     <List
       isLoading={state.isLoading}

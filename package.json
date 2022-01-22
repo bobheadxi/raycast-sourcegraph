@@ -105,7 +105,7 @@
       "icon": "logo-bw.png",
       "title": "Find Search Notebooks",
       "subtitle": "Sourcegraph Self-Hosted",
-      "description": "Browse search notebooks a Sourcegraph Self-Hosted instance.",
+      "description": "Browse search notebooks on a self-hosted Sourcegraph instance.",
       "mode": "view",
       "keywords": [
         "sourcegraph",
