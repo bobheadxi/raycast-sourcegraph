@@ -1,4 +1,4 @@
-<br>
+<br />
 
 <p align="center">
   <img src="https://github.com/bobheadxi/raycast-sourcegraph/blob/main/assets/command-icon.png?raw=true" alt="sourcegraph" width="52px" />
@@ -16,6 +16,7 @@
   <a href="#install"><strong>Install</strong></a> · 
   <a href="#setup"><strong>Setup</strong></a> · 
   <a href="https://github.com/bobheadxi/raycast-sourcegraph/issues"><strong>Issues</strong></a> · 
+  <a href="#changelog"><strong>Changelog</strong></a> · 
   <a href="#contributing"><strong>Contributing</strong></a>
 </p>
 
@@ -23,7 +24,7 @@
   <img src="https://github.com/bobheadxi/raycast-sourcegraph/blob/main/assets/demo.png?raw=true" alt="demo" />
 </p>
 
-<br>
+<br />
 
 ## Install
 
@@ -31,7 +32,7 @@ To get started, install [Raycast](https://www.raycast.com/) and [install this ex
 
 Alternatively, you can [install this extension from source](./CONTRIBUTING.md).
 
-<br>
+<br />
 
 ## Setup
 
@@ -58,11 +59,17 @@ To get started, you can try the [public Sourcegraph Cloud contexts](https://sour
 The Sourcegraph Raycast extension allows you to set a default context for all your searches in the extension preferences.
 To override it for a search, just include a `context:` parameter in your query.
 
-<br>
+<br />
+
+## Changelog
+
+[CHANGELOG.md](CHANGELOG.md) documents all notable updates to the extension.
+Updates will be regularly published to the [Raycast Extensions repository](https://github.com/raycast/extensions) from the [`bobheadxi/raycast-sourcegraph` repository](https://github.com/bobheadxi/raycast-sourcegraph).
+
+<br />
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) if you're interested in 
-contributing to this extension!
+See [CONTRIBUTING.md](CONTRIBUTING.md) if you're interested in contributing to this extension!
 
-<br>
+<br />
