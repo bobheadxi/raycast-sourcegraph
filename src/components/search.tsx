@@ -204,6 +204,7 @@ function SearchResultItem({
       subtitle={subtitle}
       accessoryTitle={context}
       icon={icon}
+      accessoryIcon={multiResult ? { source: Icon.ArrowRight } : undefined}
       actions={
         <ActionPanel>
           {resultActions(url, customActions)}
