@@ -63,6 +63,7 @@
     },
     {
       "name": "searchSelfHosted",
+      "icon": "logo-bw.png",
       "title": "Search Code",
       "subtitle": "Sourcegraph Self-Hosted",
       "description": "Search code on a self-hosted Sourcegraph instance.",
@@ -101,6 +102,7 @@
     },
     {
       "name": "findNotebooksSelfHosted",
+      "icon": "logo-bw.png",
       "title": "Find Search Notebooks",
       "subtitle": "Sourcegraph Self-Hosted",
       "description": "Browse search notebooks a Sourcegraph Self-Hosted instance.",
