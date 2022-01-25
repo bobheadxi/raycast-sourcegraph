@@ -5,7 +5,7 @@
 </p>
 
 <h1 align="center">
-  Sourcgraph Raycast Extension
+  Sourcgraph for Raycast
 </h1>
 
 <p align="center">
