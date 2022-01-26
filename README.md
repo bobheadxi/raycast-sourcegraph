@@ -5,7 +5,7 @@
 </p>
 
 <h1 align="center">
-  Sourcgraph for Raycast
+  Sourcegraph for Raycast
 </h1>
 
 <p align="center">
