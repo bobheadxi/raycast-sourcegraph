@@ -56,7 +56,7 @@ export async function performSearch(
     ["display", "1500"],
   ];
   const parameterEncoded = parameters.map(([k, v]) => k + "=" + encodeURIComponent(v)).join("&");
-  const requestURL = `${src.instance}/search/stream?${parameterEncoded}`;
+  const requestURL = `${src.instance}/.api/search/stream?${parameterEncoded}`;
   const stream = src.token
     ? new EventSource(requestURL, { headers: { Authorization: `token ${src.token}` } })
     : new EventSource(requestURL);
