@@ -170,7 +170,7 @@ function SearchResultItem({
       title = match.symbols.map((s) => s.name).join(", ");
       subtitle = match.path;
       if (match.symbols.length === 1) {
-        url = `${searchResult.url}${match.symbols[0].url}`;
+        url = `${searchResult.url}#${match.symbols[0].url}`;
       } else {
         multiResult = true;
       }
@@ -246,7 +246,7 @@ function MultiResultPeek({ searchResult }: { searchResult: { url: string; match:
                 title={s.name}
                 subtitle={s.containerName}
                 accessoryTitle={s.kind.toLowerCase()}
-                actions={<ActionPanel>{resultActions(`${searchResult.url}${s.url}`)}</ActionPanel>}
+                actions={<ActionPanel>{resultActions(`${searchResult.url}#${s.url}`)}</ActionPanel>}
               />
             ))}
           </List.Section>
