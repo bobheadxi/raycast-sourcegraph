@@ -64,14 +64,17 @@ Get results as you type on [code search](https://about.sourcegraph.com/code-sear
 #### Search contexts
 
 [Search contexts](https://docs.sourcegraph.com/code_search/explanations/features#search-contexts) allow you to narrow down your search to code you care about.
-To get started, you can try the [public Sourcegraph Cloud contexts](https://sourcegraph.com/contexts), or configure your own in your Sourcegraph Cloud account or Sourcegraph instance's "Contexts" page!
+To get started, you can try the [public Sourcegraph Cloud contexts](https://sourcegraph.com/contexts), or configure your own in your Sourcegraph Cloud account or self-hosted Sourcegraph instance's "Contexts" page!
 
 The Sourcegraph Raycast extension allows you to set a default context for your searches in the "Search Code" command preferences.
 To override it for a search, just include a `context:` parameter in your query.
 
 ### Find Search Notebooks
 
-Browse and preview [search notebooks](https://sourcegraph.com/notebooks).
+Browse and preview [search notebooks](https://docs.sourcegraph.com/notebooks) straight from Raycast.
+Notebooks enable powerful live – and persistent – documentation, shareable with your organization or the world.
+
+To get started, you can try the [public Sourcegraph Cloud notebooks](https://sourcegraph.com/notebooks?tab=explore), or configure your own from your Sourcegraph Cloud account or self-hosted Sourcegraph instance!
 
 <br />
 
