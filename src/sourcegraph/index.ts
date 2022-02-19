@@ -25,6 +25,7 @@ interface Preferences {
   customInstanceDefaultContext?: string;
 }
 
+// sourcegraphCloud returns configuration for connecting to Sourcegraph Cloud.
 export function sourcegraphCloud(): Sourcegraph {
   const prefs: Preferences = getPreferenceValues();
   return {
@@ -34,6 +35,7 @@ export function sourcegraphCloud(): Sourcegraph {
   };
 }
 
+// sourcegraphSelfHosted returns the configured Sourcegraph instance.
 export function sourcegraphSelfHosted(): Sourcegraph | null {
   const prefs: Preferences = getPreferenceValues();
   if (prefs.customInstance) {

@@ -1,4 +1,4 @@
-import SearchCommand from "./components/search";
+import SearchCommand from "./components/SearchCommand";
 import { sourcegraphCloud } from "./sourcegraph";
 
 export default function SearchCloud() {

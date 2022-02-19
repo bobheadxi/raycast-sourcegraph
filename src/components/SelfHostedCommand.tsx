@@ -2,6 +2,7 @@ import { ActionPanel, Detail, Action } from "@raycast/api";
 import { ReactElement } from "react";
 import { sourcegraphSelfHosted, Sourcegraph, isCloud } from "../sourcegraph";
 
+// SelfHostedCommand wraps the given command with the configuration for a self-hosted instance.
 export default function SelfHostedCommand({ command }: { command: (src: Sourcegraph) => ReactElement }) {
   const tryCloudMessage = "Alternatively, you can try the Sourcegraph Cloud version of this command first.";
 
