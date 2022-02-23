@@ -76,7 +76,7 @@ function NotebookResultItem({
     <List.Item
       id={id}
       title={notebook.title}
-      subtitle={updated ? `${author}, updated ${updated}` : author}
+      subtitle={updated ? `by ${author}, updated ${updated}` : author}
       accessoryTitle={stars ? `${stars}` : ""}
       accessoryIcon={
         notebook.stars?.totalCount

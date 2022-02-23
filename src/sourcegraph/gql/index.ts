@@ -74,16 +74,18 @@ export interface NotebookFileBlock {
   };
 }
 
+export interface User {
+  username: string;
+  displayName?: string;
+}
+
 export interface SearchNotebook {
   id: string;
   title: string;
   viewerHasStarred: boolean;
   public: boolean;
   stars?: { totalCount: number };
-  creator: {
-    username: string;
-    displayName?: string;
-  };
+  creator: User;
   blocks?: (NotebookMarkdownBlock & NotebookQueryBlock & NotebookFileBlock)[];
   createdAt: string;
   updatedAt: string;
@@ -135,4 +137,89 @@ export async function findNotebooks(abort: AbortSignal, src: Sourcegraph, query?
     }
   }`;
   return doRequest<{ notebooks?: { nodes?: SearchNotebook[] } }>(abort, src, q);
+}
+
+export interface BatchChange {
+  id: string;
+  namespace: { id: string; namespaceName: string };
+  name: string;
+  description: string;
+  creator: User;
+  state: "OPEN" | "CLOSED" | "DRAFT";
+  updatedAt: string;
+  changesetsStats: {
+    total: number;
+    merged: number;
+    open: number;
+    closed: number;
+  };
+}
+
+export async function getBatchChanges(abort: AbortSignal, src: Sourcegraph) {
+  const q = `{
+    batchChanges {
+      nodes {
+        id
+        namespace {
+          id
+          namespaceName
+        }
+        name
+        description
+        creator {
+          username
+          displayName
+        }
+        state
+        updatedAt
+        changesetsStats {
+          total
+          merged
+          open
+          closed
+        }
+      }
+    }
+  }`;
+  return doRequest<{ batchChanges?: { nodes?: BatchChange[] } }>(abort, src, q);
+}
+
+export interface Changeset {
+  id: string;
+  state: string;
+  repository: {
+    name: string;
+  };
+  externalURL?: {
+    url: string;
+    serviceKind: string;
+  };
+  title: string;
+  updatedAt: string;
+}
+
+export async function getChangesets(abort: AbortSignal, src: Sourcegraph, namespace: string, name: string) {
+  const q = `{
+    batchChange(namespace:"${namespace}",name:"${name}") {
+      changesets {
+        nodes {
+          id
+          state
+          __typename
+          ...on ExternalChangeset {
+            repository {
+              name
+            }
+            externalURL {
+              url
+              serviceKind
+            }
+            title
+            updatedAt
+          }
+        }
+      }
+    }
+  }`;
+  return doRequest<{ batchChange?: { changesets?: { nodes: Changeset[] } } }>(abort, src, q);
 }
