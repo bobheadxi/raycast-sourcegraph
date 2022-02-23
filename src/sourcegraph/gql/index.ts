@@ -141,6 +141,7 @@ export async function findNotebooks(abort: AbortSignal, src: Sourcegraph, query?
 
 export interface BatchChange {
   id: string;
+  url: string;
   namespace: { id: string; namespaceName: string };
   name: string;
   description: string;
@@ -160,6 +161,7 @@ export async function getBatchChanges(abort: AbortSignal, src: Sourcegraph) {
     batchChanges {
       nodes {
         id
+        url
         namespace {
           id
           namespaceName
@@ -187,6 +189,8 @@ export async function getBatchChanges(abort: AbortSignal, src: Sourcegraph) {
 export interface Changeset {
   id: string;
   state: string;
+  updatedAt: string;
+
   repository: {
     name: string;
   };
@@ -194,8 +198,8 @@ export interface Changeset {
     url: string;
     serviceKind: string;
   };
+  externalID: string;
   title: string;
-  updatedAt: string;
 }
 
 export async function getChangesets(abort: AbortSignal, src: Sourcegraph, namespace: string, name: string) {
@@ -205,6 +209,8 @@ export async function getChangesets(abort: AbortSignal, src: Sourcegraph, namesp
         nodes {
           id
           state
+          updatedAt
+
           __typename
           ...on ExternalChangeset {
             repository {
@@ -214,8 +220,8 @@ export async function getChangesets(abort: AbortSignal, src: Sourcegraph, namesp
               url
               serviceKind
             }
+            externalID
             title
-            updatedAt
           }
         }
       }

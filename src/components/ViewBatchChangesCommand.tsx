@@ -7,7 +7,7 @@ import { Sourcegraph, instanceName } from "../sourcegraph";
 import { BatchChange, getBatchChanges, Changeset, getChangesets } from "../sourcegraph/gql";
 import checkAuthEffect from "../hooks/checkAuthEffect";
 import { copyShortcut, secondaryActionShortcut } from "./shortcuts";
-import { ColorDefault, ColorEmphasis, ColorPrivate } from "./colors";
+import { ColorDefault } from "./colors";
 
 export default function ViewBatchChanges(src: Sourcegraph) {
   const { state } = useBatchChanges(src);
@@ -17,21 +17,17 @@ export default function ViewBatchChanges(src: Sourcegraph) {
   useEffect(checkAuthEffect(src, nav));
 
   return (
-    <List
-      isLoading={state.isLoading}
-      searchBarPlaceholder={`Find search notebooks on ${srcName}`}
-      selectedItemId={state.batchChanges?.length > 0 ? "first-result" : undefined}
-    >
+    <List isLoading={state.isLoading} searchBarPlaceholder={`Browse batch changes on ${srcName}`}>
       <List.Section title={"Batch changes"} subtitle={`${state.batchChanges.length} batch changes`}>
-        {state.batchChanges.map((b, i) => (
-          <BatchChange id={i === 0 ? "first-result" : undefined} key={nanoid()} batchChange={b} src={src} />
+        {state.batchChanges.map((b) => (
+          <BatchChange key={nanoid()} batchChange={b} src={src} />
         ))}
       </List.Section>
     </List>
   );
 }
 
-function BatchChange({ id, batchChange, src }: { id: string | undefined; batchChange: BatchChange; src: Sourcegraph }) {
+function BatchChange({ batchChange, src }: { batchChange: BatchChange; src: Sourcegraph }) {
   let updated: string | null = null;
   try {
     const d = DateTime.fromISO(batchChange.updatedAt);
@@ -57,9 +53,9 @@ function BatchChange({ id, batchChange, src }: { id: string | undefined; batchCh
   }
 
   const { changesetsStats } = batchChange;
+  const url = `${src.instance}${batchChange.url}`
   return (
     <List.Item
-      id={id}
       icon={{
         source: Icon.List,
         tintColor: ColorDefault,
@@ -68,10 +64,13 @@ function BatchChange({ id, batchChange, src }: { id: string | undefined; batchCh
       subtitle={updated ? `by ${author}, updated ${updated}` : author}
       accessoryTitle={
         changesetsStats.total
-          ? `${changesetsStats.merged} / ${changesetsStats.closed + changesetsStats.merged + changesetsStats.open}`
+          ? `${changesetsStats.merged} / ${changesetsStats.closed + changesetsStats.merged + changesetsStats.open} / ${
+              changesetsStats.total
+            }`
           : undefined
       }
       accessoryIcon={icon}
+      keywords={[batchChange.state]}
       actions={
         <ActionPanel>
           <Action.Push
@@ -80,14 +79,13 @@ function BatchChange({ id, batchChange, src }: { id: string | undefined; batchCh
             icon={{ source: Icon.MagnifyingGlass }}
             target={<BatchChangePeek batchChange={batchChange} src={src} />}
           />
-          <Action.OpenInBrowser key={nanoid()} url={""} shortcut={secondaryActionShortcut} />
-
-          {/* <Action.CopyToClipboard
+          <Action.OpenInBrowser key={nanoid()} url={url} shortcut={secondaryActionShortcut} />
+          <Action.CopyToClipboard
             key={nanoid()}
-            title="Copy Search Notebook URL"
+            title="Copy Batch Change URL"
             content={url}
             shortcut={copyShortcut}
-          /> */}
+          />
         </ActionPanel>
       }
     />
@@ -100,29 +98,73 @@ function BatchChangePeek({ batchChange, src }: { batchChange: BatchChange; src: 
   const unpublished = state.changesets.filter((c) => c.state === "UNPUBLISHED");
   return (
     <List isLoading={state.isLoading} searchBarPlaceholder={`Search changesets for ${batchChange.name}`}>
-      <List.Section title={"Published changesets"} subtitle={`${published.length} changesets`}>
+      <List.Section
+        title={"Published changesets"}
+        subtitle={
+          published.length > 0
+            ? [
+                batchChange.changesetsStats.open > 0 ? `${batchChange.changesetsStats.open} open` : undefined,
+                batchChange.changesetsStats.closed > 0 ? `${batchChange.changesetsStats.closed} closed` : undefined,
+                batchChange.changesetsStats.merged ? `${batchChange.changesetsStats.merged} merged` : undefined,
+              ]
+                .filter((s) => !!s)
+                .join(", ")
+            : "0 changesets"
+        }
+      >
         {published.map((c) => (
-          <ChangesetItem key={nanoid()} changeset={c} />
+          <ChangesetItem key={nanoid()} src={src} batchChange={batchChange} changeset={c} />
         ))}
       </List.Section>
       <List.Section title={"Unpublished changesets"} subtitle={`${unpublished.length} changesets`}>
         {unpublished.map((c) => (
-          <ChangesetItem key={nanoid()} changeset={c} />
+          <ChangesetItem key={nanoid()} src={src} batchChange={batchChange} changeset={c} />
         ))}
       </List.Section>
     </List>
   );
 }
 
-function ChangesetItem({ changeset }: { changeset: Changeset }) {
+function ChangesetItem({ src, batchChange, changeset }: { src: Sourcegraph; batchChange: BatchChange; changeset: Changeset }) {
+  let updated: string | null = null;
+  try {
+    const d = DateTime.fromISO(changeset.updatedAt);
+    updated = d.toRelative();
+  } catch (e) {
+    console.warn(`changeset ${changeset.id}: invalid date: ${e}`);
+  }
+
+  const icon: Image.ImageLike = { source: Icon.Circle };
+  switch (changeset.state) {
+    case "OPEN":
+      icon.source = Icon.Circle;
+      icon.tintColor = Color.Green;
+      break;
+    case "MERGED":
+      icon.source = Icon.Checkmark;
+      icon.tintColor = Color.Purple;
+      break;
+    case "CLOSED":
+      icon.source = Icon.XmarkCircle;
+      icon.tintColor = Color.Red;
+      break;
+    case "UNPUBLISHED":
+      icon.source = Icon.Document;
+      break;
+  }
+
+  const url = changeset.externalURL?.url || `${src.instance}${batchChange.url}`
   return (
     <List.Item
       title={`${changeset.repository.name}`}
-      subtitle={changeset.title}
-      accessoryTitle={changeset.state}
+      subtitle={changeset.externalID ? `#${changeset.externalID}` : undefined}
+      accessoryTitle={updated || undefined}
+      accessoryIcon={icon}
+      keywords={[changeset.state]}
       actions={
         <ActionPanel>
-          <Action.OpenInBrowser url={changeset.externalURL?.url || ""} shortcut={secondaryActionShortcut} />
+          <Action.OpenInBrowser url={url} />
+          <Action.CopyToClipboard content={url} shortcut={copyShortcut} />
         </ActionPanel>
       }
     />
