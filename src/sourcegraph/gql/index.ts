@@ -161,6 +161,7 @@ export interface BatchChange {
     merged: number;
     open: number;
     closed: number;
+    failed: number;
   };
 }
 
@@ -187,6 +188,7 @@ export async function getBatchChanges(abort: AbortSignal, src: Sourcegraph) {
           merged
           open
           closed
+          failed
         }
       }
     }
@@ -206,8 +208,9 @@ export interface Changeset {
     url: string;
     serviceKind: string;
   };
-  externalID: string;
+  externalID?: string;
   title: string;
+  reviewState?: string;
 }
 
 export async function getChangesets(abort: AbortSignal, src: Sourcegraph, namespace: string, name: string) {
@@ -230,6 +233,7 @@ export async function getChangesets(abort: AbortSignal, src: Sourcegraph, namesp
             }
             externalID
             title
+            reviewState
           }
         }
       }
@@ -245,4 +249,13 @@ export async function publishChangeset(abort: AbortSignal, src: Sourcegraph, bat
     }
   }`;
   return doMutation<{ publishChangesets?: { id: string } }>(abort, src, "PublishChangeset", m);
+}
+
+export async function reenqueueChangeset(abort: AbortSignal, src: Sourcegraph, changeset: string) {
+  const m = `{
+    reenqueueChangeset(changeset:"${changeset}") {
+      id
+    }
+  }`;
+  return doMutation<{ publishChangesets?: { id: string } }>(abort, src, "ReenqueueChangeset", m);
 }

@@ -6,7 +6,7 @@ import { nanoid } from "nanoid";
 import { Sourcegraph, instanceName } from "../sourcegraph";
 import { BatchChange, getBatchChanges, Changeset, getChangesets, publishChangeset } from "../sourcegraph/gql";
 import checkAuthEffect from "../hooks/checkAuthEffect";
-import { copyShortcut, secondaryActionShortcut } from "./shortcuts";
+import { copyShortcut, refreshShortcut, secondaryActionShortcut, tertiaryActionShortcut } from "./shortcuts";
 import { ColorDefault } from "./colors";
 
 export default function ViewBatchChanges(src: Sourcegraph) {
@@ -20,7 +20,7 @@ export default function ViewBatchChanges(src: Sourcegraph) {
     <List isLoading={state.isLoading} searchBarPlaceholder={`Browse batch changes on ${srcName}`}>
       <List.Section title={"Batch changes"} subtitle={`${state.batchChanges.length} batch changes`}>
         {state.batchChanges.map((b) => (
-          <BatchChange key={nanoid()} batchChange={b} src={src} load={load} />
+          <BatchChange key={nanoid()} batchChange={b} src={src} refreshBatchChanges={load} />
         ))}
       </List.Section>
     </List>
@@ -30,11 +30,11 @@ export default function ViewBatchChanges(src: Sourcegraph) {
 function BatchChange({
   batchChange,
   src,
-  load,
+  refreshBatchChanges,
 }: {
   batchChange: BatchChange;
   src: Sourcegraph;
-  load: () => Promise<void>;
+  refreshBatchChanges: () => Promise<void>;
 }) {
   let updated: string | null = null;
   try {
@@ -85,9 +85,17 @@ function BatchChange({
             key={nanoid()}
             title="View Batch Change"
             icon={{ source: Icon.MagnifyingGlass }}
-            target={<BatchChangePeek batchChange={batchChange} src={src} load={load} />}
+            target={<BatchChangePeek batchChange={batchChange} src={src} />}
           />
           <Action.OpenInBrowser key={nanoid()} url={url} shortcut={secondaryActionShortcut} />
+          <Action
+            title="Refresh Batch Changes"
+            icon={Icon.ArrowClockwise}
+            onAction={async () => {
+              await refreshBatchChanges();
+            }}
+            shortcut={refreshShortcut}
+          />
           <Action.CopyToClipboard key={nanoid()} title="Copy Batch Change URL" content={url} shortcut={copyShortcut} />
         </ActionPanel>
       }
@@ -95,16 +103,8 @@ function BatchChange({
   );
 }
 
-function BatchChangePeek({
-  batchChange,
-  src,
-  load,
-}: {
-  batchChange: BatchChange;
-  src: Sourcegraph;
-  load: () => Promise<void>;
-}) {
-  const { state } = useChangesets(src, batchChange);
+function BatchChangePeek({ batchChange, src }: { batchChange: BatchChange; src: Sourcegraph }) {
+  const { state, load } = useChangesets(src, batchChange);
   const published = state.changesets.filter((c) => c.state !== "UNPUBLISHED");
   const unpublished = state.changesets.filter((c) => c.state === "UNPUBLISHED");
   return (
@@ -114,9 +114,10 @@ function BatchChangePeek({
         subtitle={
           published.length > 0
             ? [
-                batchChange.changesetsStats.open > 0 ? `${batchChange.changesetsStats.open} open` : undefined,
-                batchChange.changesetsStats.closed > 0 ? `${batchChange.changesetsStats.closed} closed` : undefined,
+                batchChange.changesetsStats.open ? `${batchChange.changesetsStats.open} open` : undefined,
+                batchChange.changesetsStats.closed ? `${batchChange.changesetsStats.closed} closed` : undefined,
                 batchChange.changesetsStats.merged ? `${batchChange.changesetsStats.merged} merged` : undefined,
+                batchChange.changesetsStats.failed ? `${batchChange.changesetsStats.failed} failed` : undefined,
               ]
                 .filter((s) => !!s)
                 .join(", ")
@@ -124,12 +125,12 @@ function BatchChangePeek({
         }
       >
         {published.map((c) => (
-          <ChangesetItem key={nanoid()} src={src} batchChange={batchChange} changeset={c} load={load} />
+          <ChangesetItem key={nanoid()} src={src} batchChange={batchChange} changeset={c} refreshChangesets={load} />
         ))}
       </List.Section>
       <List.Section title={"Unpublished changesets"} subtitle={`${unpublished.length} changesets`}>
         {unpublished.map((c) => (
-          <ChangesetItem key={nanoid()} src={src} batchChange={batchChange} changeset={c} load={load} />
+          <ChangesetItem key={nanoid()} src={src} batchChange={batchChange} changeset={c} refreshChangesets={load} />
         ))}
       </List.Section>
     </List>
@@ -140,12 +141,12 @@ function ChangesetItem({
   src,
   batchChange,
   changeset,
-  load,
+  refreshChangesets,
 }: {
   src: Sourcegraph;
   batchChange: BatchChange;
   changeset: Changeset;
-  load: () => Promise<void>;
+  refreshChangesets: () => Promise<void>;
 }) {
   let updated: string | null = null;
   try {
@@ -155,26 +156,78 @@ function ChangesetItem({
     console.warn(`changeset ${changeset.id}: invalid date: ${e}`);
   }
 
+  async function delayedRefreshChangesets() {
+    await new Promise((r) => setTimeout(r, 10000));
+    await refreshChangesets();
+  }
+
   const icon: Image.ImageLike = { source: Icon.Circle };
+  let secondaryAction = <></>;
   switch (changeset.state) {
     case "OPEN":
-      icon.source = Icon.Circle;
+      switch (changeset.reviewState) {
+        case "APPROVED":
+          icon.source = Icon.Checkmark;
+          break;
+        case "CHANGES_REQUESTED":
+          icon.source = Icon.XmarkCircle;
+          break;
+        default:
+          icon.source = Icon.Circle;
+      }
       icon.tintColor = Color.Green;
       break;
+
     case "MERGED":
       icon.source = Icon.Checkmark;
       icon.tintColor = Color.Purple;
       break;
+
     case "CLOSED":
       icon.source = Icon.XmarkCircle;
       icon.tintColor = Color.Red;
       break;
+
     case "FAILED":
       icon.source = Icon.ExclamationMark;
       icon.tintColor = Color.Red;
+      secondaryAction = (
+        <Action
+          title="Retry Changeset"
+          icon={Icon.Hammer}
+          onAction={async () => {
+            await publishChangeset(new AbortController().signal, src, batchChange.id, changeset.id);
+            showToast({
+              style: Toast.Style.Success,
+              title: "Changeset has been submitted for retry!",
+            });
+            await delayedRefreshChangesets();
+          }}
+        />
+      );
       break;
+
     case "UNPUBLISHED":
       icon.source = Icon.Document;
+      secondaryAction = (
+        <Action
+          title="Publish Changeset"
+          icon={Icon.Hammer}
+          onAction={async () => {
+            await publishChangeset(new AbortController().signal, src, batchChange.id, changeset.id);
+            showToast({
+              style: Toast.Style.Success,
+              title: "Changeset has been submitted for publishing!",
+            });
+            await delayedRefreshChangesets();
+          }}
+        />
+      );
+      break;
+
+    case "PROCESSING":
+    case "RETRYING":
+      icon.source = Icon.Clock;
       break;
   }
 
@@ -182,31 +235,23 @@ function ChangesetItem({
   return (
     <List.Item
       title={`${changeset.repository.name}`}
-      subtitle={changeset.externalID ? `#${changeset.externalID}` : undefined}
+      subtitle={changeset.externalID ? `#${changeset.externalID}` : changeset.state.toLowerCase()}
       accessoryTitle={updated || undefined}
       accessoryIcon={icon}
-      keywords={[changeset.state]}
+      keywords={[changeset.state, changeset.reviewState || ""]}
       actions={
         <ActionPanel>
           <Action.OpenInBrowser url={url} />
+          {secondaryAction}
+          <Action
+            title="Refresh Changesets"
+            icon={Icon.ArrowClockwise}
+            onAction={async () => {
+              await refreshChangesets();
+            }}
+            shortcut={refreshShortcut}
+          />
           <Action.CopyToClipboard content={url} shortcut={copyShortcut} />
-          {changeset.state === "UNPUBLISHED" ? (
-            <Action
-              title="Publish Changeset"
-              icon={Icon.Hammer}
-              onAction={async () => {
-                await publishChangeset(new AbortController().signal, src, batchChange.id, changeset.id);
-                // TODO: reload the list, calling load here doesn't seem to work
-                await load();
-                showToast({
-                  style: Toast.Style.Success,
-                  title: "Changeset has been submitted for publishing!",
-                });
-              }}
-            />
-          ) : (
-            <></>
-          )}
         </ActionPanel>
       }
     />
