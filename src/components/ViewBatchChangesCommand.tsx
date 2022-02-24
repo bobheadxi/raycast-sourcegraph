@@ -1,16 +1,16 @@
-import { ActionPanel, List, Action, Icon, useNavigation, Detail, Toast, Image, Color } from "@raycast/api";
+import { ActionPanel, List, Action, Icon, useNavigation, Detail, Toast, Image, Color, showToast } from "@raycast/api";
 import { useState, useRef, useEffect } from "react";
 import { DateTime } from "luxon";
 import { nanoid } from "nanoid";
 
 import { Sourcegraph, instanceName } from "../sourcegraph";
-import { BatchChange, getBatchChanges, Changeset, getChangesets } from "../sourcegraph/gql";
+import { BatchChange, getBatchChanges, Changeset, getChangesets, publishChangeset } from "../sourcegraph/gql";
 import checkAuthEffect from "../hooks/checkAuthEffect";
 import { copyShortcut, secondaryActionShortcut } from "./shortcuts";
 import { ColorDefault } from "./colors";
 
 export default function ViewBatchChanges(src: Sourcegraph) {
-  const { state } = useBatchChanges(src);
+  const { state, load } = useBatchChanges(src);
   const srcName = instanceName(src);
   const nav = useNavigation();
 
@@ -20,14 +20,22 @@ export default function ViewBatchChanges(src: Sourcegraph) {
     <List isLoading={state.isLoading} searchBarPlaceholder={`Browse batch changes on ${srcName}`}>
       <List.Section title={"Batch changes"} subtitle={`${state.batchChanges.length} batch changes`}>
         {state.batchChanges.map((b) => (
-          <BatchChange key={nanoid()} batchChange={b} src={src} />
+          <BatchChange key={nanoid()} batchChange={b} src={src} load={load} />
         ))}
       </List.Section>
     </List>
   );
 }
 
-function BatchChange({ batchChange, src }: { batchChange: BatchChange; src: Sourcegraph }) {
+function BatchChange({
+  batchChange,
+  src,
+  load,
+}: {
+  batchChange: BatchChange;
+  src: Sourcegraph;
+  load: () => Promise<void>;
+}) {
   let updated: string | null = null;
   try {
     const d = DateTime.fromISO(batchChange.updatedAt);
@@ -53,7 +61,7 @@ function BatchChange({ batchChange, src }: { batchChange: BatchChange; src: Sour
   }
 
   const { changesetsStats } = batchChange;
-  const url = `${src.instance}${batchChange.url}`
+  const url = `${src.instance}${batchChange.url}`;
   return (
     <List.Item
       icon={{
@@ -77,22 +85,25 @@ function BatchChange({ batchChange, src }: { batchChange: BatchChange; src: Sour
             key={nanoid()}
             title="View Batch Change"
             icon={{ source: Icon.MagnifyingGlass }}
-            target={<BatchChangePeek batchChange={batchChange} src={src} />}
+            target={<BatchChangePeek batchChange={batchChange} src={src} load={load} />}
           />
           <Action.OpenInBrowser key={nanoid()} url={url} shortcut={secondaryActionShortcut} />
-          <Action.CopyToClipboard
-            key={nanoid()}
-            title="Copy Batch Change URL"
-            content={url}
-            shortcut={copyShortcut}
-          />
+          <Action.CopyToClipboard key={nanoid()} title="Copy Batch Change URL" content={url} shortcut={copyShortcut} />
         </ActionPanel>
       }
     />
   );
 }
 
-function BatchChangePeek({ batchChange, src }: { batchChange: BatchChange; src: Sourcegraph }) {
+function BatchChangePeek({
+  batchChange,
+  src,
+  load,
+}: {
+  batchChange: BatchChange;
+  src: Sourcegraph;
+  load: () => Promise<void>;
+}) {
   const { state } = useChangesets(src, batchChange);
   const published = state.changesets.filter((c) => c.state !== "UNPUBLISHED");
   const unpublished = state.changesets.filter((c) => c.state === "UNPUBLISHED");
@@ -113,19 +124,29 @@ function BatchChangePeek({ batchChange, src }: { batchChange: BatchChange; src: 
         }
       >
         {published.map((c) => (
-          <ChangesetItem key={nanoid()} src={src} batchChange={batchChange} changeset={c} />
+          <ChangesetItem key={nanoid()} src={src} batchChange={batchChange} changeset={c} load={load} />
         ))}
       </List.Section>
       <List.Section title={"Unpublished changesets"} subtitle={`${unpublished.length} changesets`}>
         {unpublished.map((c) => (
-          <ChangesetItem key={nanoid()} src={src} batchChange={batchChange} changeset={c} />
+          <ChangesetItem key={nanoid()} src={src} batchChange={batchChange} changeset={c} load={load} />
         ))}
       </List.Section>
     </List>
   );
 }
 
-function ChangesetItem({ src, batchChange, changeset }: { src: Sourcegraph; batchChange: BatchChange; changeset: Changeset }) {
+function ChangesetItem({
+  src,
+  batchChange,
+  changeset,
+  load,
+}: {
+  src: Sourcegraph;
+  batchChange: BatchChange;
+  changeset: Changeset;
+  load: () => Promise<void>;
+}) {
   let updated: string | null = null;
   try {
     const d = DateTime.fromISO(changeset.updatedAt);
@@ -148,12 +169,16 @@ function ChangesetItem({ src, batchChange, changeset }: { src: Sourcegraph; batc
       icon.source = Icon.XmarkCircle;
       icon.tintColor = Color.Red;
       break;
+    case "FAILED":
+      icon.source = Icon.ExclamationMark;
+      icon.tintColor = Color.Red;
+      break;
     case "UNPUBLISHED":
       icon.source = Icon.Document;
       break;
   }
 
-  const url = changeset.externalURL?.url || `${src.instance}${batchChange.url}`
+  const url = changeset.externalURL?.url || `${src.instance}${batchChange.url}?status=${changeset.state}`;
   return (
     <List.Item
       title={`${changeset.repository.name}`}
@@ -165,6 +190,23 @@ function ChangesetItem({ src, batchChange, changeset }: { src: Sourcegraph; batc
         <ActionPanel>
           <Action.OpenInBrowser url={url} />
           <Action.CopyToClipboard content={url} shortcut={copyShortcut} />
+          {changeset.state === "UNPUBLISHED" ? (
+            <Action
+              title="Publish Changeset"
+              icon={Icon.Hammer}
+              onAction={async () => {
+                await publishChangeset(new AbortController().signal, src, batchChange.id, changeset.id);
+                // TODO: reload the list, calling load here doesn't seem to work
+                await load();
+                showToast({
+                  style: Toast.Style.Success,
+                  title: "Changeset has been submitted for publishing!",
+                });
+              }}
+            />
+          ) : (
+            <></>
+          )}
         </ActionPanel>
       }
     />

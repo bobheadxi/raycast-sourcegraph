@@ -10,7 +10,7 @@ export class AuthError extends Error {
   }
 }
 
-async function doRequest<T>(abort: AbortSignal, src: Sourcegraph, query: string): Promise<T> {
+async function doGQLRequest<T>(abort: AbortSignal, src: Sourcegraph, body: string): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -22,7 +22,7 @@ async function doRequest<T>(abort: AbortSignal, src: Sourcegraph, query: string)
     fetch(`${src.instance}/.api/graphql`, {
       method: "POST",
       headers: headers,
-      body: JSON.stringify({ query }),
+      body,
       signal: abort,
     })
       .then((r) => {
@@ -54,9 +54,17 @@ async function doRequest<T>(abort: AbortSignal, src: Sourcegraph, query: string)
   });
 }
 
+async function doQuery<T>(abort: AbortSignal, src: Sourcegraph, name: string, query: string): Promise<T> {
+  return doGQLRequest<T>(abort, src, JSON.stringify({ query: `query raycastSourcegraph${name} ${query}` }));
+}
+
+async function doMutation<T>(abort: AbortSignal, src: Sourcegraph, name: string, mutation: string): Promise<T> {
+  return doGQLRequest<T>(abort, src, JSON.stringify({ query: `mutation raycastSourcegraph${name} ${mutation}` }));
+}
+
 export async function checkAuth(abort: AbortSignal, src: Sourcegraph) {
-  const q = `query currentUser { currentUser { username, id } }`;
-  return doRequest<{ currentUser: { username: string; id: string } }>(abort, src, q);
+  const q = `{ currentUser { username, id } }`;
+  return doQuery<{ currentUser: { username: string; id: string } }>(abort, src, "CheckAuth", q);
 }
 
 export interface NotebookMarkdownBlock {
@@ -136,7 +144,7 @@ export async function findNotebooks(abort: AbortSignal, src: Sourcegraph, query?
       }
     }
   }`;
-  return doRequest<{ notebooks?: { nodes?: SearchNotebook[] } }>(abort, src, q);
+  return doQuery<{ notebooks?: { nodes?: SearchNotebook[] } }>(abort, src, "FindNotebooks", q);
 }
 
 export interface BatchChange {
@@ -183,7 +191,7 @@ export async function getBatchChanges(abort: AbortSignal, src: Sourcegraph) {
       }
     }
   }`;
-  return doRequest<{ batchChanges?: { nodes?: BatchChange[] } }>(abort, src, q);
+  return doQuery<{ batchChanges?: { nodes?: BatchChange[] } }>(abort, src, "GetBatchChanges", q);
 }
 
 export interface Changeset {
@@ -227,5 +235,14 @@ export async function getChangesets(abort: AbortSignal, src: Sourcegraph, namesp
       }
     }
   }`;
-  return doRequest<{ batchChange?: { changesets?: { nodes: Changeset[] } } }>(abort, src, q);
+  return doQuery<{ batchChange?: { changesets?: { nodes: Changeset[] } } }>(abort, src, "GetChangesets", q);
+}
+
+export async function publishChangeset(abort: AbortSignal, src: Sourcegraph, batchChange: string, changeset: string) {
+  const m = `{
+    publishChangesets(batchChange:"${batchChange}",changesets:["${changeset}"]) {
+      id
+    }
+  }`;
+  return doMutation<{ publishChangesets?: { id: string } }>(abort, src, "PublishChangeset", m);
 }
