@@ -169,8 +169,10 @@ function ChangesetItem({
 
   const icon: Image.ImageLike = { source: Icon.Circle };
   let secondaryAction = <></>;
+  let subtitle = changeset.state.toLowerCase();
   switch (changeset.state) {
     case "OPEN":
+      subtitle = changeset.reviewState?.toLocaleLowerCase() || "";
       switch (changeset.reviewState) {
         case "APPROVED":
           icon.source = Icon.Checkmark;
@@ -241,7 +243,7 @@ function ChangesetItem({
   return (
     <List.Item
       title={`${changeset.repository.name}`}
-      subtitle={`${changeset.externalID ? `#${changeset.externalID} ` : ''}${changeset.state.toLowerCase()}`}
+      subtitle={`${changeset.externalID ? `#${changeset.externalID} ` : ""}${subtitle}`}
       accessoryTitle={updated || undefined}
       accessoryIcon={icon}
       keywords={[changeset.state, changeset.reviewState || ""]}
