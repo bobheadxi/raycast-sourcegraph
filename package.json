@@ -116,6 +116,22 @@
         "selfhosted"
       ],
       "preferences": []
+    },
+    {
+      "name": "viewBatchChangesSelfHosted",
+      "icon": "logo-bw.png",
+      "title": "View Batch Changes",
+      "subtitle": "Sourcegraph Self-Hosted",
+      "description": "Browse batch changes on a self-hosted Sourcegraph instance.",
+      "mode": "view",
+      "keywords": [
+        "sourcegraph",
+        "batch",
+        "changes",
+        "bc",
+        "selfhosted"
+      ],
+      "preferences": []
     }
   ],
   "dependencies": {

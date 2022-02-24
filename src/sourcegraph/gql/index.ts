@@ -10,7 +10,7 @@ export class AuthError extends Error {
   }
 }
 
-async function doRequest<T>(abort: AbortSignal, src: Sourcegraph, query: string): Promise<T> {
+async function doGQLRequest<T>(abort: AbortSignal, src: Sourcegraph, body: string): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -22,7 +22,7 @@ async function doRequest<T>(abort: AbortSignal, src: Sourcegraph, query: string)
     fetch(`${src.instance}/.api/graphql`, {
       method: "POST",
       headers: headers,
-      body: JSON.stringify({ query }),
+      body,
       signal: abort,
     })
       .then((r) => {
@@ -54,9 +54,17 @@ async function doRequest<T>(abort: AbortSignal, src: Sourcegraph, query: string)
   });
 }
 
+async function doQuery<T>(abort: AbortSignal, src: Sourcegraph, name: string, query: string): Promise<T> {
+  return doGQLRequest<T>(abort, src, JSON.stringify({ query: `query raycastSourcegraph${name} ${query}` }));
+}
+
+async function doMutation<T>(abort: AbortSignal, src: Sourcegraph, name: string, mutation: string): Promise<T> {
+  return doGQLRequest<T>(abort, src, JSON.stringify({ query: `mutation raycastSourcegraph${name} ${mutation}` }));
+}
+
 export async function checkAuth(abort: AbortSignal, src: Sourcegraph) {
-  const q = `query currentUser { currentUser { username, id } }`;
-  return doRequest<{ currentUser: { username: string; id: string } }>(abort, src, q);
+  const q = `{ currentUser { username, id } }`;
+  return doQuery<{ currentUser: { username: string; id: string } }>(abort, src, "CheckAuth", q);
 }
 
 export interface NotebookMarkdownBlock {
@@ -74,16 +82,18 @@ export interface NotebookFileBlock {
   };
 }
 
+export interface User {
+  username: string;
+  displayName?: string;
+}
+
 export interface SearchNotebook {
   id: string;
   title: string;
   viewerHasStarred: boolean;
   public: boolean;
   stars?: { totalCount: number };
-  creator: {
-    username: string;
-    displayName?: string;
-  };
+  creator: User;
   blocks?: (NotebookMarkdownBlock & NotebookQueryBlock & NotebookFileBlock)[];
   createdAt: string;
   updatedAt: string;
@@ -134,5 +144,118 @@ export async function findNotebooks(abort: AbortSignal, src: Sourcegraph, query?
       }
     }
   }`;
-  return doRequest<{ notebooks?: { nodes?: SearchNotebook[] } }>(abort, src, q);
+  return doQuery<{ notebooks?: { nodes?: SearchNotebook[] } }>(abort, src, "FindNotebooks", q);
+}
+
+export interface BatchChange {
+  id: string;
+  url: string;
+  namespace: { id: string; namespaceName: string };
+  name: string;
+  description: string;
+  creator: User;
+  state: "OPEN" | "CLOSED" | "DRAFT";
+  updatedAt: string;
+  changesetsStats: {
+    total: number;
+    merged: number;
+    open: number;
+    closed: number;
+    failed: number;
+  };
+}
+
+export async function getBatchChanges(abort: AbortSignal, src: Sourcegraph) {
+  const q = `{
+    batchChanges(first:100) {
+      nodes {
+        id
+        url
+        namespace {
+          id
+          namespaceName
+        }
+        name
+        description
+        creator {
+          username
+          displayName
+        }
+        state
+        updatedAt
+        changesetsStats {
+          total
+          merged
+          open
+          closed
+          failed
+        }
+      }
+    }
+  }`;
+  return doQuery<{ batchChanges?: { nodes?: BatchChange[] } }>(abort, src, "GetBatchChanges", q);
+}
+
+export interface Changeset {
+  id: string;
+  state: string;
+  updatedAt: string;
+
+  repository: {
+    name: string;
+  };
+  externalURL?: {
+    url: string;
+    serviceKind: string;
+  };
+  externalID?: string;
+  title: string;
+  reviewState?: string;
+}
+
+export async function getChangesets(abort: AbortSignal, src: Sourcegraph, namespace: string, name: string) {
+  const q = `{
+    batchChange(namespace:"${namespace}",name:"${name}") {
+      changesets {
+        nodes {
+          id
+          state
+          updatedAt
+
+          __typename
+          ...on ExternalChangeset {
+            repository {
+              name
+            }
+            externalURL {
+              url
+              serviceKind
+            }
+            externalID
+            title
+            reviewState
+          }
+        }
+      }
+    }
+  }`;
+  return doQuery<{ batchChange?: { changesets?: { nodes: Changeset[] } } }>(abort, src, "GetChangesets", q);
+}
+
+export async function publishChangeset(abort: AbortSignal, src: Sourcegraph, batchChange: string, changeset: string) {
+  const m = `{
+    publishChangesets(batchChange:"${batchChange}",changesets:["${changeset}"]) {
+      id
+    }
+  }`;
+  return doMutation<{ publishChangesets?: { id: string } }>(abort, src, "PublishChangeset", m);
+}
+
+export async function reenqueueChangeset(abort: AbortSignal, src: Sourcegraph, changeset: string) {
+  const m = `{
+    reenqueueChangeset(changeset:"${changeset}") {
+      id
+    }
+  }`;
+  return doMutation<{ publishChangesets?: { id: string } }>(abort, src, "ReenqueueChangeset", m);
 }
