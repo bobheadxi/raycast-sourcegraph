@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- **batch-changes**: "View Batch Changes" is a new command that allows you to browse and view changesets for [Sourcegraph Batch Changes](https://about.sourcegraph.com/batch-changes)! ([#11](https://github.com/bobheadxi/raycast-sourcegraph/pull/11))
+- **batch-changes**: "View Batch Changes" is a new command that allows you to browse, view, publish, and retry changesets for [Sourcegraph Batch Changes](https://about.sourcegraph.com/batch-changes)! ([#11](https://github.com/bobheadxi/raycast-sourcegraph/pull/11))
 
 ## [Feb 15th, 2022](https://github.com/raycast/extensions/pull/919)
 
