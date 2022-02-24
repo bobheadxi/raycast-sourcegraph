@@ -6,7 +6,7 @@ import { nanoid } from "nanoid";
 import { Sourcegraph, instanceName } from "../sourcegraph";
 import { BatchChange, getBatchChanges, Changeset, getChangesets, publishChangeset } from "../sourcegraph/gql";
 import checkAuthEffect from "../hooks/checkAuthEffect";
-import { copyShortcut, refreshShortcut, secondaryActionShortcut, tertiaryActionShortcut } from "./shortcuts";
+import { copyShortcut, refreshShortcut, secondaryActionShortcut } from "./shortcuts";
 import { ColorDefault } from "./colors";
 
 export default function ViewBatchChanges(src: Sourcegraph) {
@@ -16,9 +16,10 @@ export default function ViewBatchChanges(src: Sourcegraph) {
 
   useEffect(checkAuthEffect(src, nav));
 
+  const count = state.batchChanges.length;
   return (
     <List isLoading={state.isLoading} searchBarPlaceholder={`Browse batch changes on ${srcName}`}>
-      <List.Section title={"Batch changes"} subtitle={`${state.batchChanges.length} batch changes`}>
+      <List.Section title={"Batch changes"} subtitle={`${count > 100 ? `${count}+` : count} batch changes`}>
         {state.batchChanges.map((b) => (
           <BatchChange key={nanoid()} batchChange={b} src={src} refreshBatchChanges={load} />
         ))}
@@ -41,7 +42,7 @@ function BatchChange({
     const d = DateTime.fromISO(batchChange.updatedAt);
     updated = d.toRelative();
   } catch (e) {
-    console.warn(`notebook ${batchChange.id}: invalid date: ${e}`);
+    console.warn(`batch change ${batchChange.id}: invalid date: ${e}`);
   }
   const author = batchChange.creator.displayName || batchChange.creator.username;
 
@@ -97,6 +98,11 @@ function BatchChange({
             shortcut={refreshShortcut}
           />
           <Action.CopyToClipboard key={nanoid()} title="Copy Batch Change URL" content={url} shortcut={copyShortcut} />
+          <Action.OpenInBrowser
+            key={nanoid()}
+            title="Open Batch Changes in Browser"
+            url={`${src.instance}/batch-changes`}
+          />
         </ActionPanel>
       }
     />
@@ -235,7 +241,7 @@ function ChangesetItem({
   return (
     <List.Item
       title={`${changeset.repository.name}`}
-      subtitle={changeset.externalID ? `#${changeset.externalID}` : changeset.state.toLowerCase()}
+      subtitle={`${changeset.externalID ? `#${changeset.externalID} ` : ''}${changeset.state.toLowerCase()}`}
       accessoryTitle={updated || undefined}
       accessoryIcon={icon}
       keywords={[changeset.state, changeset.reviewState || ""]}
@@ -252,6 +258,11 @@ function ChangesetItem({
             shortcut={refreshShortcut}
           />
           <Action.CopyToClipboard content={url} shortcut={copyShortcut} />
+          <Action.OpenInBrowser
+            key={nanoid()}
+            title="Open Changesets in Browser"
+            url={`${src.instance}${batchChange.url}`}
+          />
         </ActionPanel>
       }
     />

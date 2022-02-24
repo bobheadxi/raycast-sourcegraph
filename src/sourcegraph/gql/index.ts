@@ -167,7 +167,7 @@ export interface BatchChange {
 
 export async function getBatchChanges(abort: AbortSignal, src: Sourcegraph) {
   const q = `{
-    batchChanges {
+    batchChanges(first:100) {
       nodes {
         id
         url
