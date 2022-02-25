@@ -257,5 +257,20 @@ export async function reenqueueChangeset(abort: AbortSignal, src: Sourcegraph, c
       id
     }
   }`;
-  return doMutation<{ publishChangesets?: { id: string } }>(abort, src, "ReenqueueChangeset", m);
+  return doMutation<{ reenqueueChangeset?: { id: string } }>(abort, src, "ReenqueueChangeset", m);
+}
+
+export async function mergeChangeset(
+  abort: AbortSignal,
+  src: Sourcegraph,
+  batchChange: string,
+  changeset: string,
+  squash: boolean
+) {
+  const m = `{
+    mergeChangesets(batchChange:"${batchChange}",changesets:["${changeset}"],squash:${JSON.stringify(squash)}) {
+      id
+    }
+  }`;
+  return doMutation<{ mergeChangesets?: { id: string } }>(abort, src, "MergeChangeset", m);
 }
