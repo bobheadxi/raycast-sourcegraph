@@ -1,10 +1,29 @@
-import { ActionPanel, List, Action, Icon, useNavigation, Detail, Toast, Image, Color, showToast } from "@raycast/api";
+import {
+  ActionPanel,
+  List,
+  Action,
+  Icon,
+  useNavigation,
+  Detail,
+  Toast,
+  Image,
+  Color,
+  showToast,
+  Form,
+} from "@raycast/api";
 import { useState, useRef, useEffect } from "react";
 import { DateTime } from "luxon";
 import { nanoid } from "nanoid";
 
 import { Sourcegraph, instanceName } from "../sourcegraph";
-import { BatchChange, getBatchChanges, Changeset, getChangesets, publishChangeset } from "../sourcegraph/gql";
+import {
+  BatchChange,
+  getBatchChanges,
+  Changeset,
+  getChangesets,
+  publishChangeset,
+  mergeChangeset,
+} from "../sourcegraph/gql";
 import checkAuthEffect from "../hooks/checkAuthEffect";
 import { copyShortcut, refreshShortcut, secondaryActionShortcut } from "./shortcuts";
 import { ColorDefault } from "./colors";
@@ -161,6 +180,7 @@ function ChangesetItem({
   } catch (e) {
     console.warn(`changeset ${changeset.id}: invalid date: ${e}`);
   }
+  const url = changeset.externalURL?.url || `${src.instance}${batchChange.url}?status=${changeset.state}`;
 
   async function delayedRefreshChangesets() {
     await new Promise((r) => setTimeout(r, 10000));
@@ -170,6 +190,7 @@ function ChangesetItem({
   const icon: Image.ImageLike = { source: Icon.Circle };
   let secondaryAction = <></>;
   let subtitle = changeset.state.toLowerCase();
+  const abort = new AbortController().signal;
   switch (changeset.state) {
     case "OPEN":
       subtitle = changeset.reviewState?.toLocaleLowerCase() || "";
@@ -184,6 +205,42 @@ function ChangesetItem({
           icon.source = Icon.Circle;
       }
       icon.tintColor = Color.Green;
+      secondaryAction = (
+        <Action.Push
+          title="Merge Changeset"
+          icon={Icon.Checkmark}
+          target={
+            <Form
+              navigationTitle="Merge Changeset"
+              actions={
+                <ActionPanel>
+                  <Action.SubmitForm
+                    title="Merge Changeset"
+                    icon={Icon.Checkmark}
+                    onSubmit={async ({ squash }: { squash: number }) => {
+                      await mergeChangeset(abort, src, batchChange.id, changeset.id, squash === 1);
+                      showToast({
+                        style: Toast.Style.Success,
+                        title: "Changeset has been submitted for merge!",
+                      });
+                      await delayedRefreshChangesets();
+                      const { pop } = useNavigation();
+                      pop();
+                    }}
+                  />
+                  <Action.OpenInBrowser url={url} />
+                </ActionPanel>
+              }
+            >
+              <Form.Description title={"Changeset"} text={`${changeset.repository.name}#${changeset.externalID}`} />
+              <Form.Description title={"Title"} text={changeset.title} />
+              <Form.Description title={"Review"} text={changeset.reviewState?.toLocaleLowerCase() || "unknown"} />
+              <Form.Separator />
+              <Form.Checkbox id="squash" label="Squash commits" defaultValue={true} storeValue={true} />
+            </Form>
+          }
+        />
+      );
       break;
 
     case "MERGED":
@@ -204,7 +261,7 @@ function ChangesetItem({
           title="Retry Changeset"
           icon={Icon.Hammer}
           onAction={async () => {
-            await publishChangeset(new AbortController().signal, src, batchChange.id, changeset.id);
+            await publishChangeset(abort, src, batchChange.id, changeset.id);
             showToast({
               style: Toast.Style.Success,
               title: "Changeset has been submitted for retry!",
@@ -222,7 +279,7 @@ function ChangesetItem({
           title="Publish Changeset"
           icon={Icon.Hammer}
           onAction={async () => {
-            await publishChangeset(new AbortController().signal, src, batchChange.id, changeset.id);
+            await publishChangeset(abort, src, batchChange.id, changeset.id);
             showToast({
               style: Toast.Style.Success,
               title: "Changeset has been submitted for publishing!",
@@ -239,7 +296,6 @@ function ChangesetItem({
       break;
   }
 
-  const url = changeset.externalURL?.url || `${src.instance}${batchChange.url}?status=${changeset.state}`;
   return (
     <List.Item
       title={`${changeset.repository.name}`}
