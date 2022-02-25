@@ -136,7 +136,7 @@
   ],
   "dependencies": {
     "@bobheadxi/node-eventsource-http2": "^1.1.1",
-    "@raycast/api": "^1.28.0",
+    "@raycast/api": "^1.29.1",
     "luxon": "^2.3.0",
     "nanoid": "^3.2.0",
     "node-fetch": "^3.2.0",
