@@ -39,14 +39,14 @@ export default function ManageBatchChanges(src: Sourcegraph) {
     <List isLoading={state.isLoading} searchBarPlaceholder={`Manage batch changes on ${srcName}`}>
       <List.Section title={"Batch changes"} subtitle={`${count > 100 ? `${count}+` : count} batch changes`}>
         {state.batchChanges.map((b) => (
-          <BatchChange key={nanoid()} batchChange={b} src={src} refreshBatchChanges={load} />
+          <BatchChangeItem key={nanoid()} batchChange={b} src={src} refreshBatchChanges={load} />
         ))}
       </List.Section>
     </List>
   );
 }
 
-function BatchChange({
+function BatchChangeItem({
   batchChange,
   src,
   refreshBatchChanges,
