@@ -26,7 +26,6 @@ import {
 } from "../sourcegraph/gql";
 import checkAuthEffect from "../hooks/checkAuthEffect";
 import { copyShortcut, refreshShortcut, secondaryActionShortcut } from "./shortcuts";
-import { ColorDefault } from "./colors";
 
 export default function ManageBatchChanges(src: Sourcegraph) {
   const { state, load } = useBatchChanges(src);
@@ -84,10 +83,7 @@ function BatchChange({
   const url = `${src.instance}${batchChange.url}`;
   return (
     <List.Item
-      icon={{
-        source: Icon.List,
-        tintColor: ColorDefault,
-      }}
+      icon={icon}
       title={`${batchChange.namespace.namespaceName} / ${batchChange.name}`}
       subtitle={updated ? `by ${author}, updated ${updated}` : author}
       accessoryTitle={
@@ -97,7 +93,6 @@ function BatchChange({
             }`
           : undefined
       }
-      accessoryIcon={icon}
       keywords={[batchChange.state]}
       actions={
         <ActionPanel>
@@ -298,10 +293,10 @@ function ChangesetItem({
 
   return (
     <List.Item
+      icon={icon}
       title={`${changeset.repository.name}`}
       subtitle={`${changeset.externalID ? `#${changeset.externalID} ` : ""}${subtitle}`}
       accessoryTitle={updated || undefined}
-      accessoryIcon={icon}
       keywords={[changeset.state, changeset.reviewState || ""]}
       actions={
         <ActionPanel>
