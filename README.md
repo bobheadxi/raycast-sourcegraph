@@ -76,9 +76,9 @@ Notebooks enable powerful live – and persistent – documentation, shareable w
 
 To get started, you can try the [public Sourcegraph Cloud notebooks](https://sourcegraph.com/notebooks?tab=explore), or configure your own from your Sourcegraph Cloud account or self-hosted Sourcegraph instance!
 
-### Browse Batch Changes
+### Manage Batch Changes
 
-Browse, view, and publish changesets for [batch changes](https://about.sourcegraph.com/batch-changes) straight from Raycast.
+Browse, view, publish, and merge changesets for [batch changes](https://about.sourcegraph.com/batch-changes) straight from Raycast.
 Batch changes automate large-scale code changes to keep your code up to date, fix critical security issues, and pay down tech debt across all of your repositories.
 
 Batch changes is currently only supported on [Sourcegraph Self-Hosted](#sourcegraph-self-hosted).

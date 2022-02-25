@@ -28,7 +28,7 @@ import checkAuthEffect from "../hooks/checkAuthEffect";
 import { copyShortcut, refreshShortcut, secondaryActionShortcut } from "./shortcuts";
 import { ColorDefault } from "./colors";
 
-export default function ViewBatchChanges(src: Sourcegraph) {
+export default function ManageBatchChanges(src: Sourcegraph) {
   const { state, load } = useBatchChanges(src);
   const srcName = instanceName(src);
   const nav = useNavigation();
@@ -37,7 +37,7 @@ export default function ViewBatchChanges(src: Sourcegraph) {
 
   const count = state.batchChanges.length;
   return (
-    <List isLoading={state.isLoading} searchBarPlaceholder={`Browse batch changes on ${srcName}`}>
+    <List isLoading={state.isLoading} searchBarPlaceholder={`Manage batch changes on ${srcName}`}>
       <List.Section title={"Batch changes"} subtitle={`${count > 100 ? `${count}+` : count} batch changes`}>
         {state.batchChanges.map((b) => (
           <BatchChange key={nanoid()} batchChange={b} src={src} refreshBatchChanges={load} />
