@@ -40,7 +40,7 @@ export function sourcegraphSelfHosted(): Sourcegraph | null {
   const prefs: Preferences = getPreferenceValues();
   if (prefs.customInstance) {
     return {
-      instance: prefs.customInstance,
+      instance: prefs.customInstance.replace(/\/$/, ""),
       token: prefs.customInstanceToken,
       defaultContext: prefs.customInstanceDefaultContext,
     };
