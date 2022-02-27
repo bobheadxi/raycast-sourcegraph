@@ -1,16 +1,4 @@
-import {
-  ActionPanel,
-  List,
-  Action,
-  showToast,
-  Detail,
-  Icon,
-  Image,
-  Clipboard,
-  Toast,
-  useNavigation,
-  Keyboard,
-} from "@raycast/api";
+import { ActionPanel, List, Action, showToast, Detail, Icon, Image, Clipboard, Toast, Keyboard } from "@raycast/api";
 import { useState, useRef, Fragment, useEffect } from "react";
 import { nanoid } from "nanoid";
 
@@ -21,14 +9,14 @@ import { Sourcegraph, instanceName } from "../sourcegraph";
 import { performSearch, SearchResult, Suggestion } from "../sourcegraph/stream-search";
 import { ContentMatch, SymbolMatch } from "../sourcegraph/stream-search/stream";
 import { ColorDefault, ColorPrivate } from "./colors";
+import ExpandableErrorToast from "./ExpandableErrorToast";
 
 // SearchCommand is the shared search command implementation.
 export default function SearchCommand(src: Sourcegraph) {
   const { state, search } = useSearch(src);
   const srcName = instanceName(src);
-  const nav = useNavigation();
 
-  useEffect(checkAuthEffect(src, nav));
+  useEffect(checkAuthEffect(src));
 
   return (
     <List
@@ -371,8 +359,6 @@ function useSearch(src: Sourcegraph) {
   });
   const cancelRef = useRef<AbortController | null>(null);
 
-  const { push } = useNavigation();
-
   async function search(searchText: string) {
     cancelRef.current?.abort();
     cancelRef.current = new AbortController();
@@ -407,16 +393,7 @@ function useSearch(src: Sourcegraph) {
           }));
         },
         onAlert: (alert) => {
-          new Toast({
-            style: Toast.Style.Failure,
-            title: alert.title,
-            primaryAction: {
-              title: "View details",
-              onAction: () => {
-                push(<Detail markdown={`**${alert.title}**\n\n${alert.description}`} navigationTitle="Alert" />);
-              },
-            },
-          }).show();
+          ExpandableErrorToast("Alert", alert.title, alert.description || "").show();
         },
         onProgress: (progress) => {
           setState((oldState) => ({
@@ -430,17 +407,7 @@ function useSearch(src: Sourcegraph) {
         isLoading: false,
       }));
     } catch (error) {
-      new Toast({
-        style: Toast.Style.Failure,
-        title: "Search failed",
-        message: String(error),
-        primaryAction: {
-          title: "View details",
-          onAction: () => {
-            push(<Detail markdown={`**Search failed:** ${String(error)}`} navigationTitle="Unexpected error" />);
-          },
-        },
-      }).show();
+      ExpandableErrorToast("Unexpected error", "Search failed", String(error)).show();
 
       setState((oldState) => ({
         ...oldState,

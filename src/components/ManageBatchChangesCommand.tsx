@@ -1,16 +1,4 @@
-import {
-  ActionPanel,
-  List,
-  Action,
-  Icon,
-  useNavigation,
-  Detail,
-  Toast,
-  Image,
-  Color,
-  showToast,
-  Form,
-} from "@raycast/api";
+import { ActionPanel, List, Action, Icon, useNavigation, Toast, Image, Color, showToast, Form } from "@raycast/api";
 import { useState, useRef, useEffect } from "react";
 import { DateTime } from "luxon";
 import { nanoid } from "nanoid";
@@ -26,13 +14,13 @@ import {
 } from "../sourcegraph/gql";
 import checkAuthEffect from "../hooks/checkAuthEffect";
 import { copyShortcut, refreshShortcut, secondaryActionShortcut, tertiaryActionShortcut } from "./shortcuts";
+import ExpandableErrorToast from "./ExpandableErrorToast";
 
 export default function ManageBatchChanges(src: Sourcegraph) {
   const { state, load } = useBatchChanges(src);
   const srcName = instanceName(src);
-  const nav = useNavigation();
 
-  useEffect(checkAuthEffect(src, nav));
+  useEffect(checkAuthEffect(src));
 
   const count = state.batchChanges.length;
   return (
@@ -337,7 +325,6 @@ function useBatchChanges(src: Sourcegraph) {
     isLoading: true,
   });
   const cancelRef = useRef<AbortController | null>(null);
-  const { push } = useNavigation();
 
   useEffect(() => {
     load(); // initial load
@@ -361,19 +348,7 @@ function useBatchChanges(src: Sourcegraph) {
         isLoading: false,
       }));
     } catch (error) {
-      new Toast({
-        style: Toast.Style.Failure,
-        title: "Get batch changes failed",
-        message: String(error),
-        primaryAction: {
-          title: "View details",
-          onAction: () => {
-            push(
-              <Detail markdown={`**Get batch changes failed:** ${String(error)}`} navigationTitle="Unexpected error" />
-            );
-          },
-        },
-      }).show();
+      ExpandableErrorToast("Unexpected error", "Get batch changes failed", String(error)).show();
 
       setState((oldState) => ({
         ...oldState,
@@ -398,7 +373,6 @@ function useChangesets(src: Sourcegraph, batchChange: BatchChange) {
     isLoading: true,
   });
   const cancelRef = useRef<AbortController | null>(null);
-  const { push } = useNavigation();
 
   useEffect(() => {
     load(); // initial load
@@ -422,19 +396,7 @@ function useChangesets(src: Sourcegraph, batchChange: BatchChange) {
         isLoading: false,
       }));
     } catch (error) {
-      new Toast({
-        style: Toast.Style.Failure,
-        title: "Get changesets failed",
-        message: String(error),
-        primaryAction: {
-          title: "View details",
-          onAction: () => {
-            push(
-              <Detail markdown={`**Get changesets failed:** ${String(error)}`} navigationTitle="Unexpected error" />
-            );
-          },
-        },
-      }).show();
+      ExpandableErrorToast("Unexpected error", "Get changesets failed", String(error)).show();
 
       setState((oldState) => ({
         ...oldState,

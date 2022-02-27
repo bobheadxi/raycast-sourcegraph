@@ -1,4 +1,4 @@
-import { ActionPanel, List, Action, Icon, useNavigation, Detail, Toast } from "@raycast/api";
+import { ActionPanel, List, Action, Icon, Detail } from "@raycast/api";
 import { useState, useRef, useEffect, Fragment } from "react";
 import { DateTime } from "luxon";
 import { nanoid } from "nanoid";
@@ -8,13 +8,13 @@ import { findNotebooks, SearchNotebook } from "../sourcegraph/gql";
 import checkAuthEffect from "../hooks/checkAuthEffect";
 import { copyShortcut, secondaryActionShortcut } from "./shortcuts";
 import { ColorDefault, ColorEmphasis, ColorPrivate } from "./colors";
+import ExpandableErrorToast from "./ExpandableErrorToast";
 
 export default function FindNotebooksCommand(src: Sourcegraph) {
   const { state, find } = useNotebooks(src);
   const srcName = instanceName(src);
-  const nav = useNavigation();
 
-  useEffect(checkAuthEffect(src, nav));
+  useEffect(checkAuthEffect(src));
 
   const showStarred = src.token && !state.searchText;
   return (
@@ -178,7 +178,6 @@ function useNotebooks(src: Sourcegraph) {
     isLoading: true,
   });
   const cancelRef = useRef<AbortController | null>(null);
-  const { push } = useNavigation();
 
   useEffect(() => {
     find(); // initial load
@@ -203,19 +202,7 @@ function useNotebooks(src: Sourcegraph) {
         isLoading: false,
       }));
     } catch (error) {
-      new Toast({
-        style: Toast.Style.Failure,
-        title: "Find notebooks failed",
-        message: String(error),
-        primaryAction: {
-          title: "View details",
-          onAction: () => {
-            push(
-              <Detail markdown={`**Find notebooks failed:** ${String(error)}`} navigationTitle="Unexpected error" />
-            );
-          },
-        },
-      }).show();
+      ExpandableErrorToast("Unexpected error", "Find notebooks failed", String(error)).show();
 
       setState((oldState) => ({
         ...oldState,
