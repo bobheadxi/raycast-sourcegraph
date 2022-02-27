@@ -10,6 +10,9 @@ import { copyShortcut, secondaryActionShortcut } from "./shortcuts";
 import { ColorDefault, ColorEmphasis, ColorPrivate } from "./colors";
 import ExpandableErrorToast from "./ExpandableErrorToast";
 
+/**
+ * FindNotebooksCommand is the shared search notebooks command.
+ */
 export default function FindNotebooksCommand(src: Sourcegraph) {
   const { state, find } = useNotebooks(src);
   const srcName = instanceName(src);

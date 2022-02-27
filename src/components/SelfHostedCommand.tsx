@@ -1,8 +1,11 @@
 import { ActionPanel, Detail, Action } from "@raycast/api";
 import { ReactElement } from "react";
-import { sourcegraphSelfHosted, Sourcegraph, isCloud } from "../sourcegraph";
+import { sourcegraphSelfHosted, Sourcegraph, isSourcegraphCloud } from "../sourcegraph";
 
-// SelfHostedCommand wraps the given command with the configuration for a self-hosted instance.
+/**
+ * SelfHostedCommand wraps the given command with the configuration for a self-hosted
+ * Sourcegraph instance.
+ */
 export default function SelfHostedCommand({ command }: { command: (src: Sourcegraph) => ReactElement }) {
   const tryCloudMessage = "Alternatively, you can try the Sourcegraph Cloud version of this command first.";
 
@@ -36,7 +39,7 @@ export default function SelfHostedCommand({ command }: { command: (src: Sourcegr
       />
     );
   }
-  if (!isCloud(src.instance) && !src.token) {
+  if (!isSourcegraphCloud(src.instance) && !src.token) {
     return (
       <Detail
         navigationTitle="Invalid Sourcegraph Self-Hosted access token"

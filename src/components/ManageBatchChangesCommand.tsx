@@ -16,6 +16,9 @@ import checkAuthEffect from "../hooks/checkAuthEffect";
 import { copyShortcut, refreshShortcut, secondaryActionShortcut, tertiaryActionShortcut } from "./shortcuts";
 import ExpandableErrorToast from "./ExpandableErrorToast";
 
+/**
+ * ManageBatchChanges is the shared batch changes command implementation.
+ */
 export default function ManageBatchChanges(src: Sourcegraph) {
   const { state, load } = useBatchChanges(src);
   const srcName = instanceName(src);

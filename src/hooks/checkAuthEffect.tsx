@@ -3,6 +3,9 @@ import ExpandableErrorToast from "../components/ExpandableErrorToast";
 import { Sourcegraph, instanceName } from "../sourcegraph";
 import { AuthError, checkAuth } from "../sourcegraph/gql";
 
+/**
+ * checkAuthEffect validates connectivity to the given Sourcegraph instance configuration.
+ */
 export default function checkAuthEffect(src: Sourcegraph) {
   const srcName = instanceName(src);
 

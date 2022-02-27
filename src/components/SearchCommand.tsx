@@ -11,7 +11,9 @@ import { ContentMatch, SymbolMatch } from "../sourcegraph/stream-search/stream";
 import { ColorDefault, ColorPrivate } from "./colors";
 import ExpandableErrorToast from "./ExpandableErrorToast";
 
-// SearchCommand is the shared search command implementation.
+/**
+ * SearchCommand is the shared search command implementation.
+ */
 export default function SearchCommand(src: Sourcegraph) {
   const { state, search } = useSearch(src);
   const srcName = instanceName(src);
