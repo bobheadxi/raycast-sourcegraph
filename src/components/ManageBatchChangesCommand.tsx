@@ -25,7 +25,7 @@ import {
   mergeChangeset,
 } from "../sourcegraph/gql";
 import checkAuthEffect from "../hooks/checkAuthEffect";
-import { copyShortcut, refreshShortcut, secondaryActionShortcut } from "./shortcuts";
+import { copyShortcut, refreshShortcut, secondaryActionShortcut, tertiaryActionShortcut } from "./shortcuts";
 
 export default function ManageBatchChanges(src: Sourcegraph) {
   const { state, load } = useBatchChanges(src);
@@ -116,6 +116,7 @@ function BatchChangeItem({
             key={nanoid()}
             title="Open Batch Changes in Browser"
             url={`${src.instance}/batch-changes`}
+            shortcut={tertiaryActionShortcut}
           />
         </ActionPanel>
       }
@@ -178,7 +179,7 @@ function ChangesetItem({
   const url = changeset.externalURL?.url || `${src.instance}${batchChange.url}?status=${changeset.state}`;
 
   async function delayedRefreshChangesets() {
-    await new Promise((r) => setTimeout(r, 10000));
+    await new Promise((r) => setTimeout(r, 1000));
     await refreshChangesets();
   }
 
@@ -315,6 +316,7 @@ function ChangesetItem({
             key={nanoid()}
             title="Open Changesets in Browser"
             url={`${src.instance}${batchChange.url}`}
+            shortcut={tertiaryActionShortcut}
           />
         </ActionPanel>
       }
