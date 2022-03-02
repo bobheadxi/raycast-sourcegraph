@@ -1,12 +1,17 @@
-import { Toast, Detail, useNavigation } from "@raycast/api";
+import { Toast, Detail } from "@raycast/api";
+import { ReactNode } from "react";
 
 /**
  * ExpandableErrorToast creates a failure toast with the given navigationTitle and title,
  * and offers a primary action that renders a Detail view with the full description as
  * markdown.
  */
-export default function ExpandableErrorToast(navigationTitle: string, title: string, description: string) {
-  const { push } = useNavigation();
+export default function ExpandableErrorToast(
+  push: (details: ReactNode) => void,
+  navigationTitle: string,
+  title: string,
+  description: string
+) {
   return new Toast({
     style: Toast.Style.Failure,
     title: title,

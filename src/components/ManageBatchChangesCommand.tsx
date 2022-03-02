@@ -172,6 +172,7 @@ function ChangesetItem({
   }
   const url = changeset.externalURL?.url || `${src.instance}${batchChange.url}?status=${changeset.state}`;
 
+  const { pop } = useNavigation();
   async function delayedRefreshChangesets() {
     await new Promise((r) => setTimeout(r, 1000));
     await refreshChangesets();
@@ -214,7 +215,6 @@ function ChangesetItem({
                         title: "Changeset has been submitted for merge!",
                       });
                       await delayedRefreshChangesets();
-                      const { pop } = useNavigation();
                       pop();
                     }}
                   />
@@ -335,6 +335,7 @@ function useBatchChanges(src: Sourcegraph) {
     isLoading: true,
   });
   const cancelRef = useRef<AbortController | null>(null);
+  const { push } = useNavigation();
 
   useEffect(() => {
     load(); // initial load
@@ -358,7 +359,7 @@ function useBatchChanges(src: Sourcegraph) {
         isLoading: false,
       }));
     } catch (error) {
-      ExpandableErrorToast("Unexpected error", "Get batch changes failed", String(error)).show();
+      ExpandableErrorToast(push, "Unexpected error", "Get batch changes failed", String(error)).show();
 
       setState((oldState) => ({
         ...oldState,
@@ -383,6 +384,7 @@ function useChangesets(src: Sourcegraph, batchChange: BatchChange) {
     isLoading: true,
   });
   const cancelRef = useRef<AbortController | null>(null);
+  const { push } = useNavigation();
 
   useEffect(() => {
     load(); // initial load
@@ -406,7 +408,7 @@ function useChangesets(src: Sourcegraph, batchChange: BatchChange) {
         isLoading: false,
       }));
     } catch (error) {
-      ExpandableErrorToast("Unexpected error", "Get changesets failed", String(error)).show();
+      ExpandableErrorToast(push, "Unexpected error", "Get changesets failed", String(error)).show();
 
       setState((oldState) => ({
         ...oldState,

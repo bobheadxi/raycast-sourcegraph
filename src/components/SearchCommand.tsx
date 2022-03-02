@@ -1,4 +1,16 @@
-import { ActionPanel, List, Action, showToast, Detail, Icon, Image, Clipboard, Toast, Keyboard } from "@raycast/api";
+import {
+  ActionPanel,
+  List,
+  Action,
+  showToast,
+  Detail,
+  Icon,
+  Image,
+  Clipboard,
+  Toast,
+  Keyboard,
+  useNavigation,
+} from "@raycast/api";
 import { useState, useRef, Fragment, useEffect } from "react";
 import { nanoid } from "nanoid";
 
@@ -360,6 +372,7 @@ function useSearch(src: Sourcegraph) {
     isLoading: false,
   });
   const cancelRef = useRef<AbortController | null>(null);
+  const { push } = useNavigation();
 
   async function search(searchText: string) {
     cancelRef.current?.abort();
@@ -395,7 +408,7 @@ function useSearch(src: Sourcegraph) {
           }));
         },
         onAlert: (alert) => {
-          ExpandableErrorToast("Alert", alert.title, alert.description || "").show();
+          ExpandableErrorToast(push, "Alert", alert.title, alert.description || "").show();
         },
         onProgress: (progress) => {
           setState((oldState) => ({
@@ -409,7 +422,7 @@ function useSearch(src: Sourcegraph) {
         isLoading: false,
       }));
     } catch (error) {
-      ExpandableErrorToast("Unexpected error", "Search failed", String(error)).show();
+      ExpandableErrorToast(push, "Unexpected error", "Search failed", String(error)).show();
 
       setState((oldState) => ({
         ...oldState,

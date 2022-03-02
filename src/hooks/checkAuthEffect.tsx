@@ -1,3 +1,4 @@
+import { useNavigation } from "@raycast/api";
 import ExpandableErrorToast from "../components/ExpandableErrorToast";
 
 import { Sourcegraph, instanceName } from "../sourcegraph";
@@ -8,6 +9,7 @@ import { AuthError, checkAuth } from "../sourcegraph/gql";
  */
 export default function checkAuthEffect(src: Sourcegraph) {
   const srcName = instanceName(src);
+  const { push } = useNavigation();
 
   return () => {
     async function checkSrc() {
@@ -22,11 +24,13 @@ export default function checkAuthEffect(src: Sourcegraph) {
         const toast =
           err instanceof AuthError
             ? ExpandableErrorToast(
+                push,
                 "Authentication error",
                 `Failed to authenticate against ${srcName}`,
                 `${err.message}. ${helpText}`
               )
             : ExpandableErrorToast(
+                push,
                 "Authentication error",
                 `Encountered error authenticating against ${srcName}`,
                 `${String(err)}. ${helpText}`

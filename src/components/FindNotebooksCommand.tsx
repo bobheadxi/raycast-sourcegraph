@@ -1,4 +1,4 @@
-import { ActionPanel, List, Action, Icon, Detail } from "@raycast/api";
+import { ActionPanel, List, Action, Icon, Detail, useNavigation } from "@raycast/api";
 import { useState, useRef, useEffect, Fragment } from "react";
 import { DateTime } from "luxon";
 import { nanoid } from "nanoid";
@@ -181,6 +181,7 @@ function useNotebooks(src: Sourcegraph) {
     isLoading: true,
   });
   const cancelRef = useRef<AbortController | null>(null);
+  const { push } = useNavigation();
 
   useEffect(() => {
     find(); // initial load
@@ -205,7 +206,7 @@ function useNotebooks(src: Sourcegraph) {
         isLoading: false,
       }));
     } catch (error) {
-      ExpandableErrorToast("Unexpected error", "Find notebooks failed", String(error)).show();
+      ExpandableErrorToast(push, "Unexpected error", "Find notebooks failed", String(error)).show();
 
       setState((oldState) => ({
         ...oldState,
