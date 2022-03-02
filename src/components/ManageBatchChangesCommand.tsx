@@ -15,6 +15,7 @@ import {
 import checkAuthEffect from "../hooks/checkAuthEffect";
 import { copyShortcut, refreshShortcut, secondaryActionShortcut, tertiaryActionShortcut } from "./shortcuts";
 import ExpandableErrorToast from "./ExpandableErrorToast";
+import { propsToKeywords } from "./keywords";
 
 /**
  * ManageBatchChanges is the shared batch changes command implementation.
@@ -84,7 +85,9 @@ function BatchChangeItem({
             }`
           : undefined
       }
-      keywords={[batchChange.state]}
+      keywords={propsToKeywords({
+        state: batchChange.state,
+      })}
       actions={
         <ActionPanel>
           <Action.Push
@@ -289,7 +292,11 @@ function ChangesetItem({
       title={`${changeset.repository.name}`}
       subtitle={`${changeset.externalID ? `#${changeset.externalID} ` : ""}${subtitle}`}
       accessoryTitle={updated || undefined}
-      keywords={[changeset.state, changeset.reviewState || ""]}
+      keywords={propsToKeywords({
+        state: changeset.state,
+        review: changeset.reviewState,
+        checks: changeset.checkState,
+      })}
       actions={
         <ActionPanel>
           <Action.OpenInBrowser url={url} />

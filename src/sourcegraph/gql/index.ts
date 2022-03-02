@@ -211,6 +211,7 @@ export interface Changeset {
   externalID?: string;
   title: string;
   reviewState?: string;
+  checkState?: string;
 }
 
 export async function getChangesets(abort: AbortSignal, src: Sourcegraph, namespace: string, name: string) {
@@ -234,6 +235,7 @@ export async function getChangesets(abort: AbortSignal, src: Sourcegraph, namesp
             externalID
             title
             reviewState
+            checkState
           }
         }
       }
