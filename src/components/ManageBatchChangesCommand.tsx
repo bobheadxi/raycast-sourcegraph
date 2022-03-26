@@ -78,11 +78,15 @@ function BatchChangeItem({
       icon={icon}
       title={`${batchChange.namespace.namespaceName} / ${batchChange.name}`}
       subtitle={updated ? `by ${author}, updated ${updated}` : author}
-      accessoryTitle={
+      accessories={
         changesetsStats.total
-          ? `${changesetsStats.merged} / ${changesetsStats.closed + changesetsStats.merged + changesetsStats.open} / ${
-              changesetsStats.total
-            }`
+          ? [
+              {
+                text: `${changesetsStats.merged} / ${
+                  changesetsStats.closed + changesetsStats.merged + changesetsStats.open
+                } / ${changesetsStats.total}`,
+              },
+            ]
           : undefined
       }
       keywords={propsToKeywords({
@@ -291,7 +295,7 @@ function ChangesetItem({
       icon={icon}
       title={`${changeset.repository.name}`}
       subtitle={`${changeset.externalID ? `#${changeset.externalID} ` : ""}${subtitle}`}
-      accessoryTitle={updated || undefined}
+      accessories={updated ? [{ text: updated }] : undefined}
       keywords={propsToKeywords({
         state: changeset.state,
         review: changeset.reviewState,

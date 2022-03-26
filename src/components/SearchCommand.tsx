@@ -196,13 +196,20 @@ function SearchResultItem({
     customActions.extraActions = [peekAction(secondaryActionShortcut)];
   }
 
+  const accessories: List.Item.Accessory[] = [];
+  if (context) {
+    accessories.push({ text: context });
+  }
+  if (multiResult) {
+    accessories.push({ icon: { source: Icon.ArrowRight } });
+  }
+
   return (
     <List.Item
       title={title}
       subtitle={subtitle}
-      accessoryTitle={context}
+      accessories={accessories}
       icon={icon}
-      accessoryIcon={multiResult ? { source: Icon.ArrowRight } : undefined}
       actions={
         <ActionPanel>
           {resultActions(url, customActions)}
@@ -231,7 +238,7 @@ function MultiResultPeek({ searchResult }: { searchResult: { url: string; match:
               <List.Item
                 key={nanoid()}
                 title={l.line}
-                accessoryTitle={`L${l.lineNumber}`}
+                accessories={[{ text: `L${l.lineNumber}` }]}
                 actions={<ActionPanel>{resultActions(`${searchResult.url}?L${l.lineNumber}`)}</ActionPanel>}
               />
             ))}
@@ -248,7 +255,7 @@ function MultiResultPeek({ searchResult }: { searchResult: { url: string; match:
                 key={nanoid()}
                 title={s.name}
                 subtitle={s.containerName}
-                accessoryTitle={s.kind.toLowerCase()}
+                accessories={[{ text: s.kind.toLowerCase() }]}
                 actions={<ActionPanel>{resultActions(`${searchResult.url}#${s.url}`)}</ActionPanel>}
               />
             ))}

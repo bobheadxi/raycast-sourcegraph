@@ -75,20 +75,22 @@ function NotebookResultItem({
   const stars = notebook.stars?.totalCount || 0;
   const author = notebook.creator.displayName || notebook.creator.username;
   const url = `${src.instance}/notebooks/${notebook.id}`;
+  const accessories: List.Item.Accessory[] = [];
+  if (stars) {
+    accessories.push({
+      text: `${stars}`,
+      icon: {
+        source: Icon.Star,
+        tintColor: notebook.viewerHasStarred ? ColorEmphasis : undefined,
+      },
+    });
+  }
   return (
     <List.Item
       id={id}
       title={notebook.title}
       subtitle={updated ? `by ${author}, updated ${updated}` : author}
-      accessoryTitle={stars ? `${stars}` : ""}
-      accessoryIcon={
-        notebook.stars?.totalCount
-          ? {
-              source: Icon.Star,
-              tintColor: notebook.viewerHasStarred ? ColorEmphasis : undefined,
-            }
-          : undefined
-      }
+      accessories={accessories}
       icon={{
         source: Icon.Document,
         tintColor: notebook.public ? ColorDefault : ColorPrivate,
