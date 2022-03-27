@@ -22,6 +22,7 @@ import { performSearch, SearchResult, Suggestion } from "../sourcegraph/stream-s
 import { ContentMatch, SymbolMatch } from "../sourcegraph/stream-search/stream";
 import { ColorDefault, ColorPrivate } from "./colors";
 import ExpandableErrorToast from "./ExpandableErrorToast";
+import { DateTime } from "luxon";
 
 /**
  * SearchCommand is the shared search command implementation.
@@ -184,7 +185,7 @@ function SearchResultItem({
     <Action.Push
       key={nanoid()}
       title="Peek Result Details"
-      target={<PeekSearchResult searchResult={searchResult} />}
+      target={<PeekSearchResult searchResult={searchResult} icon={icon} />}
       shortcut={shortcut}
       icon={{ source: Icon.MagnifyingGlass }}
     />
@@ -265,44 +266,53 @@ function MultiResultPeek({ searchResult }: { searchResult: { url: string; match:
   }
 }
 
-function PeekSearchResult({ searchResult }: { searchResult: SearchResult }) {
+function PeekSearchResult({ searchResult, icon }: { searchResult: SearchResult; icon: Image.ImageLike }) {
   const { match } = searchResult;
   const navigationTitle = `Peek ${match.type} result`;
-  const matchTitle = `**${match.repository}** ${match.repoStars ? `- ${match.repoStars} ★` : ""}`;
 
-  // Match types that use markdown view support
+  const markdownTitle = `**${match.repository}**`;
   let markdownContent = "";
+  const metadata: React.ReactNode[] = [
+    <Detail.Metadata.TagList title="Match type" key={nanoid()}>
+      <Detail.Metadata.TagList.Item text={match.type} icon={icon} />
+    </Detail.Metadata.TagList>,
+    <Detail.Metadata.Link
+      title="Repository"
+      text={match.repository}
+      target={`https://${match.repository}`}
+      key={nanoid()}
+    />,
+  ];
+  if (match.repoStars) {
+    metadata.push(<Detail.Metadata.Label title="Stars" text={`${match.repoStars}`} key={nanoid()} />);
+  }
+
   switch (match.type) {
+    // Match types that have multi result peek
+
     case "content":
     case "symbol":
-      return <MultiResultPeek searchResult={{ url: searchResult.url, match }} />;
+      return <MultiResultPeek searchResult={{ url: searchResult.url, match }} key={nanoid()} />;
+
+    // Match types that use markdown view support
 
     case "repo":
-      markdownContent = `> ${match.private ? "Private" : "Public"} ${match.type} match
-  
----
-
-${match.description || ""}`;
+      markdownContent = match.description || "";
+      metadata.push(
+        <Detail.Metadata.Label title="Visibility" text={match.private ? "Private" : "Public"} key={nanoid()} />
+      );
       break;
 
     case "path":
-      markdownContent = `> ${match.type} match
-
----
-
-\`${match.path}\`
-`;
+      markdownContent = `\`${match.path}\``;
       break;
 
     case "commit":
-      markdownContent = `> ${match.type} match in ${match.detail}
-  
----
-
-${match.label}
+      markdownContent = `${match.label}
 
 ${match.content}
 `;
+      metadata.push(<Detail.Metadata.Label title="Details" text={match.detail} key={nanoid()} />);
       break;
 
     default:
@@ -314,11 +324,22 @@ ${JSON.stringify(match, null, "  ")}
 `;
   }
 
+  if (match.repoLastFetched) {
+    metadata.push(
+      <Detail.Metadata.Label
+        title="Last updated"
+        text={DateTime.fromISO(match.repoLastFetched).toRelative() || match.repoLastFetched}
+        key={nanoid()}
+      />
+    );
+  }
+
   return (
     <Detail
       navigationTitle={navigationTitle}
-      markdown={`${matchTitle}\n\n${markdownContent}`}
+      markdown={`${markdownTitle}\n\n${markdownContent}`}
       actions={<ActionPanel>{resultActions(searchResult.url)}</ActionPanel>}
+      metadata={<Detail.Metadata>{metadata}</Detail.Metadata>}
     ></Detail>
   );
 }
