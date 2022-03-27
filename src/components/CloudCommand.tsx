@@ -1,5 +1,6 @@
 import { ApolloProvider } from "@apollo/client";
 import { useEffect } from "react";
+
 import checkAuthEffect from "../hooks/checkAuthEffect";
 import { Sourcegraph, sourcegraphCloud } from "../sourcegraph";
 import { newApolloClient } from "../sourcegraph/gql/apollo";

@@ -2,6 +2,7 @@ import { ActionPanel, List, Action, Icon, Detail, useNavigation } from "@raycast
 import { useState, Fragment, useMemo } from "react";
 import { DateTime } from "luxon";
 import { nanoid } from "nanoid";
+import { useQuery } from "@apollo/client";
 
 import { Sourcegraph, instanceName } from "../sourcegraph";
 import { copyShortcut } from "./shortcuts";
@@ -14,8 +15,6 @@ import {
   SearchNotebookFields as SearchNotebook,
   NotebooksOrderBy,
 } from "../sourcegraph/gql/schema";
-
-import { useQuery } from "@apollo/client";
 
 /**
  * FindNotebooksCommand is the shared search notebooks command.

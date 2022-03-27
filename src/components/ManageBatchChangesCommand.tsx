@@ -2,6 +2,7 @@ import { ActionPanel, List, Action, Icon, useNavigation, Toast, Image, Color, sh
 import { useState, Fragment, useMemo } from "react";
 import { DateTime } from "luxon";
 import { nanoid } from "nanoid";
+import { ApolloProvider, useApolloClient, useMutation, useQuery } from "@apollo/client";
 
 import { Sourcegraph, instanceName } from "../sourcegraph";
 import {
@@ -21,7 +22,6 @@ import { copyShortcut, refreshShortcut, secondaryActionShortcut, tertiaryActionS
 import ExpandableErrorToast from "./ExpandableErrorToast";
 import { propsToKeywords } from "./keywords";
 import { GET_BATCH_CHANGES, GET_CHANGESETS } from "../sourcegraph/gql/queries";
-import { ApolloProvider, useApolloClient, useMutation, useQuery } from "@apollo/client";
 import {
   MERGE_CHANGESET,
   PUBLISH_CHANGEST as PUBLISH_CHANGESET,

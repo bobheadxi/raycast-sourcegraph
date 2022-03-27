@@ -1,6 +1,7 @@
 import { ApolloProvider } from "@apollo/client";
 import { ActionPanel, Detail, Action } from "@raycast/api";
 import { useEffect } from "react";
+
 import checkAuthEffect from "../hooks/checkAuthEffect";
 import { sourcegraphSelfHosted, Sourcegraph } from "../sourcegraph";
 import { newApolloClient } from "../sourcegraph/gql/apollo";

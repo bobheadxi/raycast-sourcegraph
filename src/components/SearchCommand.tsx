@@ -12,15 +12,14 @@ import {
 } from "@raycast/api";
 import { useState, useRef, Fragment } from "react";
 import { nanoid } from "nanoid";
-
-import { copyShortcut, tertiaryActionShortcut } from "./shortcuts";
+import { DateTime } from "luxon";
 
 import { Sourcegraph, instanceName } from "../sourcegraph";
 import { performSearch, SearchResult, Suggestion } from "../sourcegraph/stream-search";
 import { ContentMatch, SymbolMatch } from "../sourcegraph/stream-search/stream";
 import { ColorDefault, ColorPrivate } from "./colors";
 import ExpandableErrorToast from "./ExpandableErrorToast";
-import { DateTime } from "luxon";
+import { copyShortcut, tertiaryActionShortcut } from "./shortcuts";
 
 /**
  * SearchCommand is the shared search command implementation.
