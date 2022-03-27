@@ -27,6 +27,10 @@ Checks can be run with:
 npm run lint
 ```
 
+## Changelog style
+
+See the [Raycast version history best practices guide](https://developers.raycast.com/basics/prepare-an-extension-for-store#version-history).
+
 ## Publishing to the Raycast store
 
 The latest release of this extension is published to [`extensions/sourcegraph` in `raycast/extensions`](https://github.com/raycast/extensions/tree/main/extensions/sourcegraph).
