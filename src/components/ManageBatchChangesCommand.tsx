@@ -201,7 +201,11 @@ function BatchChangeView({ batchChange, src }: { batchChange: BatchChange; src: 
   const published = changesets.filter((c) => c.state !== "UNPUBLISHED");
   const unpublished = changesets.filter((c) => c.state === "UNPUBLISHED");
   return (
-    <List isLoading={loading} searchBarPlaceholder={`Search changesets for ${batchChange.name}`}>
+    <List
+      navigationTitle={"Manage Batch Change Changesets"}
+      searchBarPlaceholder={`Search changesets for ${batchChange.name}`}
+      isLoading={loading}
+    >
       <List.Section
         title={"Published changesets"}
         subtitle={
