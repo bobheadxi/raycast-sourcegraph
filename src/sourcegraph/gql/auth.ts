@@ -58,44 +58,7 @@ async function doQuery<T>(abort: AbortSignal, src: Sourcegraph, name: string, qu
   return doGQLRequest<T>(abort, src, JSON.stringify({ query: `query raycastSourcegraph${name} ${query}` }));
 }
 
-async function doMutation<T>(abort: AbortSignal, src: Sourcegraph, name: string, mutation: string): Promise<T> {
-  return doGQLRequest<T>(abort, src, JSON.stringify({ query: `mutation raycastSourcegraph${name} ${mutation}` }));
-}
-
 export async function checkAuth(abort: AbortSignal, src: Sourcegraph) {
   const q = `{ currentUser { username, id } }`;
   return doQuery<{ currentUser: { username: string; id: string } }>(abort, src, "CheckAuth", q);
-}
-
-export async function publishChangeset(abort: AbortSignal, src: Sourcegraph, batchChange: string, changeset: string) {
-  const m = `{
-    publishChangesets(batchChange:"${batchChange}",changesets:["${changeset}"]) {
-      id
-    }
-  }`;
-  return doMutation<{ publishChangesets?: { id: string } }>(abort, src, "PublishChangeset", m);
-}
-
-export async function reenqueueChangeset(abort: AbortSignal, src: Sourcegraph, changeset: string) {
-  const m = `{
-    reenqueueChangeset(changeset:"${changeset}") {
-      id
-    }
-  }`;
-  return doMutation<{ reenqueueChangeset?: { id: string } }>(abort, src, "ReenqueueChangeset", m);
-}
-
-export async function mergeChangeset(
-  abort: AbortSignal,
-  src: Sourcegraph,
-  batchChange: string,
-  changeset: string,
-  squash: boolean
-) {
-  const m = `{
-    mergeChangesets(batchChange:"${batchChange}",changesets:["${changeset}"],squash:${JSON.stringify(squash)}) {
-      id
-    }
-  }`;
-  return doMutation<{ mergeChangesets?: { id: string } }>(abort, src, "MergeChangeset", m);
 }

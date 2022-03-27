@@ -8,7 +8,12 @@ import { copyShortcut } from "./shortcuts";
 import { ColorDefault, ColorEmphasis, ColorPrivate } from "./colors";
 import ExpandableErrorToast from "./ExpandableErrorToast";
 import { GET_NOTEBOOKS } from "../sourcegraph/gql/queries";
-import { GetNotebooksVariables, GetNotebooks, SearchNotebookFields as SearchNotebook, NotebooksOrderBy } from "../sourcegraph/gql/schema";
+import {
+  GetNotebooksVariables,
+  GetNotebooks,
+  SearchNotebookFields as SearchNotebook,
+  NotebooksOrderBy,
+} from "../sourcegraph/gql/schema";
 
 import { useQuery } from "@apollo/client";
 

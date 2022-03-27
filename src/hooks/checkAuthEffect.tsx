@@ -2,7 +2,7 @@ import { useNavigation } from "@raycast/api";
 import ExpandableErrorToast from "../components/ExpandableErrorToast";
 
 import { Sourcegraph, instanceName } from "../sourcegraph";
-import { AuthError, checkAuth } from "../sourcegraph/gql";
+import { AuthError, checkAuth } from "../sourcegraph/gql/auth";
 
 /**
  * checkAuthEffect validates connectivity to the given Sourcegraph instance configuration.

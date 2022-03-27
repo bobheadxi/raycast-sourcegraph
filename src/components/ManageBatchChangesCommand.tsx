@@ -4,19 +4,29 @@ import { DateTime } from "luxon";
 import { nanoid } from "nanoid";
 
 import { Sourcegraph, instanceName } from "../sourcegraph";
-import { publishChangeset, mergeChangeset } from "../sourcegraph/gql";
 import {
   BatchChangeFields as BatchChange,
   ChangesetFields as Changeset,
   GetChangesets,
   GetChangesetsVariables,
   GetBatchChanges,
+  MergeChangeset,
+  MergeChangesetVariables,
+  ReenqueueChangeset,
+  ReenqueueChangesetVariables,
+  PublishChangesetVariables,
+  PublishChangeset,
 } from "../sourcegraph/gql/schema";
 import { copyShortcut, refreshShortcut, secondaryActionShortcut, tertiaryActionShortcut } from "./shortcuts";
 import ExpandableErrorToast from "./ExpandableErrorToast";
 import { propsToKeywords } from "./keywords";
 import { GET_BATCH_CHANGES, GET_CHANGESETS } from "../sourcegraph/gql/queries";
-import { ApolloProvider, useApolloClient, useQuery } from "@apollo/client";
+import { ApolloProvider, useApolloClient, useMutation, useQuery } from "@apollo/client";
+import {
+  MERGE_CHANGESET,
+  PUBLISH_CHANGEST as PUBLISH_CHANGESET,
+  REENQUEUE_CHANGEST as REENQUEUE_CHANGESET,
+} from "../sourcegraph/gql/mutations";
 
 /**
  * ManageBatchChanges is the shared batch changes command implementation.
@@ -62,9 +72,7 @@ export default function ManageBatchChanges({ src }: { src: Sourcegraph }) {
         <Fragment />
       )}
 
-      <List.Section
-        title={"Batch changes"}
-      >
+      <List.Section title={"Batch changes"}>
         {batchChanges.map((b, i) => (
           <BatchChangeItem
             id={i === 0 ? "first-result" : undefined}
@@ -151,7 +159,12 @@ function BatchChangeItem({
             title="Refresh Batch Changes"
             icon={Icon.ArrowClockwise}
             onAction={async () => {
+              const toast = await showToast({
+                style: Toast.Style.Animated,
+                title: "Refreshing...",
+              });
               await refreshBatchChanges();
+              toast.hide();
             }}
             shortcut={refreshShortcut}
           />
@@ -239,16 +252,32 @@ function ChangesetItem({
     (changeset.__typename === "ExternalChangeset" && changeset.externalURL?.url) ||
     `${src.instance}${batchChange.url}?status=${changeset.state}`;
 
-  const { pop } = useNavigation();
+  const { push } = useNavigation();
   async function delayedRefreshChangesets() {
     await new Promise((r) => setTimeout(r, 1000));
+    const toast = await showToast({
+      style: Toast.Style.Animated,
+      title: "Refreshing...",
+    });
     await refreshChangesets();
+    toast.hide();
+  }
+
+  const [mergeChangeset, { error: mergeError }] = useMutation<MergeChangeset, MergeChangesetVariables>(MERGE_CHANGESET);
+  const [reenqueueChangeset, { error: reenqueueError }] = useMutation<ReenqueueChangeset, ReenqueueChangesetVariables>(
+    REENQUEUE_CHANGESET
+  );
+  const [publishChangeset, { error: publishError }] = useMutation<PublishChangeset, PublishChangesetVariables>(
+    PUBLISH_CHANGESET
+  );
+  const error = mergeError || publishError || reenqueueError;
+  if (error) {
+    ExpandableErrorToast(push, "Unexpected error", "Changeset operation failed", error.message).show();
   }
 
   const icon: Image.ImageLike = { source: Icon.Circle };
   let secondaryAction = <></>;
   let subtitle = changeset.state.toLowerCase();
-  const abort = new AbortController().signal;
   switch (changeset.state) {
     case "OPEN":
       icon.tintColor = Color.Green;
@@ -282,13 +311,18 @@ function ChangesetItem({
                     title="Merge Changeset"
                     icon={Icon.Checkmark}
                     onSubmit={async ({ squash }: { squash: number }) => {
-                      await mergeChangeset(abort, src, batchChange.id, changeset.id, squash === 1);
+                      await mergeChangeset({
+                        variables: {
+                          batchChange: batchChange.id,
+                          changeset: changeset.id,
+                          squash: squash === 1,
+                        },
+                      });
                       showToast({
                         style: Toast.Style.Success,
                         title: "Changeset has been submitted for merge!",
                       });
                       await delayedRefreshChangesets();
-                      pop();
                     }}
                   />
                   <Action.OpenInBrowser url={url} />
@@ -324,7 +358,11 @@ function ChangesetItem({
           title="Retry Changeset"
           icon={Icon.Hammer}
           onAction={async () => {
-            await publishChangeset(abort, src, batchChange.id, changeset.id);
+            await reenqueueChangeset({
+              variables: {
+                changeset: changeset.id,
+              },
+            });
             showToast({
               style: Toast.Style.Success,
               title: "Changeset has been submitted for retry!",
@@ -342,7 +380,12 @@ function ChangesetItem({
           title="Publish Changeset"
           icon={Icon.Hammer}
           onAction={async () => {
-            await publishChangeset(abort, src, batchChange.id, changeset.id);
+            await publishChangeset({
+              variables: {
+                batchChange: batchChange.id,
+                changeset: changeset.id,
+              },
+            });
             showToast({
               style: Toast.Style.Success,
               title: "Changeset has been submitted for publishing!",
