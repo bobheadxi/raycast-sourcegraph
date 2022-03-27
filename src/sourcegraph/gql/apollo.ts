@@ -2,6 +2,7 @@ import { createHttpLink, ApolloClient, InMemoryCache } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import fetch from "cross-fetch";
 import { Sourcegraph } from "..";
+import { changesetFieldsPossibleTypes } from "./queries";
 
 export function newApolloClient(src: Sourcegraph) {
   const httpLink = createHttpLink({
@@ -20,6 +21,10 @@ export function newApolloClient(src: Sourcegraph) {
 
   return new ApolloClient({
     link: authLink.concat(httpLink),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      possibleTypes: {
+        ...changesetFieldsPossibleTypes,
+      },
+    }),
   });
 }

@@ -8,7 +8,7 @@ import { copyShortcut } from "./shortcuts";
 import { ColorDefault, ColorEmphasis, ColorPrivate } from "./colors";
 import ExpandableErrorToast from "./ExpandableErrorToast";
 import { GET_NOTEBOOKS } from "../sourcegraph/gql/queries";
-import { GetNotebooksVariables, GetNotebooks, SearchNotebook, NotebooksOrderBy } from "../sourcegraph/gql/schema";
+import { GetNotebooksVariables, GetNotebooks, SearchNotebookFields as SearchNotebook, NotebooksOrderBy } from "../sourcegraph/gql/schema";
 
 import { useQuery } from "@apollo/client";
 
@@ -27,7 +27,7 @@ export default function FindNotebooksCommand({ src }: { src: Sourcegraph }) {
 
   const { push } = useNavigation();
   if (error) {
-    ExpandableErrorToast(push, "Unexpected error", "Find notebooks failed", String(error)).show();
+    ExpandableErrorToast(push, "Unexpected error", "Find notebooks failed", error.message).show();
   }
 
   const srcName = instanceName(src);

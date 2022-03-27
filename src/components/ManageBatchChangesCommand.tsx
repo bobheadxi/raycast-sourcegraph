@@ -1,40 +1,52 @@
 import { ActionPanel, List, Action, Icon, useNavigation, Toast, Image, Color, showToast, Form } from "@raycast/api";
-import { useState, useRef, useEffect, Fragment } from "react";
+import { useState, Fragment, useMemo } from "react";
 import { DateTime } from "luxon";
 import { nanoid } from "nanoid";
 
 import { Sourcegraph, instanceName } from "../sourcegraph";
+import { publishChangeset, mergeChangeset } from "../sourcegraph/gql";
 import {
-  BatchChange,
-  getBatchChanges,
-  Changeset,
-  getChangesets,
-  publishChangeset,
-  mergeChangeset,
-} from "../sourcegraph/gql";
+  BatchChangeFields as BatchChange,
+  ChangesetFields as Changeset,
+  GetChangesets,
+  GetChangesetsVariables,
+  GetBatchChanges,
+} from "../sourcegraph/gql/schema";
 import { copyShortcut, refreshShortcut, secondaryActionShortcut, tertiaryActionShortcut } from "./shortcuts";
 import ExpandableErrorToast from "./ExpandableErrorToast";
 import { propsToKeywords } from "./keywords";
+import { GET_BATCH_CHANGES, GET_CHANGESETS } from "../sourcegraph/gql/queries";
+import { ApolloProvider, useApolloClient, useQuery } from "@apollo/client";
 
 /**
  * ManageBatchChanges is the shared batch changes command implementation.
  */
 export default function ManageBatchChanges({ src }: { src: Sourcegraph }) {
-  const { state, load } = useBatchChanges(src);
   const srcName = instanceName(src);
   const [searchText, setSearchText] = useState("");
 
-  const count = state.batchChanges.length;
+  const { loading, error, data, refetch } = useQuery<GetBatchChanges>(GET_BATCH_CHANGES);
+  const refresh = async () => {
+    await refetch();
+  };
+  const batchChanges = useMemo(() => data?.batchChanges?.nodes || [], [data]);
+
+  const { push } = useNavigation();
+  if (error) {
+    ExpandableErrorToast(push, "Unexpected error", "Get batch changes failed", error.message).show();
+  }
+
+  const count = batchChanges.length;
   return (
     <List
-      isLoading={state.isLoading}
+      isLoading={loading}
       searchBarPlaceholder={`Manage batch changes on ${srcName}`}
       searchText={searchText}
       onSearchTextChange={setSearchText}
       enableFiltering={true}
-      selectedItemId={state.batchChanges?.length > 0 ? "first-result" : undefined}
+      selectedItemId={count > 0 ? "first-result" : undefined}
     >
-      {!state.isLoading && !searchText ? (
+      {!loading && searchText === "" ? (
         <List.Section title={"Suggestions"}>
           <List.Item
             title="Create a batch change"
@@ -52,15 +64,14 @@ export default function ManageBatchChanges({ src }: { src: Sourcegraph }) {
 
       <List.Section
         title={"Batch changes"}
-        subtitle={searchText ? undefined : `${count >= 100 ? `${count}+` : count} batch changes`}
       >
-        {state.batchChanges.map((b, i) => (
+        {batchChanges.map((b, i) => (
           <BatchChangeItem
             id={i === 0 ? "first-result" : undefined}
             key={nanoid()}
             batchChange={b}
             src={src}
-            refreshBatchChanges={load}
+            refreshBatchChanges={refresh}
           />
         ))}
       </List.Section>
@@ -86,7 +97,7 @@ function BatchChangeItem({
   } catch (e) {
     console.warn(`batch change ${batchChange.id}: invalid date: ${e}`);
   }
-  const author = batchChange.creator.displayName || batchChange.creator.username;
+  const author = batchChange.creator?.displayName || batchChange.creator?.username;
 
   const icon: Image.ImageLike = { source: Icon.Circle };
   switch (batchChange.state) {
@@ -105,6 +116,7 @@ function BatchChangeItem({
 
   const { changesetsStats } = batchChange;
   const url = `${src.instance}${batchChange.url}`;
+  const client = useApolloClient();
   return (
     <List.Item
       id={id}
@@ -128,7 +140,11 @@ function BatchChangeItem({
             key={nanoid()}
             title="View Batch Change"
             icon={{ source: Icon.MagnifyingGlass }}
-            target={<BatchChangePeek batchChange={batchChange} src={src} />}
+            target={
+              <ApolloProvider client={client}>
+                <BatchChangeView batchChange={batchChange} src={src} />
+              </ApolloProvider>
+            }
           />
           <Action.OpenInBrowser key={nanoid()} url={url} shortcut={secondaryActionShortcut} />
           <Action
@@ -152,12 +168,27 @@ function BatchChangeItem({
   );
 }
 
-function BatchChangePeek({ batchChange, src }: { batchChange: BatchChange; src: Sourcegraph }) {
-  const { state, load } = useChangesets(src, batchChange);
-  const published = state.changesets.filter((c) => c.state !== "UNPUBLISHED");
-  const unpublished = state.changesets.filter((c) => c.state === "UNPUBLISHED");
+function BatchChangeView({ batchChange, src }: { batchChange: BatchChange; src: Sourcegraph }) {
+  const { loading, error, data, refetch } = useQuery<GetChangesets, GetChangesetsVariables>(GET_CHANGESETS, {
+    variables: {
+      namespace: batchChange.namespace.id,
+      name: batchChange.name,
+    },
+  });
+  const refresh = async () => {
+    await refetch();
+  };
+  const changesets = useMemo(() => data?.batchChange?.changesets?.nodes || [], [data]);
+
+  const { push } = useNavigation();
+  if (error) {
+    ExpandableErrorToast(push, "Unexpected error", "Get changesets failed", error.message).show();
+  }
+
+  const published = changesets.filter((c) => c.state !== "UNPUBLISHED");
+  const unpublished = changesets.filter((c) => c.state === "UNPUBLISHED");
   return (
-    <List isLoading={state.isLoading} searchBarPlaceholder={`Search changesets for ${batchChange.name}`}>
+    <List isLoading={loading} searchBarPlaceholder={`Search changesets for ${batchChange.name}`}>
       <List.Section
         title={"Published changesets"}
         subtitle={
@@ -174,12 +205,12 @@ function BatchChangePeek({ batchChange, src }: { batchChange: BatchChange; src: 
         }
       >
         {published.map((c) => (
-          <ChangesetItem key={nanoid()} src={src} batchChange={batchChange} changeset={c} refreshChangesets={load} />
+          <ChangesetItem key={nanoid()} src={src} batchChange={batchChange} changeset={c} refreshChangesets={refresh} />
         ))}
       </List.Section>
       <List.Section title={"Unpublished changesets"} subtitle={`${unpublished.length} changesets`}>
         {unpublished.map((c) => (
-          <ChangesetItem key={nanoid()} src={src} batchChange={batchChange} changeset={c} refreshChangesets={load} />
+          <ChangesetItem key={nanoid()} src={src} batchChange={batchChange} changeset={c} refreshChangesets={refresh} />
         ))}
       </List.Section>
     </List>
@@ -204,7 +235,9 @@ function ChangesetItem({
   } catch (e) {
     console.warn(`changeset ${changeset.id}: invalid date: ${e}`);
   }
-  const url = changeset.externalURL?.url || `${src.instance}${batchChange.url}?status=${changeset.state}`;
+  const url =
+    (changeset.__typename === "ExternalChangeset" && changeset.externalURL?.url) ||
+    `${src.instance}${batchChange.url}?status=${changeset.state}`;
 
   const { pop } = useNavigation();
   async function delayedRefreshChangesets() {
@@ -218,6 +251,13 @@ function ChangesetItem({
   const abort = new AbortController().signal;
   switch (changeset.state) {
     case "OPEN":
+      icon.tintColor = Color.Green;
+      icon.source = Icon.Circle;
+
+      if (changeset.__typename !== "ExternalChangeset") {
+        break;
+      }
+
       subtitle = changeset.reviewState?.toLocaleLowerCase() || "";
       switch (changeset.reviewState) {
         case "APPROVED":
@@ -229,7 +269,6 @@ function ChangesetItem({
         default:
           icon.source = Icon.Circle;
       }
-      icon.tintColor = Color.Green;
       secondaryAction = (
         <Action.Push
           title="Merge Changeset"
@@ -257,7 +296,7 @@ function ChangesetItem({
               }
             >
               <Form.Description title={"Changeset"} text={`${changeset.repository.name}#${changeset.externalID}`} />
-              <Form.Description title={"Title"} text={changeset.title} />
+              <Form.Description title={"Title"} text={changeset.title || ""} />
               <Form.Description title={"Review"} text={changeset.reviewState?.toLocaleLowerCase() || "unknown"} />
               <Form.Separator />
               <Form.Checkbox id="squash" label="Squash commits" defaultValue={true} storeValue={true} />
@@ -320,17 +359,32 @@ function ChangesetItem({
       break;
   }
 
+  let title = "";
+  let props = {};
+  if (changeset.__typename === "ExternalChangeset") {
+    title = `${changeset.repository.name}`;
+    if (changeset.externalID) {
+      subtitle = `#${changeset.externalID} ${subtitle}`;
+    }
+    props = {
+      state: changeset.state,
+      review: changeset.reviewState,
+      checks: changeset.checkState,
+    };
+  } else {
+    title = "Unknown repository";
+    props = {
+      state: changeset.state,
+    };
+  }
+
   return (
     <List.Item
       icon={icon}
-      title={`${changeset.repository.name}`}
-      subtitle={`${changeset.externalID ? `#${changeset.externalID} ` : ""}${subtitle}`}
+      title={title}
+      subtitle={subtitle}
       accessories={updated ? [{ text: updated }] : undefined}
-      keywords={propsToKeywords({
-        state: changeset.state,
-        review: changeset.reviewState,
-        checks: changeset.checkState,
-      })}
+      keywords={propsToKeywords(props)}
       actions={
         <ActionPanel>
           <Action.OpenInBrowser url={url} />
@@ -354,98 +408,4 @@ function ChangesetItem({
       }
     />
   );
-}
-
-interface BatchChangesState {
-  batchChanges: BatchChange[];
-  isLoading: boolean;
-}
-
-function useBatchChanges(src: Sourcegraph) {
-  const [state, setState] = useState<BatchChangesState>({
-    batchChanges: [],
-    isLoading: true,
-  });
-  const cancelRef = useRef<AbortController | null>(null);
-  const { push } = useNavigation();
-
-  useEffect(() => {
-    load(); // initial load
-  }, []);
-
-  async function load() {
-    cancelRef.current?.abort();
-    cancelRef.current = new AbortController();
-
-    try {
-      setState((oldState) => ({
-        ...oldState,
-        batchChanges: [],
-        isLoading: true,
-      }));
-
-      const resp = await getBatchChanges(cancelRef.current.signal, src);
-      setState((oldState) => ({
-        ...oldState,
-        batchChanges: resp?.batchChanges?.nodes || [],
-        isLoading: false,
-      }));
-    } catch (error) {
-      ExpandableErrorToast(push, "Unexpected error", "Get batch changes failed", String(error)).show();
-
-      setState((oldState) => ({
-        ...oldState,
-        isLoading: false,
-      }));
-    }
-  }
-
-  return { state, load };
-}
-
-interface ChangesetsState {
-  changesets: Changeset[];
-  isLoading: boolean;
-}
-
-function useChangesets(src: Sourcegraph, batchChange: BatchChange) {
-  const [state, setState] = useState<ChangesetsState>({
-    changesets: [],
-    isLoading: true,
-  });
-  const cancelRef = useRef<AbortController | null>(null);
-  const { push } = useNavigation();
-
-  useEffect(() => {
-    load(); // initial load
-  }, []);
-
-  async function load() {
-    cancelRef.current?.abort();
-    cancelRef.current = new AbortController();
-
-    try {
-      setState((oldState) => ({
-        ...oldState,
-        changesets: [],
-        isLoading: true,
-      }));
-
-      const resp = await getChangesets(cancelRef.current.signal, src, batchChange.namespace.id, batchChange.name);
-      setState((oldState) => ({
-        ...oldState,
-        changesets: resp?.batchChange?.changesets?.nodes || [],
-        isLoading: false,
-      }));
-    } catch (error) {
-      ExpandableErrorToast(push, "Unexpected error", "Get changesets failed", String(error)).show();
-
-      setState((oldState) => ({
-        ...oldState,
-        isLoading: false,
-      }));
-    }
-  }
-
-  return { state, load };
 }
