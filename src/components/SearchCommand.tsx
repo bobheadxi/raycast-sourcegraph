@@ -10,10 +10,9 @@ import {
   Toast,
   useNavigation,
 } from "@raycast/api";
-import { useState, useRef, Fragment, useEffect } from "react";
+import { useState, useRef, Fragment } from "react";
 import { nanoid } from "nanoid";
 
-import checkAuthEffect from "../hooks/checkAuthEffect";
 import { copyShortcut, tertiaryActionShortcut } from "./shortcuts";
 
 import { Sourcegraph, instanceName } from "../sourcegraph";
@@ -26,11 +25,9 @@ import { DateTime } from "luxon";
 /**
  * SearchCommand is the shared search command implementation.
  */
-export default function SearchCommand(src: Sourcegraph) {
+export default function SearchCommand({ src }: { src: Sourcegraph }) {
   const { state, search } = useSearch(src);
   const srcName = instanceName(src);
-
-  useEffect(checkAuthEffect(src));
 
   return (
     <List

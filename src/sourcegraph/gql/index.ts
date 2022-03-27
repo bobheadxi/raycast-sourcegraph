@@ -87,66 +87,6 @@ export interface User {
   displayName?: string;
 }
 
-export interface SearchNotebook {
-  id: string;
-  title: string;
-  viewerHasStarred: boolean;
-  public: boolean;
-  stars?: { totalCount: number };
-  creator: User;
-  blocks?: (NotebookMarkdownBlock & NotebookQueryBlock & NotebookFileBlock)[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export async function findNotebooks(abort: AbortSignal, src: Sourcegraph, query?: string) {
-  let args = "";
-  if (query) {
-    args = `query:"${query}",orderBy:NOTEBOOK_STAR_COUNT,descending:true`;
-  } else {
-    args = "orderBy:NOTEBOOK_UPDATED_AT,descending:true";
-    if (src.token) {
-      const {
-        currentUser: { id },
-      } = await checkAuth(abort, src);
-      args = `starredByUserID:"${id}",${args}`;
-    }
-  }
-  const q = `{
-    notebooks(${args}) {
-      nodes {
-        id
-        title
-        viewerHasStarred
-        public
-        stars { totalCount }
-        creator {
-          username
-          displayName
-        }
-        blocks {
-          __typename
-          ... on MarkdownBlock {
-            markdownInput
-          }
-          ... on QueryBlock {
-            queryInput
-          }
-          ... on FileBlock {
-            fileInput {
-              repositoryName
-              filePath
-            }
-          }
-        }
-        createdAt
-        updatedAt
-      }
-    }
-  }`;
-  return doQuery<{ notebooks?: { nodes?: SearchNotebook[] } }>(abort, src, "FindNotebooks", q);
-}
-
 export interface BatchChange {
   id: string;
   url: string;

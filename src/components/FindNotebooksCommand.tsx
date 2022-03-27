@@ -1,34 +1,47 @@
 import { ActionPanel, List, Action, Icon, Detail, useNavigation } from "@raycast/api";
-import { useState, useRef, useEffect, Fragment } from "react";
+import { useState, Fragment, useMemo } from "react";
 import { DateTime } from "luxon";
 import { nanoid } from "nanoid";
 
 import { Sourcegraph, instanceName } from "../sourcegraph";
-import { findNotebooks, SearchNotebook } from "../sourcegraph/gql";
-import checkAuthEffect from "../hooks/checkAuthEffect";
 import { copyShortcut } from "./shortcuts";
 import { ColorDefault, ColorEmphasis, ColorPrivate } from "./colors";
 import ExpandableErrorToast from "./ExpandableErrorToast";
+import { GET_NOTEBOOKS } from "../sourcegraph/gql/queries";
+import { GetNotebooksVariables, GetNotebooks, SearchNotebook, NotebooksOrderBy } from "../sourcegraph/gql/schema";
+
+import { useQuery } from "@apollo/client";
 
 /**
  * FindNotebooksCommand is the shared search notebooks command.
  */
-export default function FindNotebooksCommand(src: Sourcegraph) {
-  const { state, find } = useNotebooks(src);
+export default function FindNotebooksCommand({ src }: { src: Sourcegraph }) {
+  const [searchText, setSearchText] = useState("");
+  const { loading, error, data } = useQuery<GetNotebooks, GetNotebooksVariables>(GET_NOTEBOOKS, {
+    variables: {
+      query: searchText,
+      orderBy: searchText ? NotebooksOrderBy.NOTEBOOK_STAR_COUNT : NotebooksOrderBy.NOTEBOOK_UPDATED_AT,
+    },
+  });
+  const notebooks = useMemo(() => data?.notebooks.nodes, [data]);
+
+  const { push } = useNavigation();
+  if (error) {
+    ExpandableErrorToast(push, "Unexpected error", "Find notebooks failed", String(error)).show();
+  }
+
   const srcName = instanceName(src);
-
-  useEffect(checkAuthEffect(src));
-
-  const showStarred = src.token && !state.searchText;
+  const length = notebooks?.length || 0;
   return (
     <List
-      isLoading={state.isLoading}
-      onSearchTextChange={find}
+      isLoading={loading}
+      onSearchTextChange={setSearchText}
+      searchText={searchText}
       searchBarPlaceholder={`Find search notebooks on ${srcName}`}
-      selectedItemId={state.notebooks?.length > 0 ? "first-result" : undefined}
+      selectedItemId={length > 0 ? "first-result" : undefined}
       throttle
     >
-      {!state.isLoading && !state.searchText ? (
+      {!loading && !searchText ? (
         <List.Section title={"Suggestions"}>
           <List.Item
             title="Create a search notebook"
@@ -44,14 +57,13 @@ export default function FindNotebooksCommand(src: Sourcegraph) {
         <Fragment />
       )}
 
-      <List.Section
-        title={showStarred ? "Starred" : "Notebooks"}
-        subtitle={`${state.notebooks.length} ${showStarred ? "notebooks" : "results"}`}
-      >
-        {state.notebooks.map((n, i) => (
-          <NotebookResultItem id={i === 0 ? "first-result" : undefined} key={nanoid()} notebook={n} src={src} />
-        ))}
-      </List.Section>
+      {notebooks && (
+        <List.Section title={searchText ? "Notebooks" : "Recent notebooks"}>
+          {notebooks.map((n, i) => (
+            <NotebookResultItem id={i === 0 ? "first-result" : undefined} key={nanoid()} notebook={n} src={src} />
+          ))}
+        </List.Section>
+      )}
     </List>
   );
 }
@@ -73,7 +85,7 @@ function NotebookResultItem({
     console.warn(`notebook ${notebook.id}: invalid date: ${e}`);
   }
   const stars = notebook.stars?.totalCount || 0;
-  const author = notebook.creator.displayName || notebook.creator.username;
+  const author = notebook.creator?.displayName || notebook.creator?.username || "";
   const url = `${src.instance}/notebooks/${notebook.id}`;
   const accessories: List.Item.Accessory[] = [];
   if (stars) {
@@ -112,9 +124,9 @@ function NotebookResultItem({
 }
 
 function NotebookPreviewView({ notebook, src }: { notebook: SearchNotebook; src: Sourcegraph }) {
-  const author = notebook.creator.displayName
+  const author = notebook.creator?.displayName
     ? `${notebook.creator.displayName} (@${notebook.creator.username})`
-    : `@${notebook.creator.username}`;
+    : `@${notebook.creator?.username}`;
   let blurb = `Created by ${author}`;
   try {
     blurb += ` ${DateTime.fromISO(notebook.createdAt).toRelative()}, last updated ${DateTime.fromISO(
@@ -132,18 +144,17 @@ function NotebookPreviewView({ notebook, src }: { notebook: SearchNotebook; src:
 ${
   notebook.blocks
     ? notebook.blocks
-        .map((b) => {
-          let str = "";
-          if (b.markdownInput) {
-            str += `${b.markdownInput}`;
-          } else if (b.queryInput) {
-            str += `\`\`\`\n${b.queryInput}\n\`\`\``;
-          } else if (b.fileInput) {
-            str += `\`\`\`\n${b.fileInput.repositoryName} > ${b.fileInput.filePath}\n\`\`\``;
-          } else {
-            str += `\`\`\`\n${b}\n\`\`\``;
+        .map((b): string => {
+          switch (b.__typename) {
+            case "MarkdownBlock":
+              return `${b.markdownInput}`;
+            case "QueryBlock":
+              return `\`\`\`\n${b.queryInput}\n\`\`\``;
+            case "FileBlock":
+              return `\`\`\`\n${b.fileInput.repositoryName} > ${b.fileInput.filePath}\n\`\`\``;
+            default:
+              return `\`\`\`\n${JSON.stringify(b)}\`\`\``;
           }
-          return str;
         })
         .join("\n\n")
     : ""
@@ -162,54 +173,4 @@ ${
       }
     />
   );
-}
-
-interface NotebooksState {
-  searchText: string;
-  notebooks: SearchNotebook[];
-  isLoading: boolean;
-}
-
-function useNotebooks(src: Sourcegraph) {
-  const [state, setState] = useState<NotebooksState>({
-    searchText: "",
-    notebooks: [],
-    isLoading: true,
-  });
-  const cancelRef = useRef<AbortController | null>(null);
-  const { push } = useNavigation();
-
-  useEffect(() => {
-    find(); // initial load
-  }, []);
-
-  async function find(searchText?: string) {
-    cancelRef.current?.abort();
-    cancelRef.current = new AbortController();
-
-    try {
-      setState((oldState) => ({
-        ...oldState,
-        searchText: searchText || "",
-        notebooks: [],
-        isLoading: true,
-      }));
-
-      const resp = await findNotebooks(cancelRef.current.signal, src, searchText);
-      setState((oldState) => ({
-        ...oldState,
-        notebooks: resp?.notebooks?.nodes || [],
-        isLoading: false,
-      }));
-    } catch (error) {
-      ExpandableErrorToast(push, "Unexpected error", "Find notebooks failed", String(error)).show();
-
-      setState((oldState) => ({
-        ...oldState,
-        isLoading: false,
-      }));
-    }
-  }
-
-  return { state, find };
 }

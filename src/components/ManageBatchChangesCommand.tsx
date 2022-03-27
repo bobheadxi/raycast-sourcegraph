@@ -12,7 +12,6 @@ import {
   publishChangeset,
   mergeChangeset,
 } from "../sourcegraph/gql";
-import checkAuthEffect from "../hooks/checkAuthEffect";
 import { copyShortcut, refreshShortcut, secondaryActionShortcut, tertiaryActionShortcut } from "./shortcuts";
 import ExpandableErrorToast from "./ExpandableErrorToast";
 import { propsToKeywords } from "./keywords";
@@ -20,12 +19,10 @@ import { propsToKeywords } from "./keywords";
 /**
  * ManageBatchChanges is the shared batch changes command implementation.
  */
-export default function ManageBatchChanges(src: Sourcegraph) {
+export default function ManageBatchChanges({ src }: { src: Sourcegraph }) {
   const { state, load } = useBatchChanges(src);
   const srcName = instanceName(src);
   const [searchText, setSearchText] = useState("");
-
-  useEffect(checkAuthEffect(src));
 
   const count = state.batchChanges.length;
   return (
