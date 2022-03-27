@@ -29,7 +29,11 @@ npm run lint
 
 ## Changelog style
 
-See the [Raycast version history best practices guide](https://developers.raycast.com/basics/prepare-an-extension-for-store#version-history).
+See the [Raycast version history guide](https://developers.raycast.com/basics/prepare-an-extension-for-store#version-history).
+
+## Screenshots
+
+Screenshots for the Raycast store are in the [`metadata/` directory](./metadata/). See the [Raycast extension screenshots guide](https://developers.raycast.com/basics/prepare-an-extension-for-store#screenshots).
 
 ## Publishing to the Raycast store
 
