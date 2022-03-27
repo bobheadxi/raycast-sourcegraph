@@ -8,14 +8,13 @@ import {
   Image,
   Clipboard,
   Toast,
-  Keyboard,
   useNavigation,
 } from "@raycast/api";
 import { useState, useRef, Fragment, useEffect } from "react";
 import { nanoid } from "nanoid";
 
 import checkAuthEffect from "../hooks/checkAuthEffect";
-import { copyShortcut, secondaryActionShortcut, tertiaryActionShortcut } from "./shortcuts";
+import { copyShortcut, tertiaryActionShortcut } from "./shortcuts";
 
 import { Sourcegraph, instanceName } from "../sourcegraph";
 import { performSearch, SearchResult, Suggestion } from "../sourcegraph/stream-search";
@@ -175,26 +174,8 @@ function SearchResultItem({
       subtitle = match.path;
       if (match.symbols.length === 1) {
         url = `${searchResult.url}#${match.symbols[0].url}`;
-      } else {
-        multiResult = true;
       }
       break;
-  }
-
-  const peekAction = (shortcut?: Keyboard.Shortcut) => (
-    <Action.Push
-      key={nanoid()}
-      title="Peek Result Details"
-      target={<PeekSearchResult searchResult={searchResult} icon={icon} />}
-      shortcut={shortcut}
-      icon={{ source: Icon.MagnifyingGlass }}
-    />
-  );
-  const customActions: CustomResultActions = {};
-  if (multiResult) {
-    customActions.openAction = peekAction();
-  } else {
-    customActions.extraActions = [peekAction(secondaryActionShortcut)];
   }
 
   const accessories: List.Item.Accessory[] = [];
@@ -213,7 +194,16 @@ function SearchResultItem({
       icon={icon}
       actions={
         <ActionPanel>
-          {resultActions(url, customActions)}
+          {resultActions(url, {
+            openAction: (
+              <Action.Push
+                key={nanoid()}
+                title="View Result"
+                target={<ResultView searchResult={searchResult} icon={icon} />}
+                icon={{ source: Icon.MagnifyingGlass }}
+              />
+            ),
+          })}
           <ActionPanel.Section key={nanoid()} title="Query Actions">
             <Action.OpenInBrowser title="Open Query" url={queryURL} shortcut={tertiaryActionShortcut} />
             <Action.CopyToClipboard title="Copy Link to Query" content={queryURL} />
@@ -224,12 +214,12 @@ function SearchResultItem({
   );
 }
 
-function MultiResultPeek({ searchResult }: { searchResult: { url: string; match: ContentMatch | SymbolMatch } }) {
+function MultiResultView({ searchResult }: { searchResult: { url: string; match: ContentMatch | SymbolMatch } }) {
   const { match } = searchResult;
-  const navigationTitle = `Peek ${match.type} results`;
+  const navigationTitle = `View ${match.type} results`;
   const matchTitle = `${match.repository} ${match.repoStars ? `- ${match.repoStars} ★` : ""}`;
 
-  // Match types with expanded peek support
+  // Match types with expanded view support
   switch (match.type) {
     case "content":
       return (
@@ -266,9 +256,9 @@ function MultiResultPeek({ searchResult }: { searchResult: { url: string; match:
   }
 }
 
-function PeekSearchResult({ searchResult, icon }: { searchResult: SearchResult; icon: Image.ImageLike }) {
+function ResultView({ searchResult, icon }: { searchResult: SearchResult; icon: Image.ImageLike }) {
   const { match } = searchResult;
-  const navigationTitle = `Peek ${match.type} result`;
+  const navigationTitle = `View ${match.type} result`;
 
   const markdownTitle = `**${match.repository}**`;
   let markdownContent = "";
@@ -288,13 +278,13 @@ function PeekSearchResult({ searchResult, icon }: { searchResult: SearchResult; 
   }
 
   switch (match.type) {
-    // Match types that have multi result peek
+    // Match types that have multi result view
 
     case "content":
     case "symbol":
-      return <MultiResultPeek searchResult={{ url: searchResult.url, match }} key={nanoid()} />;
+      return <MultiResultView searchResult={{ url: searchResult.url, match }} key={nanoid()} />;
 
-    // Match types that use markdown view support
+    // Match types that use markdown view
 
     case "repo":
       markdownContent = match.description || "";

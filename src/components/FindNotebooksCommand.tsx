@@ -6,7 +6,7 @@ import { nanoid } from "nanoid";
 import { Sourcegraph, instanceName } from "../sourcegraph";
 import { findNotebooks, SearchNotebook } from "../sourcegraph/gql";
 import checkAuthEffect from "../hooks/checkAuthEffect";
-import { copyShortcut, secondaryActionShortcut } from "./shortcuts";
+import { copyShortcut } from "./shortcuts";
 import { ColorDefault, ColorEmphasis, ColorPrivate } from "./colors";
 import ExpandableErrorToast from "./ExpandableErrorToast";
 
@@ -97,17 +97,16 @@ function NotebookResultItem({
       }}
       actions={
         <ActionPanel>
-          <Action.OpenInBrowser key={nanoid()} url={url} />
           <Action.Push
             key={nanoid()}
-            title="Peek Search Notebook"
+            title="Preview Notebook"
             icon={{ source: Icon.MagnifyingGlass }}
-            target={<NotebookPeek notebook={notebook} src={src} />}
-            shortcut={secondaryActionShortcut}
+            target={<NotebookPreviewView notebook={notebook} src={src} />}
           />
+          <Action.OpenInBrowser key={nanoid()} url={url} />
           <Action.CopyToClipboard
             key={nanoid()}
-            title="Copy Search Notebook URL"
+            title="Copy Notebook URL"
             content={url}
             shortcut={copyShortcut}
           />
@@ -117,7 +116,7 @@ function NotebookResultItem({
   );
 }
 
-function NotebookPeek({ notebook, src }: { notebook: SearchNotebook; src: Sourcegraph }) {
+function NotebookPreviewView({ notebook, src }: { notebook: SearchNotebook; src: Sourcegraph }) {
   const author = notebook.creator.displayName
     ? `${notebook.creator.displayName} (@${notebook.creator.username})`
     : `@${notebook.creator.username}`;
@@ -159,7 +158,7 @@ ${
   return (
     <Detail
       markdown={preview}
-      navigationTitle={"Peek Search Notebook"}
+      navigationTitle={"Preview Search Notebook"}
       actions={
         <ActionPanel>
           <Action.OpenInBrowser url={notebookURL} />
