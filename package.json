@@ -6,6 +6,12 @@
   "icon": "command-icon.png",
   "author": "bobheadxi",
   "license": "MIT",
+  "categories": [
+    "Developer Tools",
+    "Productivity",
+    "Documentation",
+    "Web"
+  ],
   "keywords": [
     "sourcegraph",
     "search",
