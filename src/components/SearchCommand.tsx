@@ -124,8 +124,6 @@ function SearchResultItem({
   let title = "";
   let subtitle = "";
   let context = match.repository;
-  let url = searchResult.url;
-  let multiResult = false;
 
   const icon: Image.ImageLike = { source: Icon.Dot, tintColor: ColorDefault };
   switch (match.type) {
@@ -158,28 +156,17 @@ function SearchResultItem({
       icon.source = Icon.Text;
       title = match.lineMatches.map((l) => l.line.trim()).join(" ... ");
       subtitle = match.path;
-      if (match.lineMatches.length === 1) {
-        url = `${searchResult.url}?L${match.lineMatches[0].lineNumber}`;
-      } else {
-        multiResult = true;
-      }
       break;
     case "symbol":
       icon.source = Icon.Link;
       title = match.symbols.map((s) => s.name).join(", ");
       subtitle = match.path;
-      if (match.symbols.length === 1) {
-        url = `${searchResult.url}#${match.symbols[0].url}`;
-      }
       break;
   }
 
   const accessories: List.Item.Accessory[] = [];
   if (context) {
     accessories.push({ text: context });
-  }
-  if (multiResult) {
-    accessories.push({ icon: { source: Icon.ArrowRight } });
   }
 
   return (
@@ -190,7 +177,7 @@ function SearchResultItem({
       icon={icon}
       actions={
         <ActionPanel>
-          {resultActions(url, {
+          {resultActions(searchResult.url, {
             openAction: (
               <Action.Push
                 key={nanoid()}
