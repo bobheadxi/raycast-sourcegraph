@@ -4,3 +4,6 @@ node_modules
 package-lock.json
 
 .DS_Store
+
+# Generated with `npm run gql-schema`
+src/sourcegraph/gql/schema.json
