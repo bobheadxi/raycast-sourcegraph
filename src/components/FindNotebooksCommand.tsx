@@ -104,12 +104,7 @@ function NotebookResultItem({
             target={<NotebookPreviewView notebook={notebook} src={src} />}
           />
           <Action.OpenInBrowser key={nanoid()} url={url} />
-          <Action.CopyToClipboard
-            key={nanoid()}
-            title="Copy Notebook URL"
-            content={url}
-            shortcut={copyShortcut}
-          />
+          <Action.CopyToClipboard key={nanoid()} title="Copy Notebook URL" content={url} shortcut={copyShortcut} />
         </ActionPanel>
       }
     />
