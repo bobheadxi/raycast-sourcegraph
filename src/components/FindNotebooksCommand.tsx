@@ -128,7 +128,7 @@ function NotebookResultItem({
 }
 
 function codeBlock(content: string) {
-  return `\`\`\`\n${content}\n\`\`\``
+  return `\`\`\`\n${content}\n\`\`\``;
 }
 
 function NotebookPreviewView({ notebook, src }: { notebook: SearchNotebook; src: Sourcegraph }) {
@@ -149,7 +149,9 @@ ${
             case "FileBlock":
               return codeBlock(`${b.fileInput.repositoryName} > ${b.fileInput.filePath}`);
             case "SymbolBlock": {
-              const symbol = `> *${b.symbolInput.symbolKind.toLocaleLowerCase()}* **${b.symbolInput.symbolName}** ${b.symbolInput.symbolContainerName}`
+              const symbol = `> *${b.symbolInput.symbolKind.toLocaleLowerCase()}* **${b.symbolInput.symbolName}** ${
+                b.symbolInput.symbolContainerName
+              }`;
               return `${symbol}\n${codeBlock(`${b.symbolInput.repositoryName} > ${b.symbolInput.filePath}`)}`;
             }
             default:
@@ -161,7 +163,7 @@ ${
 }`;
 
   const notebookURL = `${src.instance}/notebooks/${notebook.id}`;
-  const namespaceIsCreator = notebook.namespace?.namespaceName == notebook.creator?.username
+  const namespaceIsCreator = notebook.namespace?.namespaceName == notebook.creator?.username;
   return (
     <Detail
       markdown={preview}
@@ -169,11 +171,29 @@ ${
       metadata={
         <Detail.Metadata>
           <Detail.Metadata.Link title="Author" text={author} target={`${src.instance}/${notebook.creator?.url}`} />
-          {notebook.namespace && !namespaceIsCreator ? <Detail.Metadata.Link title="Owned by" text={notebook.namespace.namespaceName} target={`${src.instance}/${notebook.namespace.url}`}/>: <Fragment />}
-          {notebook.stars.totalCount ? <Detail.Metadata.Label title="Stars" text={`${notebook.stars.totalCount}`} /> : <Fragment />}
-          <Detail.Metadata.Label title="Visibility" text={notebook.public ? 'Public' : 'Private'} />
-          <Detail.Metadata.Label title="Created" text={DateTime.fromISO(notebook.createdAt).toRelative() || 'Unknown'} />
-          <Detail.Metadata.Label title="Updated" text={DateTime.fromISO(notebook.updatedAt).toRelative() || 'Unknown'} />
+          {notebook.namespace && !namespaceIsCreator ? (
+            <Detail.Metadata.Link
+              title="Owned by"
+              text={notebook.namespace.namespaceName}
+              target={`${src.instance}/${notebook.namespace.url}`}
+            />
+          ) : (
+            <Fragment />
+          )}
+          {notebook.stars.totalCount ? (
+            <Detail.Metadata.Label title="Stars" text={`${notebook.stars.totalCount}`} />
+          ) : (
+            <Fragment />
+          )}
+          <Detail.Metadata.Label title="Visibility" text={notebook.public ? "Public" : "Private"} />
+          <Detail.Metadata.Label
+            title="Created"
+            text={DateTime.fromISO(notebook.createdAt).toRelative() || "Unknown"}
+          />
+          <Detail.Metadata.Label
+            title="Updated"
+            text={DateTime.fromISO(notebook.updatedAt).toRelative() || "Unknown"}
+          />
         </Detail.Metadata>
       }
       actions={
