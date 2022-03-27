@@ -196,9 +196,15 @@ export async function getBatchChanges(abort: AbortSignal, src: Sourcegraph) {
   return doQuery<{ batchChanges?: { nodes?: BatchChange[] } }>(abort, src, "GetBatchChanges", q);
 }
 
+export type ChangesetState = "OPEN" | "MERGED" | "CLOSED" | "FAILED" | "UNPUBLISHED" | "PROCESSING" | "RETRYING";
+
+export type ChangesetReviewState = "APPROVED" | "CHANGES_REQUESTED";
+
+export type ChangesetCheckState = "PENDING" | "PASSED" | "FAILED";
+
 export interface Changeset {
   id: string;
-  state: string;
+  state: ChangesetState;
   updatedAt: string;
 
   repository: {
@@ -210,8 +216,8 @@ export interface Changeset {
   };
   externalID?: string;
   title: string;
-  reviewState?: string;
-  checkState?: string;
+  reviewState?: ChangesetReviewState;
+  checkState?: ChangesetCheckState;
 }
 
 export async function getChangesets(abort: AbortSignal, src: Sourcegraph, namespace: string, name: string) {

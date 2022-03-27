@@ -1,5 +1,5 @@
 import { ActionPanel, List, Action, Icon, useNavigation, Toast, Image, Color, showToast, Form } from "@raycast/api";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Fragment } from "react";
 import { DateTime } from "luxon";
 import { nanoid } from "nanoid";
 
@@ -23,15 +23,48 @@ import { propsToKeywords } from "./keywords";
 export default function ManageBatchChanges(src: Sourcegraph) {
   const { state, load } = useBatchChanges(src);
   const srcName = instanceName(src);
+  const [searchText, setSearchText] = useState("");
 
   useEffect(checkAuthEffect(src));
 
   const count = state.batchChanges.length;
   return (
-    <List isLoading={state.isLoading} searchBarPlaceholder={`Manage batch changes on ${srcName}`}>
-      <List.Section title={"Batch changes"} subtitle={`${count > 100 ? `${count}+` : count} batch changes`}>
-        {state.batchChanges.map((b) => (
-          <BatchChangeItem key={nanoid()} batchChange={b} src={src} refreshBatchChanges={load} />
+    <List
+      isLoading={state.isLoading}
+      searchBarPlaceholder={`Manage batch changes on ${srcName}`}
+      searchText={searchText}
+      onSearchTextChange={setSearchText}
+      enableFiltering={true}
+      selectedItemId={state.batchChanges?.length > 0 ? "first-result" : undefined}
+    >
+      {!state.isLoading && !searchText ? (
+        <List.Section title={"Suggestions"}>
+          <List.Item
+            title="Create a batch change"
+            icon={{ source: Icon.Plus }}
+            actions={
+              <ActionPanel>
+                <Action.OpenInBrowser title="Create in Browser" url={`${src.instance}/batch-changes/create`} />
+              </ActionPanel>
+            }
+          />
+        </List.Section>
+      ) : (
+        <Fragment />
+      )}
+
+      <List.Section
+        title={"Batch changes"}
+        subtitle={searchText ? undefined : `${count >= 100 ? `${count}+` : count} batch changes`}
+      >
+        {state.batchChanges.map((b, i) => (
+          <BatchChangeItem
+            id={i === 0 ? "first-result" : undefined}
+            key={nanoid()}
+            batchChange={b}
+            src={src}
+            refreshBatchChanges={load}
+          />
         ))}
       </List.Section>
     </List>
@@ -39,10 +72,12 @@ export default function ManageBatchChanges(src: Sourcegraph) {
 }
 
 function BatchChangeItem({
+  id,
   batchChange,
   src,
   refreshBatchChanges,
 }: {
+  id: string | undefined;
   batchChange: BatchChange;
   src: Sourcegraph;
   refreshBatchChanges: () => Promise<void>;
@@ -75,6 +110,7 @@ function BatchChangeItem({
   const url = `${src.instance}${batchChange.url}`;
   return (
     <List.Item
+      id={id}
       icon={icon}
       title={`${batchChange.namespace.namespaceName} / ${batchChange.name}`}
       subtitle={updated ? `by ${author}, updated ${updated}` : author}
@@ -89,9 +125,6 @@ function BatchChangeItem({
             ]
           : undefined
       }
-      keywords={propsToKeywords({
-        state: batchChange.state,
-      })}
       actions={
         <ActionPanel>
           <Action.Push
@@ -327,14 +360,12 @@ function ChangesetItem({
 }
 
 interface BatchChangesState {
-  searchText: string;
   batchChanges: BatchChange[];
   isLoading: boolean;
 }
 
 function useBatchChanges(src: Sourcegraph) {
   const [state, setState] = useState<BatchChangesState>({
-    searchText: "",
     batchChanges: [],
     isLoading: true,
   });
@@ -376,14 +407,12 @@ function useBatchChanges(src: Sourcegraph) {
 }
 
 interface ChangesetsState {
-  searchText: string;
   changesets: Changeset[];
   isLoading: boolean;
 }
 
 function useChangesets(src: Sourcegraph, batchChange: BatchChange) {
   const [state, setState] = useState<ChangesetsState>({
-    searchText: "",
     changesets: [],
     isLoading: true,
   });
