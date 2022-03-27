@@ -85,8 +85,8 @@ export interface GetNotebooks_notebooks_nodes_namespace {
   url: string;            // The URL to this namespace.
 }
 
-export interface GetNotebooks_notebooks_nodes_blocks_SymbolBlock {
-  __typename: "SymbolBlock" | "ComputeBlock";
+export interface GetNotebooks_notebooks_nodes_blocks_ComputeBlock {
+  __typename: "ComputeBlock";
 }
 
 export interface GetNotebooks_notebooks_nodes_blocks_MarkdownBlock {
@@ -109,7 +109,20 @@ export interface GetNotebooks_notebooks_nodes_blocks_FileBlock {
   fileInput: GetNotebooks_notebooks_nodes_blocks_FileBlock_fileInput;  // File block input.
 }
 
-export type GetNotebooks_notebooks_nodes_blocks = GetNotebooks_notebooks_nodes_blocks_SymbolBlock | GetNotebooks_notebooks_nodes_blocks_MarkdownBlock | GetNotebooks_notebooks_nodes_blocks_QueryBlock | GetNotebooks_notebooks_nodes_blocks_FileBlock;
+export interface GetNotebooks_notebooks_nodes_blocks_SymbolBlock_symbolInput {
+  repositoryName: string;       // Name of the repository, e.g. "github.com/sourcegraph/sourcegraph".
+  filePath: string;             // Path within the repository, e.g. "client/web/file.tsx".
+  symbolName: string;           // The symbol name.
+  symbolContainerName: string;  // Name of the symbol container.
+  symbolKind: SymbolKind;       // The symbol kind.
+}
+
+export interface GetNotebooks_notebooks_nodes_blocks_SymbolBlock {
+  __typename: "SymbolBlock";
+  symbolInput: GetNotebooks_notebooks_nodes_blocks_SymbolBlock_symbolInput;  // Symbol block input.
+}
+
+export type GetNotebooks_notebooks_nodes_blocks = GetNotebooks_notebooks_nodes_blocks_ComputeBlock | GetNotebooks_notebooks_nodes_blocks_MarkdownBlock | GetNotebooks_notebooks_nodes_blocks_QueryBlock | GetNotebooks_notebooks_nodes_blocks_FileBlock | GetNotebooks_notebooks_nodes_blocks_SymbolBlock;
 
 export interface GetNotebooks_notebooks_nodes {
   id: string;                                                // The unique id of the notebook.
@@ -262,8 +275,8 @@ export interface SearchNotebookFields_namespace {
   url: string;            // The URL to this namespace.
 }
 
-export interface SearchNotebookFields_blocks_SymbolBlock {
-  __typename: "SymbolBlock" | "ComputeBlock";
+export interface SearchNotebookFields_blocks_ComputeBlock {
+  __typename: "ComputeBlock";
 }
 
 export interface SearchNotebookFields_blocks_MarkdownBlock {
@@ -286,7 +299,20 @@ export interface SearchNotebookFields_blocks_FileBlock {
   fileInput: SearchNotebookFields_blocks_FileBlock_fileInput;  // File block input.
 }
 
-export type SearchNotebookFields_blocks = SearchNotebookFields_blocks_SymbolBlock | SearchNotebookFields_blocks_MarkdownBlock | SearchNotebookFields_blocks_QueryBlock | SearchNotebookFields_blocks_FileBlock;
+export interface SearchNotebookFields_blocks_SymbolBlock_symbolInput {
+  repositoryName: string;       // Name of the repository, e.g. "github.com/sourcegraph/sourcegraph".
+  filePath: string;             // Path within the repository, e.g. "client/web/file.tsx".
+  symbolName: string;           // The symbol name.
+  symbolContainerName: string;  // Name of the symbol container.
+  symbolKind: SymbolKind;       // The symbol kind.
+}
+
+export interface SearchNotebookFields_blocks_SymbolBlock {
+  __typename: "SymbolBlock";
+  symbolInput: SearchNotebookFields_blocks_SymbolBlock_symbolInput;  // Symbol block input.
+}
+
+export type SearchNotebookFields_blocks = SearchNotebookFields_blocks_ComputeBlock | SearchNotebookFields_blocks_MarkdownBlock | SearchNotebookFields_blocks_QueryBlock | SearchNotebookFields_blocks_FileBlock | SearchNotebookFields_blocks_SymbolBlock;
 
 export interface SearchNotebookFields {
   id: string;                                        // The unique id of the notebook.
@@ -384,6 +410,37 @@ export type ChangesetFields = ChangesetFields_HiddenExternalChangeset | Changese
 //==============================================================
 // START Enums and Input Objects
 //==============================================================
+
+// All possible kinds of symbols. This set matches that of the Language Server Protocol (https://microsoft.github.io/language-server-protocol/specification#workspace_symbol).
+export enum SymbolKind {
+  ARRAY = "ARRAY",
+  BOOLEAN = "BOOLEAN",
+  CLASS = "CLASS",
+  CONSTANT = "CONSTANT",
+  CONSTRUCTOR = "CONSTRUCTOR",
+  ENUM = "ENUM",
+  ENUMMEMBER = "ENUMMEMBER",
+  EVENT = "EVENT",
+  FIELD = "FIELD",
+  FILE = "FILE",
+  FUNCTION = "FUNCTION",
+  INTERFACE = "INTERFACE",
+  KEY = "KEY",
+  METHOD = "METHOD",
+  MODULE = "MODULE",
+  NAMESPACE = "NAMESPACE",
+  NULL = "NULL",
+  NUMBER = "NUMBER",
+  OBJECT = "OBJECT",
+  OPERATOR = "OPERATOR",
+  PACKAGE = "PACKAGE",
+  PROPERTY = "PROPERTY",
+  STRING = "STRING",
+  STRUCT = "STRUCT",
+  TYPEPARAMETER = "TYPEPARAMETER",
+  UNKNOWN = "UNKNOWN",
+  VARIABLE = "VARIABLE",
+}
 
 // NotebooksOrderBy enumerates the ways notebooks can be ordered.
 export enum NotebooksOrderBy {

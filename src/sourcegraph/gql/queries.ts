@@ -32,6 +32,15 @@ const SEARCH_NOTEBOOK_FIELDS = gql`
           filePath
         }
       }
+      ... on SymbolBlock {
+        symbolInput {
+          repositoryName
+          filePath
+          symbolName
+          symbolContainerName
+          symbolKind
+        }
+      }
     }
     createdAt
     updatedAt

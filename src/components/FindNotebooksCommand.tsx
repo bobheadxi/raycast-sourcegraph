@@ -127,6 +127,10 @@ function NotebookResultItem({
   );
 }
 
+function codeBlock(content: string) {
+  return `\`\`\`\n${content}\n\`\`\``
+}
+
 function NotebookPreviewView({ notebook, src }: { notebook: SearchNotebook; src: Sourcegraph }) {
   const author = notebook.creator?.displayName
     ? `${notebook.creator.displayName} (@${notebook.creator.username})`
@@ -141,9 +145,13 @@ ${
             case "MarkdownBlock":
               return b.markdownInput;
             case "QueryBlock":
-              return `\`\`\`\n${b.queryInput}\n\`\`\``;
+              return codeBlock(b.queryInput);
             case "FileBlock":
-              return `\`\`\`\n${b.fileInput.repositoryName} > ${b.fileInput.filePath}\n\`\`\``;
+              return codeBlock(`${b.fileInput.repositoryName} > ${b.fileInput.filePath}`);
+            case "SymbolBlock": {
+              const symbol = `> *${b.symbolInput.symbolKind.toLocaleLowerCase()}* **${b.symbolInput.symbolName}** ${b.symbolInput.symbolContainerName}`
+              return `${symbol}\n${codeBlock(`${b.symbolInput.repositoryName} > ${b.symbolInput.filePath}`)}`;
+            }
             default:
               return `> Unsupported block type: \`${b.__typename}\``;
           }
