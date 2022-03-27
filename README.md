@@ -67,7 +67,6 @@ Get results as you type on [code search](https://about.sourcegraph.com/code-sear
 To get started, you can try the [public Sourcegraph Cloud contexts](https://sourcegraph.com/contexts), or configure your own in your Sourcegraph Cloud account or self-hosted Sourcegraph instance's "Contexts" page!
 
 The Sourcegraph Raycast extension allows you to set a default context for your searches in the "Search Code" command preferences.
-To override it for a search, just include a `context:` parameter in your query.
 
 ### Find Search Notebooks
 

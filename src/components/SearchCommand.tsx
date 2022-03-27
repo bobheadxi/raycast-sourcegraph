@@ -27,14 +27,12 @@ import { copyShortcut, tertiaryActionShortcut } from "./shortcuts";
 export default function SearchCommand({ src }: { src: Sourcegraph }) {
   const { state, search } = useSearch(src);
   const srcName = instanceName(src);
-
   return (
     <List
       isLoading={state.isLoading}
       onSearchTextChange={search}
-      searchBarPlaceholder={`Search ${srcName} ${
-        src.defaultContext ? `context ${src.defaultContext}` : `(e.g. 'fmt.Sprintf lang:go')`
-      }`}
+      searchText={state.searchText}
+      searchBarPlaceholder={`Search ${srcName} (e.g. 'fmt.Sprintf lang:go')`}
       throttle
     >
       {/* show suggestions IFF no results */}
@@ -123,7 +121,7 @@ function SearchResultItem({
   const { match } = searchResult;
   let title = "";
   let subtitle = "";
-  let context = match.repository;
+  const accessory: List.Item.Accessory = { text: match.repository };
 
   const icon: Image.ImageLike = { source: Icon.Dot, tintColor: ColorDefault };
   switch (match.type) {
@@ -140,7 +138,12 @@ function SearchResultItem({
       }
       title = match.repository;
       subtitle = match.description || "";
-      context = match.repoStars ? `${match.repoStars} ★` : "";
+      if (match.repoStars) {
+        accessory.text = `${match.repoStars}`;
+        accessory.icon = Icon.Star;
+      } else {
+        accessory.text = "";
+      }
       break;
     case "commit":
       icon.source = Icon.MemoryChip;
@@ -165,8 +168,8 @@ function SearchResultItem({
   }
 
   const accessories: List.Item.Accessory[] = [];
-  if (context) {
-    accessories.push({ text: context });
+  if (accessory.text || accessory.icon) {
+    accessories.push(accessory);
   }
 
   return (
@@ -362,11 +365,9 @@ interface SearchState {
   isLoading: boolean;
 }
 
-const containsFilterRegex = new RegExp(/context:\S+/);
-
 function useSearch(src: Sourcegraph) {
   const [state, setState] = useState<SearchState>({
-    searchText: "",
+    searchText: src.defaultContext ? `context:${src.defaultContext} ` : "",
     results: [],
     suggestions: [],
     summary: "",
@@ -378,11 +379,6 @@ function useSearch(src: Sourcegraph) {
   async function search(searchText: string) {
     cancelRef.current?.abort();
     cancelRef.current = new AbortController();
-
-    // inject context if not overwridden
-    if (src.defaultContext && !containsFilterRegex.test(searchText)) {
-      searchText = `context:${src.defaultContext} ${searchText}`;
-    }
 
     try {
       setState((oldState) => ({
