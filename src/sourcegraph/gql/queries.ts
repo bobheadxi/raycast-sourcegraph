@@ -12,6 +12,11 @@ const SEARCH_NOTEBOOK_FIELDS = gql`
     creator {
       username
       displayName
+      url
+    }
+    namespace {
+      namespaceName
+      url
     }
     blocks {
       __typename

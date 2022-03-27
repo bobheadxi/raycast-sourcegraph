@@ -131,19 +131,7 @@ function NotebookPreviewView({ notebook, src }: { notebook: SearchNotebook; src:
   const author = notebook.creator?.displayName
     ? `${notebook.creator.displayName} (@${notebook.creator.username})`
     : `@${notebook.creator?.username}`;
-  let blurb = `Created by ${author}`;
-  try {
-    blurb += ` ${DateTime.fromISO(notebook.createdAt).toRelative()}, last updated ${DateTime.fromISO(
-      notebook.updatedAt
-    ).toRelative()}`;
-  } catch (e) {
-    console.warn(`notebook ${notebook.id}: invalid date: ${e}`);
-  }
-  const preview = `**${notebook.title}** ${notebook.stars?.totalCount ? `- ${notebook.stars.totalCount} ★` : ""}
-
-> ${blurb}
-
----
+  const preview = `**${notebook.title}**
 
 ${
   notebook.blocks
@@ -151,13 +139,13 @@ ${
         .map((b): string => {
           switch (b.__typename) {
             case "MarkdownBlock":
-              return `${b.markdownInput}`;
+              return b.markdownInput;
             case "QueryBlock":
               return `\`\`\`\n${b.queryInput}\n\`\`\``;
             case "FileBlock":
               return `\`\`\`\n${b.fileInput.repositoryName} > ${b.fileInput.filePath}\n\`\`\``;
             default:
-              return `\`\`\`\n${JSON.stringify(b)}\`\`\``;
+              return `> Unsupported block type: \`${b.__typename}\``;
           }
         })
         .join("\n\n")
@@ -165,10 +153,21 @@ ${
 }`;
 
   const notebookURL = `${src.instance}/notebooks/${notebook.id}`;
+  const namespaceIsCreator = notebook.namespace?.namespaceName == notebook.creator?.username
   return (
     <Detail
       markdown={preview}
       navigationTitle={"Preview Search Notebook"}
+      metadata={
+        <Detail.Metadata>
+          <Detail.Metadata.Link title="Author" text={author} target={`${src.instance}/${notebook.creator?.url}`} />
+          {notebook.namespace && !namespaceIsCreator ? <Detail.Metadata.Link title="Owned by" text={notebook.namespace.namespaceName} target={`${src.instance}/${notebook.namespace.url}`}/>: <Fragment />}
+          {notebook.stars.totalCount ? <Detail.Metadata.Label title="Stars" text={`${notebook.stars.totalCount}`} /> : <Fragment />}
+          <Detail.Metadata.Label title="Visibility" text={notebook.public ? 'Public' : 'Private'} />
+          <Detail.Metadata.Label title="Created" text={DateTime.fromISO(notebook.createdAt).toRelative() || 'Unknown'} />
+          <Detail.Metadata.Label title="Updated" text={DateTime.fromISO(notebook.updatedAt).toRelative() || 'Unknown'} />
+        </Detail.Metadata>
+      }
       actions={
         <ActionPanel>
           <Action.OpenInBrowser url={notebookURL} />
