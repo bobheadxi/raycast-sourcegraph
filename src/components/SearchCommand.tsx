@@ -9,6 +9,7 @@ import { ContentMatch, SymbolMatch } from "../sourcegraph/stream-search/stream";
 import { ColorDefault, ColorEmphasis, ColorPrivate } from "./colors";
 import ExpandableErrorToast from "./ExpandableErrorToast";
 import { copyShortcut, drilldownShortcut, tertiaryActionShortcut } from "./shortcuts";
+import { parse } from "path/win32";
 
 /**
  * SearchCommand is the shared search command implementation.
@@ -264,9 +265,12 @@ function MultiResultView({ searchResult }: { searchResult: { url: string; match:
   const navigationTitle = `View ${match.type} results`;
   const matchTitle = `${match.repository} ${match.repoStars ? `- ${match.repoStars} ★` : ""}`;
 
-  const urlWithHash = (url: string, hash: string) => {
+  const urlWithLineNumber = (url: string, line: number) => {
     const parsed = new URL(url)
-    parsed.hash = hash
+    parsed.searchParams.set(`L${line}`, '')
+    // L needs to be the first param. Kind of mysterious. Sort works by luck because L
+    // comes before U in the UTM params, but might need to be more careful
+    parsed.searchParams.sort()
     return parsed.toString()
   }
 
@@ -281,7 +285,7 @@ function MultiResultView({ searchResult }: { searchResult: { url: string; match:
                 key={nanoid()}
                 title={l.line}
                 accessories={[{ text: `L${l.lineNumber}` }]}
-                actions={<ActionPanel>{resultActions(urlWithHash(searchResult.url, `L${l.lineNumber}`))}</ActionPanel>}
+                actions={<ActionPanel>{resultActions(urlWithLineNumber(searchResult.url, l.lineNumber))}</ActionPanel>}
               />
             ))}
           </List.Section>
@@ -298,7 +302,7 @@ function MultiResultView({ searchResult }: { searchResult: { url: string; match:
                 title={s.name}
                 subtitle={s.containerName}
                 accessories={[{ text: s.kind.toLowerCase() }]}
-                actions={<ActionPanel>{resultActions(urlWithHash(searchResult.url, s.url))}</ActionPanel>}
+                actions={<ActionPanel>{resultActions(s.url)}</ActionPanel>}
               />
             ))}
           </List.Section>
