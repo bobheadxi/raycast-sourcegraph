@@ -55,7 +55,7 @@ export default function SearchCommand({ src }: { src: Sourcegraph }) {
               icon={{ source: Icon.Globe }}
               actions={
                 <ActionPanel>
-                  <Action.OpenInBrowser url={newURL(src, '/help/code_search/reference/queries')} />
+                  <Action.OpenInBrowser url={newURL(src, "/help/code_search/reference/queries")} />
                 </ActionPanel>
               }
             />
@@ -265,13 +265,13 @@ function MultiResultView({ searchResult }: { searchResult: { url: string; match:
   const matchTitle = `${match.repository} ${match.repoStars ? `- ${match.repoStars} ★` : ""}`;
 
   const urlWithLineNumber = (url: string, line: number) => {
-    const parsed = new URL(url)
-    parsed.searchParams.set(`L${line}`, '')
+    const parsed = new URL(url);
+    parsed.searchParams.set(`L${line}`, "");
     // L needs to be the first param. Kind of mysterious. Sort works by luck because L
     // comes before U in the UTM params, but might need to be more careful
-    parsed.searchParams.sort()
-    return parsed.toString()
-  }
+    parsed.searchParams.sort();
+    return parsed.toString();
+  };
 
   // Match types with expanded view support
   switch (match.type) {
