@@ -9,7 +9,6 @@ import { ContentMatch, SymbolMatch } from "../sourcegraph/stream-search/stream";
 import { ColorDefault, ColorEmphasis, ColorPrivate } from "./colors";
 import ExpandableErrorToast from "./ExpandableErrorToast";
 import { copyShortcut, drilldownShortcut, tertiaryActionShortcut } from "./shortcuts";
-import { parse } from "path/win32";
 
 /**
  * SearchCommand is the shared search command implementation.
@@ -56,7 +55,7 @@ export default function SearchCommand({ src }: { src: Sourcegraph }) {
               icon={{ source: Icon.Globe }}
               actions={
                 <ActionPanel>
-                  <Action.OpenInBrowser url="https://docs.sourcegraph.com/code_search/reference/queries" />
+                  <Action.OpenInBrowser url={newURL(src, '/help/code_search/reference/queries')} />
                 </ActionPanel>
               }
             />
