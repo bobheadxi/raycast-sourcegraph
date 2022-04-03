@@ -157,13 +157,19 @@ function getQueryURL(src: Sourcegraph, query: string) {
   return newURL(src, "/search", new URLSearchParams({ q: query }));
 }
 
+// https://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript
+// adjusted to remove the forward slash ('/') escape, because it seems we don't need it
+const regexpRe = /[-\\^$*+?.()|[\]{}]/g;
+
+function escapeRegexp(text: string) {
+  return text.replace(regexpRe, "\\$&");
+}
+
 function makeDrilldownAction(
   name: string,
   setSearchText: (text: string) => void,
   opts: { repo?: string; revision?: string; file?: string }
 ) {
-  const escapeRegexp = (text: string) => text.replace(".", "\\.");
-
   const clauses: string[] = [];
   if (opts.repo) {
     let repoQuery = `r:^${escapeRegexp(opts.repo)}$`;

@@ -44,8 +44,6 @@ export async function performSearch(
     return;
   }
 
-  console.log(patternType);
-
   const parameters = new URLSearchParams([
     ["q", query],
     ["v", "V2"],
