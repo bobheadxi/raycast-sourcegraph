@@ -123,6 +123,26 @@ function BatchChangeItem({
   }
 
   const { changesetsStats } = batchChange;
+  const accessories: List.Item.Accessory[] = []
+  if (changesetsStats.open) {
+    accessories.push({
+      icon: { tintColor: Color.Green, source: Icon.Circle },
+      text: `${changesetsStats.open}`,
+    })
+  }
+  if (changesetsStats.merged) {
+    accessories.push({
+      icon: { tintColor: Color.Purple, source: Icon.Checkmark },
+      text: `${changesetsStats.merged}`
+    })
+  }
+  if (changesetsStats.draft || changesetsStats.unpublished) {
+    accessories.push({
+      icon: { tintColor: Color.SecondaryText, source: Icon.Document },
+      text: `${changesetsStats.draft + changesetsStats.unpublished}`
+    })
+  }
+
   const url = newURL(src, batchChange.url);
   const client = useApolloClient();
   return (
@@ -131,17 +151,7 @@ function BatchChangeItem({
       icon={icon}
       title={`${batchChange.namespace.namespaceName} / ${batchChange.name}`}
       subtitle={updated ? `by ${author}, updated ${updated}` : author}
-      accessories={
-        changesetsStats.total
-          ? [
-              {
-                text: `${changesetsStats.merged} / ${
-                  changesetsStats.closed + changesetsStats.merged + changesetsStats.open
-                } / ${changesetsStats.total}`,
-              },
-            ]
-          : undefined
-      }
+      accessories={accessories}
       actions={
         <ActionPanel>
           <Action.Push

@@ -80,6 +80,8 @@ const BATCH_CHANGE_FIELDS = gql`
       open
       closed
       failed
+      unpublished
+      draft
     }
   }
 `;
