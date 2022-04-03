@@ -137,3 +137,23 @@ export const GET_CHANGESETS = gql`
     }
   }
 `;
+
+export const BLOB_CONTENTS = gql`
+  fragment BlobContents on GitBlob {
+    content
+    binary
+  }
+`;
+
+export const GET_FILE_CONTENTS = gql`
+  ${BLOB_CONTENTS}
+  query GetFileContents($repo: String!, $rev: String!, $path: String!) {
+    repository(name: $repo) {
+      commit(rev: $rev) {
+        blob(path: $path) {
+          ...BlobContents
+        }
+      }
+    }
+  }
+`;
