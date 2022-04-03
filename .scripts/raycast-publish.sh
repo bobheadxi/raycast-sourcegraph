@@ -13,6 +13,7 @@ rsync -rv \
     --exclude=node_modules \
     --exclude=.scripts \
     --exclude=.github \
+    --exclude=src/sourcegraph/gql/schema.json \
     ./ "$RAYCAST_EXTENSIONS_DIR/extensions/sourcegraph"
 
 pushd "$RAYCAST_EXTENSIONS_DIR" || exit
