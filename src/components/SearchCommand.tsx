@@ -243,7 +243,7 @@ function SearchResultItem({
               <Action.Push
                 key={nanoid()}
                 title="View Result"
-                target={<ResultView searchResult={searchResult} icon={icon} />}
+                target={<ResultView src={src} searchResult={searchResult} icon={icon} />}
                 icon={{ source: Icon.MagnifyingGlass }}
               />
             ),
@@ -310,7 +310,7 @@ function MultiResultView({ searchResult }: { searchResult: { url: string; match:
   }
 }
 
-function ResultView({ searchResult, icon }: { searchResult: SearchResult; icon: Image.ImageLike }) {
+function ResultView({ searchResult, icon }: { src: Sourcegraph; searchResult: SearchResult; icon: Image.ImageLike }) {
   const { match } = searchResult;
   const navigationTitle = `View ${match.type} result`;
 

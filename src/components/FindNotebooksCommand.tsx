@@ -22,6 +22,7 @@ import {
 export default function FindNotebooksCommand({ src }: { src: Sourcegraph }) {
   const [searchText, setSearchText] = useState("");
   const { loading, error, data } = useQuery<GetNotebooks, GetNotebooksVariables>(GET_NOTEBOOKS, {
+    client: src.client,
     variables: {
       query: searchText,
       orderBy: searchText ? NotebooksOrderBy.NOTEBOOK_STAR_COUNT : NotebooksOrderBy.NOTEBOOK_UPDATED_AT,

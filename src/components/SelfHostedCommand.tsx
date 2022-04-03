@@ -1,10 +1,8 @@
-import { ApolloProvider } from "@apollo/client";
 import { ActionPanel, Detail, Action } from "@raycast/api";
 import { useEffect } from "react";
 
 import checkAuthEffect from "../hooks/checkAuthEffect";
 import { sourcegraphSelfHosted, Sourcegraph } from "../sourcegraph";
-import { newApolloClient } from "../sourcegraph/gql/apollo";
 
 /**
  * SelfHostedCommand wraps the given command with the configuration for a self-hosted
@@ -55,9 +53,5 @@ export default function SelfHostedCommand({ Command }: { Command: React.Function
 
   useEffect(checkAuthEffect(src));
 
-  return (
-    <ApolloProvider client={newApolloClient(src)}>
-      <Command src={src} />
-    </ApolloProvider>
-  );
+  return <Command src={src} />;
 }
