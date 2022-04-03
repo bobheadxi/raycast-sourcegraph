@@ -180,19 +180,19 @@ ${
           ) : (
             <Fragment />
           )}
+          <Detail.Metadata.Label title="Visibility" text={notebook.public ? "Public" : "Private"} />
           {notebook.stars.totalCount ? (
             <Detail.Metadata.Label title="Stars" text={`${notebook.stars.totalCount}`} />
           ) : (
             <Fragment />
           )}
-          <Detail.Metadata.Label title="Visibility" text={notebook.public ? "Public" : "Private"} />
-          <Detail.Metadata.Label
-            title="Created"
-            text={DateTime.fromISO(notebook.createdAt).toRelative() || "Unknown"}
-          />
           <Detail.Metadata.Label
             title="Updated"
             text={DateTime.fromISO(notebook.updatedAt).toRelative() || "Unknown"}
+          />
+          <Detail.Metadata.Label
+            title="Created"
+            text={DateTime.fromISO(notebook.createdAt).toRelative() || "Unknown"}
           />
         </Detail.Metadata>
       }
