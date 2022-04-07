@@ -367,7 +367,7 @@ function MultiResultView({ searchResult }: { searchResult: { url: string; match:
  */
 function renderBlob(blob: BlobContents | null | undefined): string {
   if (!blob) {
-    return quoteBlock("Blob not found");
+    return quoteBlock("File not found");
   }
   if (blob.binary) {
     return quoteBlock("File preview is not yet supported for binary files.");
@@ -544,6 +544,7 @@ interface SearchState {
   suggestions: Suggestion[];
   summary: string | null;
   isLoading: boolean;
+  previousSearch: string;
 }
 
 function useSearch(src: Sourcegraph) {
@@ -552,22 +553,32 @@ function useSearch(src: Sourcegraph) {
     suggestions: [],
     summary: "",
     isLoading: false,
+    previousSearch: "",
   });
   const cancelRef = useRef<AbortController | null>(null);
   const { push } = useNavigation();
 
   async function search(searchText: string, pattern: PatternType) {
+    // Do not repeat searches that are essentially the same
+    if (state.previousSearch.trim() === searchText.trim()) {
+      return;
+    }
+
+    // Cancel previous search
     cancelRef.current?.abort();
     cancelRef.current = new AbortController();
 
+    // Reset state for new search
+    setState((oldState) => ({
+      ...oldState,
+      results: [],
+      suggestions: [],
+      summary: null,
+      isLoading: true,
+      previousSearch: searchText,
+    }));
+
     try {
-      setState((oldState) => ({
-        ...oldState,
-        results: [],
-        suggestions: [],
-        summary: null,
-        isLoading: true,
-      }));
       await performSearch(cancelRef.current.signal, src, searchText, pattern, {
         onResults: (results) => {
           setState((oldState) => ({
