@@ -4,7 +4,7 @@ import { DateTime } from "luxon";
 import { nanoid } from "nanoid";
 import { useMutation, useQuery } from "@apollo/client";
 
-import { Sourcegraph, instanceName, newURL } from "../sourcegraph";
+import { Sourcegraph, instanceName, LinkBuilder } from "../sourcegraph";
 import {
   BatchChangeFields as BatchChange,
   ChangesetFields as Changeset,
@@ -27,6 +27,8 @@ import {
   PUBLISH_CHANGEST as PUBLISH_CHANGESET,
   REENQUEUE_CHANGEST as REENQUEUE_CHANGESET,
 } from "../sourcegraph/gql/mutations";
+
+const link = new LinkBuilder("batch-changes");
 
 /**
  * ManageBatchChanges is the shared batch changes command implementation.
@@ -70,7 +72,7 @@ export default function ManageBatchChanges({ src }: { src: Sourcegraph }) {
             icon={{ source: Icon.Plus }}
             actions={
               <ActionPanel>
-                <Action.OpenInBrowser title="Create in Browser" url={newURL(src, "/batch-changes/create")} />
+                <Action.OpenInBrowser title="Create in Browser" url={link.new(src, "/batch-changes/create")} />
               </ActionPanel>
             }
           />
@@ -150,7 +152,7 @@ function BatchChangeItem({
     });
   }
 
-  const url = newURL(src, batchChange.url);
+  const url = link.new(src, batchChange.url);
   return (
     <List.Item
       id={id}
@@ -184,7 +186,7 @@ function BatchChangeItem({
           <Action.OpenInBrowser
             key={nanoid()}
             title="Open Batch Changes in Browser"
-            url={newURL(src, "/batch-changes")}
+            url={link.new(src, "/batch-changes")}
             shortcut={tertiaryActionShortcut}
           />
         </ActionPanel>
@@ -267,7 +269,7 @@ function ChangesetItem({
   }
   const url =
     (changeset.__typename === "ExternalChangeset" && changeset.externalURL?.url) ||
-    newURL(src, batchChange.url, new URLSearchParams({ status: changeset.state }));
+    link.new(src, batchChange.url, new URLSearchParams({ status: changeset.state }));
 
   const { push } = useNavigation();
   async function delayedRefreshChangesets() {
@@ -468,7 +470,7 @@ function ChangesetItem({
           <Action.OpenInBrowser
             key={nanoid()}
             title="Open Changesets in Browser"
-            url={newURL(src, batchChange.url)}
+            url={link.new(src, batchChange.url)}
             shortcut={tertiaryActionShortcut}
           />
         </ActionPanel>

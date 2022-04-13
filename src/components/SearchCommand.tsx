@@ -3,7 +3,7 @@ import { useState, useRef, Fragment, useEffect } from "react";
 import { nanoid } from "nanoid";
 import { DateTime } from "luxon";
 
-import { Sourcegraph, instanceName, newURL } from "../sourcegraph";
+import { Sourcegraph, instanceName, LinkBuilder } from "../sourcegraph";
 import { PatternType, performSearch, SearchResult, Suggestion } from "../sourcegraph/stream-search";
 import { ContentMatch, SymbolMatch } from "../sourcegraph/stream-search/stream";
 import { ColorDefault, ColorEmphasis, ColorPrivate } from "./colors";
@@ -13,6 +13,8 @@ import { useLazyQuery } from "@apollo/client";
 import { GET_FILE_CONTENTS } from "../sourcegraph/gql/queries";
 import { BlobContents, GetFileContents, GetFileContentsVariables } from "../sourcegraph/gql/schema";
 import { bold, codeBlock, quoteBlock } from "../markdown";
+
+const link = new LinkBuilder("search");
 
 /**
  * SearchCommand is the shared search command implementation.
@@ -69,7 +71,7 @@ export default function SearchCommand({ src }: { src: Sourcegraph }) {
               icon={{ source: Icon.QuestionMark }}
               actions={
                 <ActionPanel>
-                  <Action.OpenInBrowser url={newURL(src, "/help/code_search/reference/queries")} />
+                  <Action.OpenInBrowser url={link.new(src, "/help/code_search/reference/queries")} />
                 </ActionPanel>
               }
             />
@@ -154,7 +156,7 @@ function resultActions(url: string, customActions?: CustomResultActions) {
 }
 
 function getQueryURL(src: Sourcegraph, query: string) {
-  return newURL(src, "/search", new URLSearchParams({ q: query }));
+  return link.new(src, "/search", new URLSearchParams({ q: query }));
 }
 
 // https://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript
