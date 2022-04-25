@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [Search fixes] - 2022-04-25
 
 - **search**: Internal improvements to mitigate stuttering when typing search queries.
 
