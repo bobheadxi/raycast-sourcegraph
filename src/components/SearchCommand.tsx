@@ -1,5 +1,5 @@
 import { ActionPanel, List, Action, Detail, Icon, Image, useNavigation } from "@raycast/api";
-import { useState, useRef, Fragment, useEffect } from "react";
+import { useState, useRef, Fragment, useMemo } from "react";
 import { nanoid } from "nanoid";
 import { DateTime } from "luxon";
 
@@ -26,7 +26,7 @@ export default function SearchCommand({ src }: { src: Sourcegraph }) {
   );
 
   const { state, search } = useSearch(src);
-  useEffect(() => {
+  useMemo(() => {
     if (patternType) {
       search(searchText, patternType);
     }

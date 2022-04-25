@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- **search**: Repeated queries that differ only by leading and trailing whitespace no longer trigger a new search.
+- **search**: Internal improvements to mitigate stuttering when typing search queries.
 
 ## [Bug fixes](https://github.com/raycast/extensions/pull/1291) - 2022-04-05
 
