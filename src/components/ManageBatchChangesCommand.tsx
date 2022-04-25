@@ -27,6 +27,7 @@ import {
   PUBLISH_CHANGEST as PUBLISH_CHANGESET,
   REENQUEUE_CHANGEST as REENQUEUE_CHANGESET,
 } from "../sourcegraph/gql/mutations";
+import { sentenceCase } from "../text";
 
 const link = new LinkBuilder("batch-changes");
 
@@ -137,18 +138,21 @@ function BatchChangeItem({
     accessories.push({
       icon: { tintColor: Color.Green, source: Icon.Circle },
       text: `${changesetsStats.open}`,
+      tooltip: "Open Changesets"
     });
   }
   if (changesetsStats.merged) {
     accessories.push({
       icon: { tintColor: Color.Purple, source: Icon.Checkmark },
       text: `${changesetsStats.merged}`,
+      tooltip: "Merged Changesets"
     });
   }
   if (changesetsStats.draft || changesetsStats.unpublished) {
     accessories.push({
       icon: { tintColor: Color.SecondaryText, source: Icon.Document },
       text: `${changesetsStats.draft + changesetsStats.unpublished}`,
+      tooltip: "Unpublished Changesets"
     });
   }
 
@@ -156,7 +160,7 @@ function BatchChangeItem({
   return (
     <List.Item
       id={id}
-      icon={icon}
+      icon={{ value: icon, tooltip: sentenceCase(batchChange.state) }}
       title={`${batchChange.namespace.namespaceName} / ${batchChange.name}`}
       subtitle={updated ? `by ${author}, updated ${updated}` : author}
       accessories={accessories}
@@ -302,6 +306,7 @@ function ChangesetItem({
   }
 
   const icon: Image.ImageLike = { source: Icon.Circle };
+  const tooltipDetails: string[] = [changeset.state]
   let secondaryAction = <></>;
   let subtitle = changeset.state.toLowerCase();
   switch (changeset.state) {
@@ -314,6 +319,9 @@ function ChangesetItem({
       }
 
       subtitle = changeset.reviewState?.toLocaleLowerCase() || "";
+      if (changeset.reviewState) {
+        tooltipDetails.push(changeset.reviewState)
+      }
       switch (changeset.reviewState) {
         case "APPROVED":
           icon.source = Icon.Checkmark;
@@ -430,8 +438,10 @@ function ChangesetItem({
 
   let title = "";
   let props = {};
+  let subtitleTooltip: string | null = null;
   if (changeset.__typename === "ExternalChangeset") {
     title = `${changeset.repository.name}`;
+    subtitleTooltip = changeset.title
     if (changeset.externalID) {
       subtitle = `#${changeset.externalID} ${subtitle}`;
     }
@@ -449,9 +459,9 @@ function ChangesetItem({
 
   return (
     <List.Item
-      icon={icon}
+      icon={{ value: icon, tooltip: sentenceCase(tooltipDetails.join(", ")) }}
       title={title}
-      subtitle={subtitle}
+      subtitle={subtitleTooltip ? { value: subtitle, tooltip: subtitleTooltip } : subtitle}
       accessories={updated ? [{ text: updated }] : undefined}
       keywords={propsToKeywords(props)}
       actions={

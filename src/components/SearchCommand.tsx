@@ -13,6 +13,7 @@ import { useLazyQuery } from "@apollo/client";
 import { GET_FILE_CONTENTS } from "../sourcegraph/gql/queries";
 import { BlobContents, GetFileContents, GetFileContentsVariables } from "../sourcegraph/gql/schema";
 import { bold, codeBlock, quoteBlock } from "../markdown";
+import { sentenceCase } from "../text";
 
 const link = new LinkBuilder("search");
 
@@ -195,10 +196,6 @@ function makeDrilldownAction(
       }}
     />
   );
-}
-
-function sentenceCase(sentence: string): string {
-  return sentence.trim().split(" ").map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
 }
 
 function SearchResultItem({
