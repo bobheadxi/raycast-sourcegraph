@@ -3,6 +3,7 @@
 ## [Search fixes] - 2022-04-25
 
 - **search**: Internal improvements to mitigate stuttering when typing search queries.
+- **search**: Icons, titles, and subtitles in the main search results list are now all hoverable to see the full text.
 
 ## [Bug fixes](https://github.com/raycast/extensions/pull/1291) - 2022-04-05
 
