@@ -1,6 +1,6 @@
 import EventSource from "eventsource";
 
-import { getMatchUrl, SearchEvent, SearchMatch } from "./stream";
+import { getMatchUrl, SearchEvent, SearchMatch, LATEST_VERSION } from "./stream";
 import { LinkBuilder, Sourcegraph } from "..";
 
 export interface SearchResult {
@@ -48,7 +48,7 @@ export async function performSearch(
 
   const parameters = new URLSearchParams([
     ["q", query],
-    ["v", "V2"],
+    ["v", LATEST_VERSION],
     ["t", patternType],
     ["display", "1500"],
   ]);
