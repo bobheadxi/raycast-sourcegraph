@@ -103,6 +103,7 @@ function NotebookResultItem({
         source: Icon.Star,
         tintColor: notebook.viewerHasStarred ? ColorEmphasis : undefined,
       },
+      tooltip: notebook.viewerHasStarred ? "Starred by you" : `${stars} stars`,
     });
   }
   return (
@@ -114,6 +115,7 @@ function NotebookResultItem({
       icon={{
         source: Icon.Document,
         tintColor: notebook.public ? ColorDefault : ColorPrivate,
+        tooltip: notebook.public ? "Public notebook" : "Private notebook",
       }}
       actions={
         <ActionPanel>

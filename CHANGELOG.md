@@ -5,6 +5,7 @@
 - **search**: Internal improvements to mitigate stuttering when typing search queries.
 - **search**: Icons, titles, and subtitles in the main search results list are now all hoverable to see more details.
 - **batch-changes**: Some list elements are now hoverable for additional details.
+- **notebooks**: Some list elements are now hoverable for additional details.
 
 ## [Bug fixes](https://github.com/raycast/extensions/pull/1291) - 2022-04-05
 
