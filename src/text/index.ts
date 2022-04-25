@@ -1,8 +1,4 @@
 export function sentenceCase(sentence: string): string {
-  return sentence
-    .trim()
-    .toLowerCase()
-    .split(" ")
-    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-    .join(" ");
+  sentence = sentence.trim().toLowerCase();
+  return sentence.charAt(0).toUpperCase() + sentence.slice(1);
 }

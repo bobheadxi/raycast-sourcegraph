@@ -138,21 +138,21 @@ function BatchChangeItem({
     accessories.push({
       icon: { tintColor: Color.Green, source: Icon.Circle },
       text: `${changesetsStats.open}`,
-      tooltip: "Open Changesets"
+      tooltip: "Open changesets",
     });
   }
   if (changesetsStats.merged) {
     accessories.push({
       icon: { tintColor: Color.Purple, source: Icon.Checkmark },
       text: `${changesetsStats.merged}`,
-      tooltip: "Merged Changesets"
+      tooltip: "Merged changesets",
     });
   }
   if (changesetsStats.draft || changesetsStats.unpublished) {
     accessories.push({
       icon: { tintColor: Color.SecondaryText, source: Icon.Document },
       text: `${changesetsStats.draft + changesetsStats.unpublished}`,
-      tooltip: "Unpublished Changesets"
+      tooltip: "Unpublished changesets",
     });
   }
 
@@ -306,7 +306,7 @@ function ChangesetItem({
   }
 
   const icon: Image.ImageLike = { source: Icon.Circle };
-  const tooltipDetails: string[] = [changeset.state]
+  const tooltipDetails: string[] = [changeset.state];
   let secondaryAction = <></>;
   let subtitle = changeset.state.toLowerCase();
   switch (changeset.state) {
@@ -320,7 +320,7 @@ function ChangesetItem({
 
       subtitle = changeset.reviewState?.toLocaleLowerCase() || "";
       if (changeset.reviewState) {
-        tooltipDetails.push(changeset.reviewState)
+        tooltipDetails.push(changeset.reviewState);
       }
       switch (changeset.reviewState) {
         case "APPROVED":
@@ -441,7 +441,7 @@ function ChangesetItem({
   let subtitleTooltip: string | null = null;
   if (changeset.__typename === "ExternalChangeset") {
     title = `${changeset.repository.name}`;
-    subtitleTooltip = changeset.title
+    subtitleTooltip = changeset.title;
     if (changeset.externalID) {
       subtitle = `#${changeset.externalID} ${subtitle}`;
     }

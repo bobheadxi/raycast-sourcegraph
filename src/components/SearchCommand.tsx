@@ -217,29 +217,29 @@ function SearchResultItem({
   const accessory: List.Item.Accessory = { text: match.repository, tooltip: match.repository };
   let drilldownAction: React.ReactElement | undefined;
 
-  const tooltipDetails: string[] = []
+  const tooltipDetails: string[] = [];
   const icon: Image.ImageLike = { source: Icon.Dot, tintColor: ColorDefault };
   switch (match.type) {
     case "repo":
       if (match.fork) {
         icon.source = Icon.Circle;
-        tooltipDetails.push('forked')
+        tooltipDetails.push("forked");
       }
       if (match.archived) {
         icon.source = Icon.XmarkCircle;
-        tooltipDetails.push('archived')
+        tooltipDetails.push("archived");
       }
       // TODO color results of all matches based on repo privacy
       if (match.private) {
         icon.tintColor = ColorPrivate;
-        tooltipDetails.push('private')
+        tooltipDetails.push("private");
       }
       title = match.repository;
       subtitle = match.description || "";
       if (match.repoStars) {
         accessory.text = `${match.repoStars}`;
         accessory.icon = Icon.Star;
-        accessory.tooltip = ""
+        accessory.tooltip = "";
       } else {
         accessory.text = "";
       }
@@ -295,7 +295,7 @@ function SearchResultItem({
       title={{ value: title, tooltip: title }}
       subtitle={{ value: subtitle, tooltip: subtitle }}
       accessories={accessories}
-      icon={{ value: icon, tooltip: sentenceCase(`${tooltipDetails.join(', ')} ${match.type} match`) }}
+      icon={{ value: icon, tooltip: sentenceCase(`${tooltipDetails.join(", ")} ${match.type} match`) }}
       actions={
         <ActionPanel>
           {resultActions(searchResult.url, {
