@@ -544,10 +544,10 @@ function SuggestionItem({
               icon={Icon.Clipboard}
               onAction={async () => {
                 const { query } = suggestion;
-                if (typeof query === 'object') {
+                if (typeof query === "object") {
                   setSearchText(`${searchText} ${query.addition}`);
                 } else {
-                  setSearchText(query || '')
+                  setSearchText(query || "");
                 }
               }}
             />
