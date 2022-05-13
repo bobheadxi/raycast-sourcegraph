@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **search**: Fix 'Apply suggestions' on some suggestions returned by the searches. ([#15](https://github.com/bobheadxi/raycast-sourcegraph/pull/15))
+
 ## [Search fixes, hover tooltips](https://github.com/raycast/extensions/pull/1493) - 2022-04-25
 
 - **search**: Internal improvements to mitigate stuttering when typing search queries.
