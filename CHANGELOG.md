@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [Fix search suggestions](https://github.com/raycast/extensions/pull/1696) - 2022-05-14
 
 - **search**: Fix 'Apply suggestions' on some suggestions returned by the search API. ([#15](https://github.com/bobheadxi/raycast-sourcegraph/pull/15))
 
