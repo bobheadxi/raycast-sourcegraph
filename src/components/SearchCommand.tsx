@@ -6,14 +6,13 @@ import { DateTime } from "luxon";
 import { Sourcegraph, instanceName, LinkBuilder } from "../sourcegraph";
 import { PatternType, performSearch, SearchResult, Suggestion } from "../sourcegraph/stream-search";
 import { ContentMatch, SymbolMatch } from "../sourcegraph/stream-search/stream";
+import { BlobContentsFragment as BlobContents, useGetFileContentsLazyQuery } from "../sourcegraph/gql/operations";
+import { bold, codeBlock, quoteBlock } from "../markdown";
+import { count, sentenceCase } from "../text";
+
 import { ColorDefault, ColorEmphasis, ColorPrivate } from "./colors";
 import ExpandableErrorToast from "./ExpandableErrorToast";
 import { copyShortcut, drilldownShortcut, tertiaryActionShortcut } from "./shortcuts";
-import { useLazyQuery } from "@apollo/client";
-import { GET_FILE_CONTENTS } from "../sourcegraph/gql/queries";
-import { BlobContents, GetFileContents, GetFileContentsVariables } from "../sourcegraph/gql/schema";
-import { bold, codeBlock, quoteBlock } from "../markdown";
-import { count, sentenceCase } from "../text";
 
 const link = new LinkBuilder("search");
 
@@ -421,9 +420,7 @@ function ResultView({
   searchResult: SearchResult;
   icon: Image.ImageLike;
 }) {
-  const [getFileContents, fileContents] = useLazyQuery<GetFileContents, GetFileContentsVariables>(GET_FILE_CONTENTS, {
-    client: src.client,
-  });
+  const [getFileContents, fileContents] = useGetFileContentsLazyQuery(src);
 
   const { match } = searchResult;
   const navigationTitle = `View ${match.type} result`;
