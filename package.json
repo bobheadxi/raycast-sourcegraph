@@ -150,12 +150,12 @@
     }
   ],
   "dependencies": {
-    "@apollo/client": "^3.5.10",
-    "@raycast/api": "^1.33.2",
+    "@apollo/client": "^3.6.5",
+    "@raycast/api": "^1.35.2",
     "cross-fetch": "^3.1.5",
-    "eventsource": "^2.0.0",
-    "luxon": "^2.3.2",
-    "nanoid": "^3.3.3"
+    "eventsource": "^2.0.2",
+    "luxon": "^2.4.0",
+    "nanoid": "^3.3.4"
   },
   "devDependencies": {
     "@types/eventsource": "^1.1.8",
