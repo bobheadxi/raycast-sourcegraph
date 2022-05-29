@@ -1,17 +1,17 @@
-import { ActionPanel, List, Action, Detail, Icon, Image, useNavigation } from "@raycast/api";
-import { useState, useRef, Fragment, useMemo } from "react";
+import { ActionPanel, List, Action, Detail, Icon, Image } from "@raycast/api";
+import { useState, Fragment, useMemo } from "react";
 import { nanoid } from "nanoid";
 import { DateTime } from "luxon";
 
 import { Sourcegraph, instanceName, LinkBuilder } from "../sourcegraph";
-import { PatternType, performSearch, SearchResult, Suggestion } from "../sourcegraph/stream-search";
+import { PatternType, SearchResult, Suggestion } from "../sourcegraph/stream-search";
 import { ContentMatch, SymbolMatch } from "../sourcegraph/stream-search/stream";
 import { BlobContentsFragment as BlobContents, useGetFileContentsLazyQuery } from "../sourcegraph/gql/operations";
 import { bold, codeBlock, quoteBlock } from "../markdown";
 import { count, sentenceCase } from "../text";
+import { useSearch } from "../hooks/search";
 
 import { ColorDefault, ColorEmphasis, ColorPrivate } from "./colors";
-import ExpandableErrorToast from "./ExpandableErrorToast";
 import { copyShortcut, drilldownShortcut, tertiaryActionShortcut } from "./shortcuts";
 
 const link = new LinkBuilder("search");
@@ -27,7 +27,7 @@ export default function SearchCommand({ src }: { src: Sourcegraph }) {
     src.featureFlags.searchPatternDropdown ? undefined : "literal"
   );
 
-  const { state, search } = useSearch(src);
+  const { state, search } = useSearch(src, MAX_RENDERED_RESULTS);
   useMemo(() => {
     if (patternType) {
       search(searchText, patternType);
@@ -571,99 +571,4 @@ function SuggestionItem({
       }
     />
   );
-}
-
-interface SearchState {
-  results: SearchResult[];
-  suggestions: Suggestion[];
-  summary: string;
-  summaryDetail?: string;
-  isLoading: boolean;
-  previousSearch: string;
-}
-
-function useSearch(src: Sourcegraph) {
-  const [state, setState] = useState<SearchState>({
-    results: [],
-    suggestions: [],
-    summary: "",
-    isLoading: false,
-    previousSearch: "",
-  });
-  const cancelRef = useRef<AbortController | null>(null);
-  const { push } = useNavigation();
-
-  async function search(searchText: string, pattern: PatternType) {
-    // Do not repeat searches that are essentially the same
-    if (state.previousSearch.trim() === searchText.trim()) {
-      return;
-    }
-
-    // Reset state for new search
-    setState({
-      results: [],
-      suggestions: [],
-      summary: "",
-      summaryDetail: undefined,
-      isLoading: true,
-      previousSearch: searchText,
-    });
-
-    try {
-      // Cancel previous search
-      cancelRef.current?.abort();
-      cancelRef.current = new AbortController();
-
-      // Do the search
-      await performSearch(cancelRef.current.signal, src, searchText, pattern, {
-        onResults: (results) => {
-          setState((oldState) => {
-            if (oldState.results.length > MAX_RENDERED_RESULTS) {
-              return {
-                ...oldState,
-                summaryDetail: `${MAX_RENDERED_RESULTS} results shown`,
-              };
-            }
-            return {
-              ...oldState,
-              results: oldState.results.concat(results),
-            };
-          });
-        },
-        onSuggestions: (suggestions, pushToTop) => {
-          setState((oldState) => ({
-            ...oldState,
-            suggestions: pushToTop
-              ? suggestions.concat(oldState.suggestions)
-              : oldState.suggestions.concat(suggestions),
-          }));
-        },
-        onAlert: (alert) => {
-          ExpandableErrorToast(push, "Alert", alert.title, alert.description || "").show();
-        },
-        onProgress: (progress) => {
-          setState((oldState) => ({
-            ...oldState,
-            summary: `Found ${progress.matchCount}${progress.skipped ? "+" : ""} results in ${progress.duration}`,
-          }));
-        },
-      });
-      setState((oldState) => ({
-        ...oldState,
-        isLoading: false,
-      }));
-    } catch (error) {
-      ExpandableErrorToast(push, "Unexpected error", "Search failed", String(error)).show();
-
-      setState((oldState) => ({
-        ...oldState,
-        isLoading: false,
-      }));
-    }
-  }
-
-  return {
-    state: state,
-    search: search,
-  };
 }

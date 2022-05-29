@@ -12,8 +12,10 @@ export interface SearchResult {
 export interface Suggestion {
   title: string;
   description?: string;
-  // query describes an entire query to replace the existing query with, or a partial
-  // addition.
+  /**
+   * query describes an entire query to replace the existing query with, or a partial
+   * query to be appended to the current query.
+   */
   query?: { addition: string } | string;
 }
 
