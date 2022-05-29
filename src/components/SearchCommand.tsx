@@ -16,6 +16,8 @@ import { copyShortcut, drilldownShortcut, tertiaryActionShortcut } from "./short
 
 const link = new LinkBuilder("search");
 
+const MAX_RENDERED_RESULTS = 100;
+
 /**
  * SearchCommand is the shared search command implementation.
  */
@@ -47,9 +49,9 @@ export default function SearchCommand({ src }: { src: Sourcegraph }) {
       {/* show suggestions IFF no results */}
       {!state.isLoading && state.results.length === 0 ? (
         <List.Section title="Suggestions" subtitle={state.summary || ""}>
-          {state.suggestions.slice(0, 3).map((suggestion) => (
+          {state.suggestions.slice(0, 3).map((suggestion, i) => (
             <SuggestionItem
-              key={nanoid()}
+              key={`suggestion-item-${i}`}
               suggestion={suggestion}
               searchText={searchText}
               setSearchText={setSearchText}
@@ -82,10 +84,13 @@ export default function SearchCommand({ src }: { src: Sourcegraph }) {
       )}
 
       {/* results */}
-      <List.Section title="Results" subtitle={state.summary || ""}>
-        {state.results.map((searchResult) => (
+      <List.Section
+        title="Results"
+        subtitle={state.summaryDetail ? `${state.summary} (${state.summaryDetail})` : state.summary}
+      >
+        {state.results.map((searchResult, i) => (
           <SearchResultItem
-            key={nanoid()}
+            key={`result-item-${i}`}
             searchResult={searchResult}
             searchText={searchText}
             src={src}
@@ -571,7 +576,8 @@ function SuggestionItem({
 interface SearchState {
   results: SearchResult[];
   suggestions: Suggestion[];
-  summary: string | null;
+  summary: string;
+  summaryDetail?: string;
   isLoading: boolean;
   previousSearch: string;
 }
@@ -593,27 +599,36 @@ function useSearch(src: Sourcegraph) {
       return;
     }
 
-    // Cancel previous search
-    cancelRef.current?.abort();
-    cancelRef.current = new AbortController();
-
     // Reset state for new search
-    setState((oldState) => ({
-      ...oldState,
+    setState({
       results: [],
       suggestions: [],
-      summary: null,
+      summary: "",
+      summaryDetail: undefined,
       isLoading: true,
       previousSearch: searchText,
-    }));
+    });
 
     try {
+      // Cancel previous search
+      cancelRef.current?.abort();
+      cancelRef.current = new AbortController();
+
+      // Do the search
       await performSearch(cancelRef.current.signal, src, searchText, pattern, {
         onResults: (results) => {
-          setState((oldState) => ({
-            ...oldState,
-            results: oldState.results.concat(results),
-          }));
+          setState((oldState) => {
+            if (oldState.results.length > MAX_RENDERED_RESULTS) {
+              return {
+                ...oldState,
+                summaryDetail: `${MAX_RENDERED_RESULTS} results shown`,
+              };
+            }
+            return {
+              ...oldState,
+              results: oldState.results.concat(results),
+            };
+          });
         },
         onSuggestions: (suggestions, pushToTop) => {
           setState((oldState) => ({
@@ -629,7 +644,7 @@ function useSearch(src: Sourcegraph) {
         onProgress: (progress) => {
           setState((oldState) => ({
             ...oldState,
-            summary: `${progress.matchCount} results in ${progress.duration}`,
+            summary: `Found ${progress.matchCount}${progress.skipped ? "+" : ""} results in ${progress.duration}`,
           }));
         },
       });

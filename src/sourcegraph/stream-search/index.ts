@@ -1,4 +1,5 @@
 import EventSource from "eventsource";
+import { Duration } from "luxon";
 
 import { getMatchUrl, SearchEvent, SearchMatch, LATEST_VERSION } from "./stream";
 import { LinkBuilder, Sourcegraph } from "..";
@@ -24,6 +25,7 @@ export interface Alert {
 export interface Progress {
   matchCount: number;
   duration: string;
+  skipped: number;
 }
 
 export interface SearchHandlers {
@@ -180,9 +182,17 @@ export async function performSearch(
         type: "progress",
         data: message.data ? JSON.parse(message.data) : {},
       };
+
+      const {
+        data: { matchCount, durationMs, skipped },
+      } = event;
+
       handlers.onProgress({
-        matchCount: event.data.matchCount,
-        duration: `${event.data.durationMs}ms`,
+        matchCount: matchCount,
+        duration: Duration.fromObject({ seconds: durationMs > 1000 ? 0 : undefined, milliseconds: durationMs })
+          .normalize()
+          .toHuman({ unitDisplay: "narrow" }),
+        skipped: skipped?.length || 0,
       });
     });
 
