@@ -270,7 +270,7 @@ function SearchResultItem({
       subtitle = DateTime.fromISO(match.authorDate).toRelative() || match.authorDate;
       subtitleTooltip = match.authorDate;
       matchDetails.push(`by ${match.authorName}`);
-      drilldownAction = makeDrilldownAction("Search Revision", setSearchText, {
+      drilldownAction = makeDrilldownAction("Search Revision of Repository", setSearchText, {
         repo: match.repository,
         revision: match.oid,
       });
