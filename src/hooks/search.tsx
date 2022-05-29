@@ -33,6 +33,15 @@ export interface SearchState {
   previousSearch?: string;
 }
 
+const emptyState: SearchState = {
+  results: [],
+  suggestions: [],
+  summary: "",
+  summaryDetail: undefined,
+  isLoading: false,
+  previousSearch: undefined,
+};
+
 /**
  * useSearch enables search capabilities.
  *
@@ -40,16 +49,17 @@ export interface SearchState {
  * @param maxResults Configures the maximum number of results to send to state
  */
 export function useSearch(src: Sourcegraph, maxResults: number) {
-  const [state, setState] = useState<SearchState>({
-    results: [],
-    suggestions: [],
-    summary: "",
-    isLoading: false,
-  });
+  const [state, setState] = useState<SearchState>(emptyState);
   const cancelRef = useRef<AbortController | null>(null);
   const { push } = useNavigation();
 
   async function search(searchText: string, pattern: PatternType) {
+    // Do not execute empty search - simply reset state
+    if (!searchText.trim()) {
+      setState(emptyState);
+      return;
+    }
+
     // Do not repeat searches that are essentially the same
     if ((state.previousSearch || "").trim() === searchText.trim()) {
       return;
@@ -57,10 +67,7 @@ export function useSearch(src: Sourcegraph, maxResults: number) {
 
     // Reset state for new search
     setState({
-      results: [],
-      suggestions: [],
-      summary: "",
-      summaryDetail: undefined,
+      ...emptyState,
       isLoading: true,
       previousSearch: searchText,
     });
@@ -104,13 +111,9 @@ export function useSearch(src: Sourcegraph, maxResults: number) {
           }));
         },
       });
-      setState((oldState) => ({
-        ...oldState,
-        isLoading: false,
-      }));
     } catch (error) {
       ExpandableErrorToast(push, "Unexpected error", "Search failed", String(error)).show();
-
+    } finally {
       setState((oldState) => ({
         ...oldState,
         isLoading: false,
