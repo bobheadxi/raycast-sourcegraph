@@ -252,6 +252,10 @@ function SearchResultItem({
       }
       title = match.repository;
       subtitle = match.description || "";
+      // Add repo name to popover if we are at risk of cutting it off
+      if (title.length > 30 && title.length + subtitle.length > 90) {
+        matchDetails.push(match.repository);
+      }
       if (match.repoStars) {
         accessory.text = `${match.repoStars}`;
         accessory.icon = Icon.Star;
