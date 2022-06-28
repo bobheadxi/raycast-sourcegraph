@@ -235,6 +235,10 @@ function SearchResultItem({
   // subtitle, which can be long and helpful to present in the results list.
   let subtitleTooltip: string | undefined;
 
+  // A guesstimated threshold at which title + subtitle is long and likely to cause
+  // cutting-off of text
+  const combinedThreshold = 90;
+
   switch (match.type) {
     case "repo":
       if (match.fork) {
@@ -253,7 +257,7 @@ function SearchResultItem({
       title = match.repository;
       subtitle = match.description || "";
       // Add repo name to popover if we are at risk of cutting it off
-      if (title.length > 30 && title.length + subtitle.length > 90) {
+      if (title.length > 30 && title.length + subtitle.length > combinedThreshold) {
         matchDetails.push(match.repository);
       }
       if (match.repoStars) {
@@ -320,7 +324,14 @@ function SearchResultItem({
   return (
     <List.Item
       title={{ value: title, tooltip: matchDetails.join(", ") }}
-      subtitle={{ value: subtitle, tooltip: subtitleTooltip || subtitle }}
+      subtitle={{
+        value: subtitle,
+        // If no subtitle is present, let subtitle itself be hoverable if it is long
+        // using a guesstimated threshold
+        tooltip:
+          subtitleTooltip ||
+          (subtitle.length > 60 && title.length + subtitle.length > combinedThreshold ? subtitle : ""),
+      }}
       accessories={accessories}
       icon={{ value: icon, tooltip: sentenceCase(`${matchTypeDetails.join(", ")} ${match.type} match`) }}
       actions={

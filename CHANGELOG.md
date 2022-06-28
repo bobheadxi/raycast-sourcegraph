@@ -3,6 +3,7 @@
 ## Improved search result tooltips - Unreleased
 
 - **search**: Repository results with long names and long descriptions that are at risk of getting their names cut off are now hoverable for the full name of the repository.
+- **search**: Repository results with short descriptions no longer have hover text.
 
 ## [Search performance improvements](https://github.com/raycast/extensions/pull/1844) - 2022-05-29
 
