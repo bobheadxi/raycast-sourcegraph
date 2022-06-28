@@ -216,6 +216,14 @@ function SearchResultItem({
   const queryURL = getQueryURL(src, searchText);
   const { match } = searchResult;
 
+  // Branches is a common property for setting a revision
+  let revisions: string[] | undefined;
+  let firstRevision: string | undefined;
+  if ("branches" in match && match.branches) {
+    revisions = match.branches;
+    firstRevision = match.branches[0];
+  }
+
   // Title to denote the result
   let title = "";
   // Subtitle to show context about the result
@@ -223,7 +231,12 @@ function SearchResultItem({
   // Icon to denote the type of the result
   const icon: Image.ImageLike = { source: Icon.Dot, tintColor: ColorDefault };
   // Broader context about the result, usually just the repository.
-  const accessory: List.Item.Accessory = { text: match.repository, tooltip: match.repository };
+  const accessory: List.Item.Accessory = revisions
+    ? {
+        text: `${match.repository}@${firstRevision}`,
+        tooltip: `${match.repository}@${firstRevision}`,
+      }
+    : { text: match.repository, tooltip: match.repository };
 
   // Action to drill down on the search result.
   let drilldownAction: React.ReactElement | undefined;
@@ -256,6 +269,12 @@ function SearchResultItem({
       }
       title = match.repository;
       subtitle = match.description || "";
+      if (revisions) {
+        // On revision matches, render the branch match first and move the default
+        // subtitle to a hover item.
+        subtitleTooltip = subtitle;
+        subtitle = revisions.map((r) => `@${r}`).join(", ");
+      }
       // Add repo name to popover if we are at risk of cutting it off
       if (title.length > 30 && title.length + subtitle.length > combinedThreshold) {
         matchDetails.push(match.repository);
@@ -269,6 +288,7 @@ function SearchResultItem({
       }
       drilldownAction = makeDrilldownAction("Search Repository", setSearchText, {
         repo: match.repository,
+        revision: firstRevision,
       });
       break;
 
@@ -280,7 +300,7 @@ function SearchResultItem({
       matchDetails.push(`by ${match.authorName}`);
       drilldownAction = makeDrilldownAction("Search Revision of Repository", setSearchText, {
         repo: match.repository,
-        revision: match.oid,
+        revision: match.oid, // a commit is always a revision
       });
       break;
 
@@ -290,6 +310,7 @@ function SearchResultItem({
       drilldownAction = makeDrilldownAction("Search File", setSearchText, {
         repo: match.repository,
         file: match.path,
+        revision: firstRevision,
       });
       break;
 
@@ -301,6 +322,7 @@ function SearchResultItem({
       drilldownAction = makeDrilldownAction("Search File", setSearchText, {
         repo: match.repository,
         file: match.path,
+        revision: firstRevision,
       });
       break;
 
@@ -312,6 +334,7 @@ function SearchResultItem({
       drilldownAction = makeDrilldownAction("Search File", setSearchText, {
         repo: match.repository,
         file: match.path,
+        revision: firstRevision,
       });
       break;
   }

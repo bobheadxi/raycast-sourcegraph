@@ -1,7 +1,8 @@
 # Changelog
 
-## Improved search result tooltips - Unreleased
+## Improved revision search and result tooltips - Unreleased
 
+- **search**: Results from revision matches (e.g. with `repo:sourcegraph@3.41`) now annotate results with which revision the match was on, and drilldowns (<kbd>Tab</kbd> on a result) now more consistently apply the appropriate revision to generated searches.
 - **search**: Repository results with long names and long descriptions that are at risk of getting their names cut off are now hoverable for the full name of the repository.
 - **search**: Repository results with short descriptions no longer have hover text.
 
