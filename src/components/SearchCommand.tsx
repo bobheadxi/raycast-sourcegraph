@@ -231,7 +231,7 @@ function SearchResultItem({
   // Icon to denote the type of the result
   const icon: Image.ImageLike = { source: Icon.Dot, tintColor: ColorDefault };
   // Broader context about the result, usually just the repository.
-  const accessory: List.Item.Accessory = revisions
+  const accessory: List.Item.Accessory = firstRevision
     ? {
         text: `${match.repository}@${firstRevision}`,
         tooltip: `${match.repository}@${firstRevision}`,
