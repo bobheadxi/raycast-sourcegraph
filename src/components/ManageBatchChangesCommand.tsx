@@ -15,7 +15,7 @@ import {
 } from "../sourcegraph/gql/operations";
 
 import { copyShortcut, refreshShortcut, secondaryActionShortcut, tertiaryActionShortcut } from "./shortcuts";
-import ExpandableErrorToast from "./ExpandableErrorToast";
+import ExpandableToast from "./ExpandableToast";
 import { propsToKeywords } from "./keywords";
 
 import { sentenceCase } from "../text";
@@ -43,7 +43,7 @@ export default function ManageBatchChanges({ src }: { src: Sourcegraph }) {
 
   const { push } = useNavigation();
   if (error) {
-    ExpandableErrorToast(push, "Unexpected error", "Get batch changes failed", error.message).show();
+    ExpandableToast(push, "Unexpected error", "Get batch changes failed", error.message).show();
   }
 
   const showSuggestions = !loading && searchText === "";
@@ -203,7 +203,7 @@ function BatchChangeView({ batchChange, src }: { batchChange: BatchChange; src: 
 
   const { push } = useNavigation();
   if (error) {
-    ExpandableErrorToast(push, "Unexpected error", "Get changesets failed", error.message).show();
+    ExpandableToast(push, "Unexpected error", "Get changesets failed", error.message).show();
   }
 
   const published = changesets.filter((c) => c.state !== "UNPUBLISHED");
@@ -280,7 +280,7 @@ function ChangesetItem({
   const [publishChangeset, { error: publishError }] = usePublishChangesetMutation(src);
   const error = mergeError || publishError || reenqueueError;
   if (error) {
-    ExpandableErrorToast(push, "Unexpected error", "Changeset operation failed", error.message).show();
+    ExpandableToast(push, "Unexpected error", "Changeset operation failed", error.message).show();
   }
 
   const icon: Image.ImageLike = { source: Icon.Circle };

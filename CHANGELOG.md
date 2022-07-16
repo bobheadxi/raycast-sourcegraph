@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **search**: Add support for lucky suggestions.
+
 ## [Bug fix](https://github.com/raycast/extensions/pull/2210) - 2022-07-07
 
 - **search**: Fix issue where search results with lengthy details can cause Raycast to crash.
