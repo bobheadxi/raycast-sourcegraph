@@ -3,6 +3,7 @@
 ## Unreleased
 
 - **search**: Add support for lucky suggestions.
+- **all**: Iconography has been updated throughout the extension.
 
 ## [Bug fix](https://github.com/raycast/extensions/pull/2210) - 2022-07-07
 

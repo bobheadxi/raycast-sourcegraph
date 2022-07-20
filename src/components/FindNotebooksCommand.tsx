@@ -51,7 +51,7 @@ export default function FindNotebooksCommand({ src }: { src: Sourcegraph }) {
         <List.Section title={"Suggestions"}>
           <List.Item
             title="Create a search notebook"
-            icon={{ source: Icon.Plus }}
+            icon={{ source: Icon.NewDocument }}
             actions={
               <ActionPanel>
                 <Action.OpenInBrowser title="Create in Browser" url={link.new(src, `/notebooks/new`)} />
@@ -112,7 +112,7 @@ function NotebookResultItem({
       accessories={accessories}
       icon={{
         value: {
-          source: Icon.Document,
+          source: Icon.CodeBlock,
           tintColor: notebook.public ? ColorDefault : ColorPrivate,
         },
         tooltip: notebook.public ? "Public notebook" : "Private notebook",
@@ -122,7 +122,7 @@ function NotebookResultItem({
           <Action.Push
             key={nanoid()}
             title="Preview Notebook"
-            icon={{ source: Icon.MagnifyingGlass }}
+            icon={{ source: Icon.Maximize }}
             target={<NotebookPreviewView notebook={notebook} src={src} />}
           />
           <Action.OpenInBrowser key={nanoid()} url={url} />

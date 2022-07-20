@@ -106,22 +106,38 @@ function BatchChangeItem({
   }
   const author = batchChange.creator?.displayName || batchChange.creator?.username;
 
+  // Indicated publisched changesets with the icon
+  const { changesetsStats } = batchChange;
+  const publishedChangesets = changesetsStats.total - changesetsStats.unpublished;
   const icon: Image.ImageLike = { source: Icon.Circle };
+  if (publishedChangesets > 0) {
+    // If anything is published, show a bit of progress
+    icon.source = Icon.CircleProgress25;
+  }
+  if (publishedChangesets > changesetsStats.total * 0.5) {
+    icon.source = Icon.CircleProgress50;
+  }
+  if (publishedChangesets > changesetsStats.total * 0.75) {
+    icon.source = Icon.CircleProgress75;
+  }
+  if (publishedChangesets > 0 && publishedChangesets === changesetsStats.total) {
+    // All changesets published!
+    icon.source = Icon.CircleProgress100;
+  }
+
+  // Indicate state with color
   switch (batchChange.state) {
     case "OPEN":
-      icon.source = Icon.Circle;
       icon.tintColor = Color.Green;
       break;
     case "CLOSED":
-      icon.source = Icon.Checkmark;
       icon.tintColor = Color.Red;
       break;
     case "DRAFT":
-      icon.source = Icon.Document;
       break;
   }
 
-  const { changesetsStats } = batchChange;
+  // Add summary stats
   const accessories: List.Item.Accessory[] = [];
   if (changesetsStats.open) {
     accessories.push({
@@ -139,7 +155,7 @@ function BatchChangeItem({
   }
   if (changesetsStats.draft || changesetsStats.unpublished) {
     accessories.push({
-      icon: { tintColor: Color.SecondaryText, source: Icon.Document },
+      icon: { tintColor: Color.SecondaryText, source: Icon.CircleEllipsis },
       text: `${changesetsStats.draft + changesetsStats.unpublished}`,
       tooltip: "Unpublished changesets",
     });
@@ -158,7 +174,7 @@ function BatchChangeItem({
           <Action.Push
             key={nanoid()}
             title="View Batch Change"
-            icon={{ source: Icon.MagnifyingGlass }}
+            icon={{ source: Icon.Maximize }}
             target={<BatchChangeView batchChange={batchChange} src={src} />}
           />
           <Action.OpenInBrowser key={nanoid()} url={url} shortcut={secondaryActionShortcut} />
@@ -290,7 +306,7 @@ function ChangesetItem({
   switch (changeset.state) {
     case "OPEN":
       icon.tintColor = Color.Green;
-      icon.source = Icon.Circle;
+      icon.source = Icon.Dot;
 
       if (changeset.__typename !== "ExternalChangeset") {
         break;
