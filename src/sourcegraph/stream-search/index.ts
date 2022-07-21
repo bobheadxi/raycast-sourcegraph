@@ -56,7 +56,7 @@ export async function performSearch(
     ["q", query],
     ["v", LATEST_VERSION],
     ["t", patternType],
-    ["display", "1500"],
+    ["display", "200"],
   ]);
   const requestURL = link.new(src, "/.api/search/stream", parameters);
   const stream = src.token
