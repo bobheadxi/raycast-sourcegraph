@@ -2,8 +2,9 @@
 
 ## Unreleased
 
-- **search**: Add support for lucky suggestions.
 - **all**: Iconography has been updated throughout the extension.
+- **search**: Add support for lucky suggestions.
+- **search**: Improve items for suggested filters.
 
 ## [Bug fix](https://github.com/raycast/extensions/pull/2210) - 2022-07-07
 

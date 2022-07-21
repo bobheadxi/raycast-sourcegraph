@@ -118,8 +118,7 @@ export async function performSearch(
           .filter((s) => s.count > 1)
           .map((f) => {
             return {
-              title: `Filter for '${f.label}'`,
-              description: `${f.count} matches`,
+              title: f.label,
               query: { addition: f.value },
             };
           }),
