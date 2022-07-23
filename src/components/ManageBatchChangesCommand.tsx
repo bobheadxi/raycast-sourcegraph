@@ -1,4 +1,5 @@
 import { ActionPanel, List, Action, Icon, useNavigation, Toast, Image, Color, showToast, Form } from "@raycast/api";
+import { getProgressIcon } from "@raycast/utils";
 import { useState, Fragment, useMemo } from "react";
 import { DateTime } from "luxon";
 import { nanoid } from "nanoid";
@@ -106,35 +107,22 @@ function BatchChangeItem({
   }
   const author = batchChange.creator?.displayName || batchChange.creator?.username;
 
-  // Indicated publisched changesets with the icon
+  // Indicated published changesets with the icon
   const { changesetsStats } = batchChange;
   const publishedChangesets = changesetsStats.total - changesetsStats.unpublished;
-  const icon: Image.ImageLike = { source: Icon.Circle };
-  if (publishedChangesets > 0) {
-    // If anything is published, show a bit of progress
-    icon.source = Icon.CircleProgress25;
-  }
-  if (publishedChangesets > changesetsStats.total * 0.5) {
-    icon.source = Icon.CircleProgress50;
-  }
-  if (publishedChangesets > changesetsStats.total * 0.75) {
-    icon.source = Icon.CircleProgress75;
-  }
-  if (publishedChangesets > 0 && publishedChangesets === changesetsStats.total) {
-    // All changesets published!
-    icon.source = Icon.CircleProgress100;
-  }
-
-  // Indicate state with color
+  const progress = publishedChangesets ? publishedChangesets / changesetsStats.total : 0;
+  let icon: Image.ImageLike;
   switch (batchChange.state) {
     case "OPEN":
-      icon.tintColor = Color.Green;
+      // Provide hex because this API does not accept Color.
+      icon = getProgressIcon(progress, "#37b24d");
       break;
     case "CLOSED":
-      icon.tintColor = Color.Red;
+      // Provide hex because this API does not accept Color.
+      icon = getProgressIcon(progress, "#c92a2a");
       break;
-    case "DRAFT":
-      break;
+    default:
+      icon = { source: Icon.Document };
   }
 
   // Add summary stats
