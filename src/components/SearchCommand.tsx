@@ -221,7 +221,7 @@ function SearchResultItem({
   let firstRevision: string | undefined;
   if ("branches" in match && match.branches) {
     revisions = match.branches;
-    firstRevision = match.branches[0];
+    firstRevision = match.branches[0] === "HEAD" ? undefined : match.branches[0];
   }
 
   // Title to denote the result
