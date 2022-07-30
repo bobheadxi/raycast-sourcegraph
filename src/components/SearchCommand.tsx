@@ -220,8 +220,11 @@ function SearchResultItem({
   let revisions: string[] | undefined;
   let firstRevision: string | undefined;
   if ("branches" in match && match.branches) {
-    revisions = match.branches;
-    firstRevision = match.branches[0] === "HEAD" ? undefined : match.branches[0];
+    // Only show interesting branches
+    if (match.branches.length === 1 && match.branches[0] !== "HEAD") {
+      revisions = match.branches;
+      firstRevision = match.branches[0];
+    }
   }
 
   // Title to denote the result
