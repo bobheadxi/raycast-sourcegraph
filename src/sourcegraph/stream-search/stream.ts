@@ -1,5 +1,4 @@
-// https://sourcegraph.com/search?q=context:global+repo:%5Egithub%5C.com/sourcegraph/sourcegraph%24+file:%5Ecmd/frontend/graphqlbackend/schema%5C.graphql+SymbolKind&patternType=literal
-export type SymbolKind = string;
+import { SymbolKind } from "../gql/operations";
 
 // https://sourcegraph.com/github.com/sourcegraph/sourcegraph/-/blob/client/common/src/errors/types.ts?L3&subtree=true
 export interface ErrorLike {
