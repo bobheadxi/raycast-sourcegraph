@@ -59,10 +59,14 @@ export async function performSearch(
     ["display", "200"],
   ]);
   const requestURL = link.new(src, "/.api/search/stream", parameters);
-  const stream = src.token
-    ? new EventSource(requestURL, { headers: { Authorization: `token ${src.token}` } })
-    : new EventSource(requestURL);
+  const headers: { [key: string]: string } = {
+    "X-Requested-With": "Raycast-Sourcegraph",
+  };
+  if (src.token) {
+    headers["Authorization"] = `token ${src.token}`;
+  }
 
+  const stream = new EventSource(requestURL, { headers });
   return new Promise((resolve) => {
     /**
      * All events that indicate the end of the request should use this to resolve.
