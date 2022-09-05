@@ -9,9 +9,13 @@ export interface ErrorLike {
 // Copied from https://sourcegraph.com/github.com/sourcegraph/sourcegraph/-/blob/client/shared/src/search/stream.ts?L12&subtree=true
 
 // The latest supported version of our search syntax. Users should never be able to determine the search version.
-// The version is set based on the release tag of the instance. Anything before 3.9.0 will not pass a version parameter,
-// and will therefore default to V1.
-export const LATEST_VERSION = "V2";
+// The version is set based on the release tag of the instance.
+// History:
+// V3 - default to standard interpretation (RFC 675): Interpret patterns enclosed by /.../ as regular expressions. Interpret patterns literally otherwise.
+// V2 - default to interpreting patterns literally only.
+// V1 - default to interpreting patterns as regular expressions.
+// None - Anything before 3.9.0 will not pass a version parameter and defaults to V1.
+export const LATEST_VERSION = "V3";
 
 /** All values that are valid for the `type:` filter. `null` represents default code search. */
 export type SearchType = "file" | "repo" | "path" | "symbol" | "diff" | "commit" | null;
@@ -29,6 +33,7 @@ export type SearchMatch = ContentMatch | RepositoryMatch | CommitMatch | SymbolM
 export interface PathMatch {
   type: "path";
   path: string;
+  pathMatches?: Range[];
   repository: string;
   repoStars?: number;
   repoLastFetched?: string;
@@ -93,6 +98,7 @@ export interface MatchedSymbol {
   name: string;
   containerName: string;
   kind: SymbolKind;
+  line: number;
 }
 
 type MarkdownText = string;
@@ -129,6 +135,7 @@ export interface RepositoryMatch {
   archived?: boolean;
   private?: boolean;
   branches?: string[];
+  descriptionMatches?: Range[];
 }
 
 /**
@@ -223,8 +230,12 @@ interface Alert {
   proposedQueries: ProposedQuery[] | null;
 }
 
+// Same key values from internal/search/alert.go
+export type AnnotationName = "ResultCount";
+
 interface ProposedQuery {
   description?: string | null;
+  annotations?: { name: AnnotationName; value: string }[];
   query: string;
 }
 
