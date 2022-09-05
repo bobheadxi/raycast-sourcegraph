@@ -63,6 +63,14 @@ export enum AnalyticsDateRange {
   LastWeek = "LAST_WEEK",
 }
 
+/** Group site analytics by period. */
+export enum AnalyticsGrouping {
+  /** Group data by day. */
+  Daily = "DAILY",
+  /** Group data by week. */
+  Weekly = "WEEKLY",
+}
+
 /** Denotes the type of operation of a given log entry. */
 export enum AuditLogOperation {
   /** Denotes this log entry represents an INSERT query. */
@@ -319,6 +327,13 @@ export enum ChangesetState {
   Scheduled = "SCHEDULED",
   /** The changeset has not been marked as to be published. */
   Unpublished = "UNPUBLISHED",
+}
+
+/** The clone status of a repository. */
+export enum CloneStatus {
+  Cloned = "CLONED",
+  Cloning = "CLONING",
+  NotCloned = "NOT_CLONED",
 }
 
 /**
@@ -594,6 +609,16 @@ export type HighlightLineRange = {
   startLine: Scalars["Int"];
 };
 
+/** The format and highlighting to use when requesting highlighting information for a file. */
+export enum HighlightResponseFormat {
+  /** HTML formatted file content with syntax highlighting. */
+  HtmlHighlight = "HTML_HIGHLIGHT",
+  /** HTML formatted file content without syntax highlighting. */
+  HtmlPlaintext = "HTML_PLAINTEXT",
+  /** SCIP highlighting information as JSON. */
+  JsonScip = "JSON_SCIP",
+}
+
 /** Denotes the confidence in the correctness of the proposed index target. */
 export enum InferedPreciseSupportLevel {
   /**
@@ -740,23 +765,6 @@ export type LineChartSearchInsightInput = {
   viewControls?: InputMaybe<InsightViewControlsInput>;
 };
 
-/** Fidelity of a lockfile index. */
-export enum LockfileIndexFidelity {
-  /**
-   * If we couldn't determine the roots of the dependency graph because it's
-   * circular. That means we can't say what's a direct dependency and what not, but
-   * we can tell which dependency depends on which other dependency.
-   */
-  Circular = "CIRCULAR",
-  /**
-   * Couldn't build a complete graph from lockfile. It's instead a flat list of
-   * dependencies found in the lockfile.
-   */
-  Flat = "FLAT",
-  /** Full dependency graph. */
-  Graph = "GRAPH",
-}
-
 /** Describes options for rendering Markdown. */
 export type MarkdownOptions = {
   /** A dummy null value (empty input types are not allowed yet). */
@@ -894,6 +902,15 @@ export type MonitorWebhookInput = {
   url: Scalars["String"];
 };
 
+/** An enum to describe the reasons why a search aggregations are not available */
+export enum NotAvailableReasonType {
+  InvalidAggregationModeForQuery = "INVALID_AGGREGATION_MODE_FOR_QUERY",
+  InvalidQuery = "INVALID_QUERY",
+  OtherError = "OTHER_ERROR",
+  TimeoutExtensionAvailable = "TIMEOUT_EXTENSION_AVAILABLE",
+  TimeoutNoExtensionAvailable = "TIMEOUT_NO_EXTENSION_AVAILABLE",
+}
+
 /** Enum of possible block types. */
 export enum NotebookBlockType {
   Compute = "COMPUTE",
@@ -1000,24 +1017,6 @@ export type ProductSubscriptionInput = {
   userCount: Scalars["Int"];
 };
 
-/** Input for getting insights related to a file. This input type is experimental and should be considered unstable in the API. */
-export type RelatedInsightsInput = {
-  /** The path to the file */
-  file: Scalars["String"];
-  /** The repo name for the file */
-  repo: Scalars["String"];
-  /** The revision number */
-  revision: Scalars["String"];
-};
-
-/** Input for getting insights related to a repo. This input type is experimental and should be considered unstable in the API. */
-export type RelatedInsightsRepoInput = {
-  /** The repo name for the file */
-  repo: Scalars["String"];
-  /** The revision number */
-  revision: Scalars["String"];
-};
-
 /** Input object for adding insight view to dashboard. */
 export type RemoveInsightViewFromDashboardInput = {
   /** ID of the dashboard. */
@@ -1044,6 +1043,14 @@ export type RepositoryScopeInput = {
   /** The list of repositories included in this scope. */
   repositories: Array<Scalars["String"]>;
 };
+
+/** Supported aggregation modes for search aggregations */
+export enum SearchAggregationMode {
+  Author = "AUTHOR",
+  CaptureGroup = "CAPTURE_GROUP",
+  Path = "PATH",
+  Repo = "REPO",
+}
 
 /**
  * Tiered list of types of search-based support for a language. This may be expanded as different
@@ -1152,6 +1159,7 @@ export type SearchInsightPreviewInput = {
 
 /** The search pattern type. */
 export enum SearchPatternType {
+  Keyword = "keyword",
   Literal = "literal",
   Lucky = "lucky",
   Regexp = "regexp",
@@ -1245,6 +1253,43 @@ export type SettingsMutationGroupInput = {
   lastID?: InputMaybe<Scalars["Int"]>;
   /** The subject whose settings to mutate (organization, user, etc.). */
   subject: Scalars["ID"];
+};
+
+/** SiteUserOrderBy enumerates the ways a users list can be ordered. */
+export enum SiteUserOrderBy {
+  /** The datetime when user was added to the system. */
+  CreatedAt = "CREATED_AT",
+  /** The datetime when user was soft deleted. */
+  DeletedAt = "DELETED_AT",
+  /** User's primary email. */
+  Email = "EMAIL",
+  /** The total number of user's event_logs. */
+  EventsCount = "EVENTS_COUNT",
+  /** The last event_log datetime. */
+  LastActiveAt = "LAST_ACTIVE_AT",
+  /** Whether the user is site admin or not. */
+  SiteAdmin = "SITE_ADMIN",
+  Username = "USERNAME",
+}
+
+/** SiteUsersDateRangeInput argument to filter based on date range or date equals to null */
+export type SiteUsersDateRangeInput = {
+  /** Equal to Null */
+  empty?: InputMaybe<Scalars["Boolean"]>;
+  /** Greater than or equal to */
+  gte?: InputMaybe<Scalars["DateTime"]>;
+  /** Less than or equal to */
+  lte?: InputMaybe<Scalars["DateTime"]>;
+  /** Negation */
+  not?: InputMaybe<Scalars["Boolean"]>;
+};
+
+/** SiteUsersNumberRangeInput argument to filter based on the number range */
+export type SiteUsersNumberRangeInput = {
+  /** Less than or equal to */
+  gte?: InputMaybe<Scalars["Float"]>;
+  /** Greater than or equal to */
+  lte?: InputMaybe<Scalars["Float"]>;
 };
 
 /** Input for a user satisfaction (NPS) survey submission. */
@@ -2173,7 +2218,6 @@ const result: PossibleTypesResultData = {
       "InsightsDashboard",
       "LSIFIndex",
       "LSIFUpload",
-      "LockfileIndex",
       "Monitor",
       "MonitorActionEvent",
       "MonitorEmail",
@@ -2200,10 +2244,14 @@ const result: PossibleTypesResultData = {
     RegistryPublisher: ["Org", "User"],
     RepositoryComparisonInterface: ["PreviewRepositoryComparison", "RepositoryComparison"],
     RepositoryRedirect: ["Redirect", "Repository"],
-    SearchQueryInsightsResult: ["SearchQueryInsights", "SearchQueryInsightsNotAvailable"],
+    SearchAggregationResult: [
+      "ExhaustiveSearchAggregationResult",
+      "NonExhaustiveSearchAggregationResult",
+      "SearchAggregationNotAvailable",
+    ],
     SearchResult: ["CommitSearchResult", "FileMatch", "Repository"],
     SettingsSubject: ["DefaultSettings", "Org", "Site", "User"],
-    StatusMessage: ["CloningProgress", "ExternalServiceSyncError", "IndexingError", "IndexingProgress", "SyncError"],
+    StatusMessage: ["CloningProgress", "ExternalServiceSyncError", "SyncError"],
     TreeEntry: ["GitBlob", "GitTree"],
     TreeEntryLSIFData: ["GitBlobLSIFData", "GitTreeLSIFData"],
     VisibleApplyPreviewTargets: [
