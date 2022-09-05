@@ -161,7 +161,17 @@ export async function performSearch(
           event.data.proposedQueries.map((p) => {
             return {
               title: p.description || event.data.title,
-              description: !p.description ? event.data.title : "",
+              description: p.annotations
+                ?.map((annotation) => {
+                  switch (annotation.name) {
+                    case "ResultCount":
+                      return `${annotation.value} results`;
+                    default:
+                      return undefined;
+                  }
+                })
+                .filter((desc) => !!desc)
+                .join(", "),
               query: p.query,
             };
           }),
