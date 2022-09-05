@@ -49,8 +49,17 @@ export interface ContentMatch {
   repoLastFetched?: string;
   branches?: string[];
   commit?: string;
+  // Usages of lineMatches should support chunkMatches as well
   lineMatches: LineMatch[];
+  // Experimental API from https://github.com/sourcegraph/sourcegraph/pull/37582
+  chunkMatches: ChunkMatch[];
   hunks?: DecoratedHunk[];
+}
+
+interface ChunkMatch {
+  content: string;
+  contentStart: Location;
+  ranges: Range[];
 }
 
 export interface DecoratedHunk {

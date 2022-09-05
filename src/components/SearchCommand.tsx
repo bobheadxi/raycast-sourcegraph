@@ -319,9 +319,21 @@ function SearchResultItem({
 
     case "content":
       icon.source = Icon.Snippets;
-      title = match.lineMatches.map((l) => l.line.trim()).join(" ... ");
+      // Support both lineMatches and chunkMatches
+      title = match.lineMatches
+        ? match.lineMatches.map((l) => l.line.trim()).join(" ... ")
+        : match.chunkMatches
+            .map((c) =>
+              c.content
+                .split("\n")
+                .map((l) => l.trim())
+                .join(" ... ")
+            )
+            .join(" ... ");
       subtitle = match.path;
-      matchDetails.push(count(match.lineMatches.length, "line match", "line matches"));
+      matchDetails.push(
+        count(match.lineMatches ? match.lineMatches.length : match.chunkMatches.length, "line match", "line matches")
+      );
       drilldownAction = makeDrilldownAction("Search File", setSearchText, {
         repo: match.repository,
         file: match.path,
@@ -406,14 +418,29 @@ function MultiResultView({ searchResult }: { searchResult: { url: string; match:
       return (
         <List navigationTitle={navigationTitle} searchBarPlaceholder="Filter matches">
           <List.Section title={match.path} subtitle={matchTitle}>
-            {match.lineMatches.map((l) => (
-              <List.Item
-                key={nanoid()}
-                title={l.line}
-                accessories={[{ text: `L${l.lineNumber}` }]}
-                actions={<ActionPanel>{resultActions(urlWithLineNumber(searchResult.url, l.lineNumber))}</ActionPanel>}
-              />
-            ))}
+            {match.lineMatches
+              ? match.lineMatches.map((l) => (
+                  <List.Item
+                    key={nanoid()}
+                    title={l.line}
+                    accessories={[{ text: `L${l.lineNumber}` }]}
+                    actions={
+                      <ActionPanel>{resultActions(urlWithLineNumber(searchResult.url, l.lineNumber))}</ActionPanel>
+                    }
+                  />
+                ))
+              : match.chunkMatches.map((c) => (
+                  <List.Item
+                    key={nanoid()}
+                    title={c.content}
+                    accessories={[{ text: `L${c.contentStart.line}` }]}
+                    actions={
+                      <ActionPanel>
+                        {resultActions(urlWithLineNumber(searchResult.url, c.contentStart.line))}
+                      </ActionPanel>
+                    }
+                  />
+                ))}
           </List.Section>
         </List>
       );
