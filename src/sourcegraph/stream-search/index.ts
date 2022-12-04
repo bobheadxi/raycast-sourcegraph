@@ -95,7 +95,7 @@ export async function performSearch(
             case "content":
               // Line number appears 0-indexed, for ease of use increment it so links
               // aren't off by 1.
-              match.lineMatches.forEach((l) => {
+              match.lineMatches?.forEach((l) => {
                 l.lineNumber += 1;
               });
               break;

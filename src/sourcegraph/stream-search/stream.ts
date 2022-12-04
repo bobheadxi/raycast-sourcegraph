@@ -39,18 +39,22 @@ export interface PathMatch {
   repoLastFetched?: string;
   branches?: string[];
   commit?: string;
+  debug?: string;
 }
 
 export interface ContentMatch {
   type: "content";
   path: string;
+  pathMatches?: Range[];
   repository: string;
   repoStars?: number;
   repoLastFetched?: string;
   branches?: string[];
   commit?: string;
-  lineMatches: LineMatch[];
+  lineMatches?: LineMatch[];
+  chunkMatches?: ChunkMatch[];
   hunks?: DecoratedHunk[];
+  debug?: string;
 }
 
 export interface DecoratedHunk {
@@ -76,10 +80,16 @@ export interface Location {
   column: number;
 }
 
-interface LineMatch {
+export interface LineMatch {
   line: string;
   lineNumber: number;
   offsetAndLengths: number[][];
+}
+
+interface ChunkMatch {
+  content: string;
+  contentStart: Location;
+  ranges: Range[];
 }
 
 export interface SymbolMatch {
@@ -91,6 +101,7 @@ export interface SymbolMatch {
   branches?: string[];
   commit?: string;
   symbols: MatchedSymbol[];
+  debug?: string;
 }
 
 export interface MatchedSymbol {
@@ -117,6 +128,8 @@ export interface CommitMatch {
   message: string;
   authorName: string;
   authorDate: string;
+  committerName: string;
+  committerDate: string;
   repoStars?: number;
   repoLastFetched?: string;
 
@@ -128,6 +141,7 @@ export interface CommitMatch {
 export interface RepositoryMatch {
   type: "repo";
   repository: string;
+  repositoryMatches?: Range[];
   repoStars?: number;
   repoLastFetched?: string;
   description?: string;
@@ -221,7 +235,7 @@ export interface Filter {
   kind: "file" | "repo" | "lang" | "utility";
 }
 
-export type AlertKind = "lucky-search-queries";
+export type AlertKind = "smart-search-additional-results" | "smart-search-pure-results";
 
 interface Alert {
   title: string;
