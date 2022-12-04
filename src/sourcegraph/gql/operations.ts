@@ -451,6 +451,8 @@ export type Event = {
   cohortID?: InputMaybe<Scalars["String"]>;
   /** Device ID used for Amplitude analytics. Used on Sourcegraph Cloud only. */
   deviceID?: InputMaybe<Scalars["String"]>;
+  /** Device session ID to identify the user's session for analytics. */
+  deviceSessionID?: InputMaybe<Scalars["String"]>;
   /** The name of the event. */
   event: Scalars["String"];
   /**
@@ -503,6 +505,22 @@ export enum EventStatus {
   Success = "SUCCESS",
 }
 
+/** The compatibility of the executor with the sourcegraph instance. */
+export enum ExecutorCompatibility {
+  /** Executor version is more than one version behind the Sourcegraph instance. */
+  Outdated = "OUTDATED",
+  /** Executor is up-to-date with the Sourcegraph instance. */
+  UpToDate = "UP_TO_DATE",
+  /** Executor version is more than one version ahead of the Sourcegraph instance. */
+  VersionAhead = "VERSION_AHEAD",
+}
+
+/** Enum of the possible scopes for executor secrets. */
+export enum ExecutorSecretScope {
+  /** The secret is meant to be used with Batch Changes execution. */
+  Batches = "BATCHES",
+}
+
 /** A specific kind of external service. */
 export enum ExternalServiceKind {
   Awscodecommit = "AWSCODECOMMIT",
@@ -520,11 +538,16 @@ export enum ExternalServiceKind {
   Perforce = "PERFORCE",
   Phabricator = "PHABRICATOR",
   Pythonpackages = "PYTHONPACKAGES",
+  Rubypackages = "RUBYPACKAGES",
   Rustpackages = "RUSTPACKAGES",
 }
 
 /** The possible states of an external service sync job. */
 export enum ExternalServiceSyncJobState {
+  /** Sync job has been canceled. */
+  Canceled = "CANCELED",
+  /** Sync job is being canceled. */
+  Canceling = "CANCELING",
   /** Sync finished successfully. */
   Completed = "COMPLETED",
   /** An error occured while syncing. Will be retried eventually. */
@@ -589,10 +612,8 @@ export enum GroupByField {
 export type HappinessFeedbackSubmissionInput = {
   /** The path that the happiness feedback will be submitted from. */
   currentPath?: InputMaybe<Scalars["String"]>;
-  /** The answer to "What's going well? What could be better?". */
+  /** The feedback text from the user. */
   feedback?: InputMaybe<Scalars["String"]>;
-  /** User's happiness rating, from 1-4. */
-  score: Scalars["Int"];
 };
 
 /** A specific highlighted line range to fetch. */
@@ -953,6 +974,18 @@ export enum OrganizationInvitationResponseType {
   Reject = "REJECT",
 }
 
+/** Status types of permissions providers. */
+export enum PermissionsProviderStatus {
+  Error = "ERROR",
+  Success = "SUCCESS",
+}
+
+/** Status types of permissions sync jobs. */
+export enum PermissionsSyncJobStatus {
+  Error = "ERROR",
+  Success = "SUCCESS",
+}
+
 /** Options for a pie chart */
 export type PieChartOptionsInput = {
   /**
@@ -1002,21 +1035,6 @@ export type ProductLicenseInput = {
   userCount: Scalars["Int"];
 };
 
-/**
- * An input type that describes a product subscription to be purchased. Corresponds to
- * ProductSubscriptionInvoiceItem.
- * FOR INTERNAL USE ONLY.
- */
-export type ProductSubscriptionInput = {
-  /**
-   * The billing plan ID for the subscription (ProductPlan.billingPlanID). This also specifies the
-   * billing product, because a plan is associated with its product in the billing system.
-   */
-  billingPlanID: Scalars["String"];
-  /** This subscription's user count. */
-  userCount: Scalars["Int"];
-};
-
 /** Input object for adding insight view to dashboard. */
 export type RemoveInsightViewFromDashboardInput = {
   /** ID of the dashboard. */
@@ -1031,6 +1049,7 @@ export enum RepositoryOrderBy {
   RepositoryCreatedAt = "REPOSITORY_CREATED_AT",
   RepositoryName = "REPOSITORY_NAME",
   RepoCreatedAt = "REPO_CREATED_AT",
+  Size = "SIZE",
 }
 
 /** Different repository permission levels. */
@@ -1165,6 +1184,38 @@ export enum SearchPatternType {
   Regexp = "regexp",
   Standard = "standard",
   Structural = "structural",
+}
+
+/** The output format to emit for a parsed query. */
+export enum SearchQueryOutputFormat {
+  /** JSON format. */
+  Json = "JSON",
+  /** Mermaid flowchart format. */
+  Mermaid = "MERMAID",
+  /** S-expression format. */
+  Sexp = "SEXP",
+}
+
+/**
+ * Represents phases in query parsing. The parse tree corresponds closely to the
+ * input query syntax. A subsequent processing phase on the parse tree generates a
+ * job tree. The job tree is an internal representation analogous to a database
+ * query plan. The job tree discards information about query syntax and corresponds
+ * closely to backend services (text search, git commit search, etc.).
+ */
+export enum SearchQueryOutputPhase {
+  JobTree = "JOB_TREE",
+  ParseTree = "PARSE_TREE",
+}
+
+/** The output format to emit for a parsed query. */
+export enum SearchQueryOutputVerbosity {
+  /** Basic verbosity outputs nodes and essential fields associated with nodes. */
+  Basic = "BASIC",
+  /** Maximal verbosity outputs nodes and all information associated with nodes. */
+  Maximal = "MAXIMAL",
+  /** Minimal verbosity outputs only nodes. */
+  Minimal = "MINIMAL",
 }
 
 /** Required input to generate a live preview for a series. */
@@ -1473,10 +1524,23 @@ export type UserSubRepoPermission = {
    * addresses (bindID of "email").
    */
   bindID: Scalars["String"];
-  /** An array of paths that the user is not allowed to access, in glob format. */
-  pathExcludes: Array<Scalars["String"]>;
-  /** An array of paths that the user is allowed to access, in glob format. */
-  pathIncludes: Array<Scalars["String"]>;
+  /**
+   * DEPRECATED
+   * An array of paths that the user is not allowed to access, in glob format.
+   */
+  pathExcludes?: InputMaybe<Array<Scalars["String"]>>;
+  /**
+   * DEPRECATED
+   * An array of paths that the user is allowed to access, in glob format.
+   */
+  pathIncludes?: InputMaybe<Array<Scalars["String"]>>;
+  /**
+   * An array of paths in glob format. Paths starting with a minus (-)
+   * (i.e. "-/dev/private") prevent access, otherwise paths grant access.
+   * The last applicable path takes precedence.
+   * When paths is set, pathIncludes and pathExcludes are ignored.
+   */
+  paths?: InputMaybe<Array<Scalars["String"]>>;
 };
 
 /** Possible sort orderings for a workspace connection. */
@@ -2181,7 +2245,7 @@ const result: PossibleTypesResultData = {
     ChangesetSpec: ["HiddenChangesetSpec", "VisibleChangesetSpec"],
     ComputeResult: ["ComputeMatchContext", "ComputeText"],
     FeatureFlag: ["FeatureFlagBoolean", "FeatureFlagRollout"],
-    File2: ["GitBlob", "VirtualFile"],
+    File2: ["BatchSpecWorkspaceFile", "GitBlob", "VirtualFile"],
     GenericSearchResultInterface: ["CommitSearchResult", "Repository"],
     GitRevSpec: ["GitObject", "GitRef", "GitRevSpecExpr"],
     GitTreeOrBlob: ["GitBlob", "GitTree"],
@@ -2190,6 +2254,7 @@ const result: PossibleTypesResultData = {
       "HiddenApplyPreviewTargetsDetach",
       "HiddenApplyPreviewTargetsUpdate",
     ],
+    IncompleteDatapointAlert: ["GenericIncompleteDatapointAlert", "TimeoutDatapointAlert"],
     InsightDataSeriesDefinition: ["SearchInsightDataSeriesDefinition"],
     InsightPresentation: ["LineChartInsightViewPresentation", "PieChartInsightViewPresentation"],
     InsightTimeScope: ["InsightIntervalTimeScope"],
@@ -2201,10 +2266,13 @@ const result: PossibleTypesResultData = {
       "BatchChange",
       "BatchChangesCredential",
       "BatchSpec",
+      "BatchSpecWorkspaceFile",
       "BulkOperation",
       "ChangesetEvent",
       "CodeIntelligenceConfigurationPolicy",
       "Executor",
+      "ExecutorSecret",
+      "ExecutorSecretAccessLog",
       "ExternalAccount",
       "ExternalChangeset",
       "ExternalService",
@@ -2229,6 +2297,7 @@ const result: PossibleTypesResultData = {
       "Org",
       "OrganizationInvitation",
       "OutOfBandMigration",
+      "PermissionsSyncJob",
       "ProductLicense",
       "ProductSubscription",
       "RegistryExtension",
@@ -2238,6 +2307,7 @@ const result: PossibleTypesResultData = {
       "User",
       "VisibleBatchSpecWorkspace",
       "VisibleChangesetSpec",
+      "Webhook",
       "WebhookLog",
     ],
     NotebookBlock: ["ComputeBlock", "FileBlock", "MarkdownBlock", "QueryBlock", "SymbolBlock"],
@@ -2251,7 +2321,7 @@ const result: PossibleTypesResultData = {
     ],
     SearchResult: ["CommitSearchResult", "FileMatch", "Repository"],
     SettingsSubject: ["DefaultSettings", "Org", "Site", "User"],
-    StatusMessage: ["CloningProgress", "ExternalServiceSyncError", "SyncError"],
+    StatusMessage: ["CloningProgress", "ExternalServiceSyncError", "IndexingProgress", "SyncError"],
     TreeEntry: ["GitBlob", "GitTree"],
     TreeEntryLSIFData: ["GitBlobLSIFData", "GitTreeLSIFData"],
     VisibleApplyPreviewTargets: [
