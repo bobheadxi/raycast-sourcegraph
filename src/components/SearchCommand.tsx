@@ -110,6 +110,11 @@ export default function SearchCommand({ src }: { src: Sourcegraph }) {
 function SearchDropdown({ setPatternType }: { setPatternType: (pt: PatternType) => void }) {
   const patternTypes: { type: PatternType; name: string; icon: Image.ImageLike }[] = [
     {
+      type: "lucky",
+      name: "Smart search",
+      icon: Icon.Bolt,
+    },
+    {
       type: "literal",
       name: "Literal search",
       icon: Icon.Bubble,
