@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [Search API capabilities updates](https://github.com/raycast/extensions/pull/3789) - 2022-12-05
 
 - **search**: Improved support for some new API capabilities.
 - **internal**: Various dependency updates.
