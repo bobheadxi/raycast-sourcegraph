@@ -1,4 +1,4 @@
-import { ActionPanel, Detail, Action, Icon, openExtensionPreferences } from "@raycast/api";
+import { ActionPanel, Detail, Action, Icon, openExtensionPreferences, updateCommandMetadata } from "@raycast/api";
 import { useEffect } from "react";
 
 import checkAuthEffect from "../hooks/checkAuthEffect";
@@ -26,6 +26,7 @@ export default function InstanceCommand({ Command }: { Command: React.FunctionCo
 
   const src = sourcegraphInstance();
   if (!src) {
+    updateCommandMetadata({ subtitle: null });
     return (
       <Detail
         navigationTitle="No Sourcegraph Self-Hosted instance configured"
@@ -44,6 +45,7 @@ export default function InstanceCommand({ Command }: { Command: React.FunctionCo
   try {
     new URL(src.instance);
   } catch (e) {
+    updateCommandMetadata({ subtitle: null });
     return (
       <Detail
         navigationTitle="Invalid Sourcegraph Self-Hosted URL"
@@ -59,6 +61,12 @@ export default function InstanceCommand({ Command }: { Command: React.FunctionCo
       />
     );
   }
+
+  updateCommandMetadata({
+    // We've already checked this URL is valid, so we can reliably use it here.
+    subtitle: new URL(src.instance).host,
+  });
+
   if (!src.token) {
     return (
       <Detail

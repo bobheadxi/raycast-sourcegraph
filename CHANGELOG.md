@@ -3,6 +3,7 @@
 ## Unreleased
 
 - **search**: Improved metadata display for repository and symbol results.
+- **all**: When a custom Sourcegraph instance is configured, the instance's URL will now be configured as the command subtitle for the relevant command variants.
 
 ## [Search API capabilities updates](https://github.com/raycast/extensions/pull/3789) - 2022-12-05
 
