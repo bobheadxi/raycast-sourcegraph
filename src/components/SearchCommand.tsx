@@ -1,4 +1,4 @@
-import { ActionPanel, List, Action, Detail, Icon, Image } from "@raycast/api";
+import { ActionPanel, List, Action, Detail, Icon, Image, Color } from "@raycast/api";
 import React, { useState, Fragment, useMemo } from "react";
 import { nanoid } from "nanoid";
 import { DateTime } from "luxon";
@@ -6,7 +6,11 @@ import { DateTime } from "luxon";
 import { Sourcegraph, instanceName, LinkBuilder } from "../sourcegraph";
 import { PatternType, SearchResult, Suggestion } from "../sourcegraph/stream-search";
 import { ContentMatch, SymbolMatch } from "../sourcegraph/stream-search/stream";
-import { BlobContentsFragment as BlobContents, useGetFileContentsLazyQuery } from "../sourcegraph/gql/operations";
+import {
+  BlobContentsFragment as BlobContents,
+  useGetFileContentsLazyQuery,
+  SymbolKind,
+} from "../sourcegraph/gql/operations";
 import { bold, codeBlock, quoteBlock } from "../markdown";
 import { count, sentenceCase } from "../text";
 import { useSearch } from "../hooks/search";
@@ -238,13 +242,15 @@ function SearchResultItem({
   let subtitle = "";
   // Icon to denote the type of the result
   const icon: Image.ImageLike = { source: Icon.Dot, tintColor: ColorDefault };
-  // Broader context about the result, usually just the repository.
-  const accessory: List.Item.Accessory = firstRevision
+  // Repository context for the result. Comes last in accessories.
+  const repoAccessory: List.Item.Accessory = firstRevision
     ? {
         text: `${match.repository}@${firstRevision}`,
         tooltip: `${match.repository}@${firstRevision}`,
       }
     : { text: match.repository, tooltip: match.repository };
+  // Additional accessories denoting details about this result.
+  const accessories: List.Item.Accessory[] = [];
 
   // Action to drill down on the search result.
   let drilldownAction: React.ReactElement | undefined;
@@ -270,7 +276,6 @@ function SearchResultItem({
         icon.source = Icon.XMarkCircle;
         matchTypeDetails.push("archived");
       }
-      // TODO color results of all matches based on repo privacy
       if (match.private) {
         icon.tintColor = ColorPrivate;
         matchTypeDetails.push("private");
@@ -287,12 +292,14 @@ function SearchResultItem({
       if (title.length > 30 && title.length + subtitle.length > combinedThreshold) {
         matchDetails.push(match.repository);
       }
+      // For a repository result, we don't need the repo accessory to show context about
+      // the repo again - we can just show star count if available.
       if (match.repoStars) {
-        accessory.text = `${match.repoStars}`;
-        accessory.icon = Icon.Star;
-        accessory.tooltip = "";
+        repoAccessory.text = match.repoStars > 1000 ? `${Math.round(match.repoStars / 1000)}k` : `${match.repoStars}`;
+        repoAccessory.icon = Icon.Star;
+        repoAccessory.tooltip = `${match.repoStars} stars`;
       } else {
-        accessory.text = "";
+        repoAccessory.text = "";
       }
       drilldownAction = makeDrilldownAction("Search Repository", setSearchText, {
         repo: match.repository,
@@ -336,10 +343,10 @@ function SearchResultItem({
               .join(" ... ")
           )
           .join(" ... ");
-        matchDetails.push(count(match.chunkMatches?.length, "chunk match", "chunk matches"));
+        matchDetails.push(count(match.chunkMatches?.length, "match", "matches"));
       } else if (match.lineMatches) {
         title = match.lineMatches.map((l) => l.line.trim()).join(" ... ");
-        matchDetails.push(count(match.lineMatches.length, "line match", "line matches"));
+        matchDetails.push(count(match.lineMatches.length, "match", "matches"));
       }
 
       drilldownAction = makeDrilldownAction("Search File", setSearchText, {
@@ -353,7 +360,7 @@ function SearchResultItem({
       icon.source = Icon.Code;
       title = match.symbols.map((s) => s.name).join(", ");
       subtitle = match.path;
-      matchDetails.push(count(match.symbols.length, "symbol match", "symbols matches"));
+      matchDetails.push(count(match.symbols.length, "match", "matches"));
       drilldownAction = makeDrilldownAction("Search File", setSearchText, {
         repo: match.repository,
         file: match.path,
@@ -362,9 +369,9 @@ function SearchResultItem({
       break;
   }
 
-  const accessories: List.Item.Accessory[] = [];
-  if (accessory.text || accessory.icon) {
-    accessories.push(accessory);
+  // Add repo accessory as right-most detail
+  if (repoAccessory.text || repoAccessory.icon) {
+    accessories.push(repoAccessory);
   }
 
   return (
@@ -465,7 +472,37 @@ function MultiResultView({ searchResult }: { searchResult: { url: string; match:
                 key={nanoid()}
                 title={s.name}
                 subtitle={s.containerName}
-                accessories={[{ text: s.kind.toLowerCase() }]}
+                accessories={[
+                  {
+                    tag: {
+                      value: s.kind.toLowerCase(),
+                      color: ((): Color => {
+                        switch (s.kind) {
+                          // Functional things
+                          case SymbolKind.Function:
+                          case SymbolKind.Method:
+                          case SymbolKind.Constructor:
+                            return Color.Purple;
+
+                          // Thing-y things
+                          case SymbolKind.Class:
+                          case SymbolKind.Interface:
+                          case SymbolKind.Struct:
+                            return Color.Orange;
+
+                          // Even more thing-y things
+                          case SymbolKind.Module:
+                          case SymbolKind.Namespace:
+                          case SymbolKind.File:
+                            return Color.PrimaryText;
+                        }
+
+                        // Everybody else
+                        return Color.Blue;
+                      })(),
+                    },
+                  },
+                ]}
                 actions={<ActionPanel>{resultActions(s.url)}</ActionPanel>}
               />
             ))}

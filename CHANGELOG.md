@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **search**: Improved metadata display for repository and symbol results.
+
 ## [Search API capabilities updates](https://github.com/raycast/extensions/pull/3789) - 2022-12-05
 
 - **search**: Improved support for some new API capabilities.
