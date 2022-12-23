@@ -504,7 +504,7 @@ function MultiResultView({ searchResult }: { searchResult: { url: string; match:
 
     case "symbol":
       return (
-        <List navigationTitle={navigationTitle} searchBarPlaceholder="Filter symbols">
+        <List navigationTitle={navigationTitle} searchBarPlaceholder="Filter symbols results">
           <List.Section title={match.path} subtitle={matchTitle}>
             {match.symbols.map((s) => (
               <List.Item
