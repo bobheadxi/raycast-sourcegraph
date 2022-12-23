@@ -101,6 +101,35 @@
       ]
     },
     {
+      "name": "searchHistoryDotCom",
+      "title": "Code Search History",
+      "subtitle": "Sourcegraph.com",
+      "description": "Browse and launch recent searches in Search Code.",
+      "mode": "view",
+      "keywords": [
+        "sourcegraph",
+        "search",
+        "code",
+        "history",
+        "recent"
+      ]
+    },
+    {
+      "name": "searchHistoryInstance",
+      "icon": "logo-bw.png",
+      "title": "Code Search History",
+      "subtitle": "Sourcegraph Instance",
+      "description": "Browse and launch recent searches in Search Code.",
+      "mode": "view",
+      "keywords": [
+        "sourcegraph",
+        "search",
+        "code",
+        "history",
+        "recent"
+      ]
+    },
+    {
       "name": "findNotebooksDotCom",
       "title": "Find Search Notebooks",
       "subtitle": "Sourcegraph.com",

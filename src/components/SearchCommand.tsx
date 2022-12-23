@@ -1,9 +1,20 @@
-import { ActionPanel, List, Action, Detail, Icon, Image, Color } from "@raycast/api";
+import {
+  ActionPanel,
+  List,
+  Action,
+  Detail,
+  Icon,
+  Image,
+  Color,
+  LaunchProps,
+  launchCommand,
+  LaunchType,
+} from "@raycast/api";
 import React, { useState, Fragment, useMemo } from "react";
 import { nanoid } from "nanoid";
 import { DateTime } from "luxon";
 
-import { Sourcegraph, instanceName, LinkBuilder } from "../sourcegraph";
+import { Sourcegraph, instanceName, LinkBuilder, isSourcegraphDotCom } from "../sourcegraph";
 import { PatternType, SearchResult, Suggestion } from "../sourcegraph/stream-search";
 import { ContentMatch, SymbolMatch } from "../sourcegraph/stream-search/stream";
 import {
@@ -17,16 +28,27 @@ import { useSearch } from "../hooks/search";
 
 import { ColorDefault, ColorEmphasis, ColorPrivate } from "./colors";
 import { copyShortcut, drilldownShortcut, tertiaryActionShortcut } from "./shortcuts";
+import { SearchHistory } from "../searchHistory";
 
 const link = new LinkBuilder("search");
 
 const MAX_RENDERED_RESULTS = 100;
 
+function initialSearchText(src: Sourcegraph, props?: LaunchProps): string {
+  if (props) {
+    const historyItem = SearchHistory.fromLaunchProps(props);
+    if (historyItem) {
+      return historyItem.query;
+    }
+  }
+  return src.defaultContext ? `context:${src.defaultContext} ` : "";
+}
+
 /**
  * SearchCommand is the shared search command implementation.
  */
-export default function SearchCommand({ src }: { src: Sourcegraph }) {
-  const [searchText, setSearchText] = useState(src.defaultContext ? `context:${src.defaultContext} ` : "");
+export default function SearchCommand({ src, props }: { src: Sourcegraph; props?: LaunchProps }) {
+  const [searchText, setSearchText] = useState(initialSearchText(src, props));
   const [patternType, setPatternType] = useState<PatternType | undefined>(
     src.featureFlags.searchPatternDropdown ? undefined : "literal"
   );
@@ -69,6 +91,23 @@ export default function SearchCommand({ src }: { src: Sourcegraph }) {
               actions={
                 <ActionPanel>
                   <Action.OpenInBrowser url={getQueryURL(src, searchText)} />
+                </ActionPanel>
+              }
+            />
+            <List.Item
+              title="View recent searches"
+              icon={{ source: Icon.List }}
+              actions={
+                <ActionPanel>
+                  <Action
+                    title="Launch Code Search History"
+                    onAction={async () =>
+                      launchCommand({
+                        name: isSourcegraphDotCom(src.instance) ? "searchHistoryDotCom" : "searchHistoryInstance",
+                        type: LaunchType.UserInitiated,
+                      })
+                    }
+                  />
                 </ActionPanel>
               }
             />

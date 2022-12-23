@@ -1,4 +1,12 @@
-import { ActionPanel, Detail, Action, Icon, openExtensionPreferences, updateCommandMetadata } from "@raycast/api";
+import {
+  ActionPanel,
+  Detail,
+  Action,
+  Icon,
+  openExtensionPreferences,
+  updateCommandMetadata,
+  LaunchProps,
+} from "@raycast/api";
 import { useEffect } from "react";
 
 import checkAuthEffect from "../hooks/checkAuthEffect";
@@ -9,7 +17,13 @@ import { sourcegraphInstance, Sourcegraph } from "../sourcegraph";
  * InstanceCommand wraps the given command with the configuration for a specific
  * Sourcegraph instance.
  */
-export default function InstanceCommand({ Command }: { Command: React.FunctionComponent<{ src: Sourcegraph }> }) {
+export default function InstanceCommand({
+  Command,
+  props,
+}: {
+  Command: React.FunctionComponent<{ src: Sourcegraph; props?: LaunchProps }>;
+  props?: LaunchProps;
+}) {
   const tryCloudMessage = "Alternatively, you can try the Sourcegraph.com version of this command first.";
 
   const setupGuideAction = (
@@ -86,5 +100,5 @@ export default function InstanceCommand({ Command }: { Command: React.FunctionCo
 
   useEffect(checkAuthEffect(src));
 
-  return <Command src={src} />;
+  return <Command src={src} props={props} />;
 }
