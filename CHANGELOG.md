@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **search-history**: Introduce 'Code Search History' command - unique searches are now stored locally, and past searches can now be listed in this new command ([#19](https://github.com/bobheadxi/raycast-sourcegraph/pull/19))
 - **search**: Improved metadata display for repository and symbol results.
 - **all**: When a custom Sourcegraph instance is configured, the instance's URL will now be configured as the command subtitle for the relevant command variants.
 
