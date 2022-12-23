@@ -44,7 +44,11 @@ export class SearchHistory {
     await LocalStorage.setItem(
       this.localStorageKey(src),
       // Cap the search history size
-      JSON.stringify(searchHistory.length > this.SEARCH_HISTORY_LIMIT ? searchHistory.slice(0, 100) : searchHistory)
+      JSON.stringify(
+        searchHistory.length > this.SEARCH_HISTORY_LIMIT
+          ? searchHistory.slice(0, this.SEARCH_HISTORY_LIMIT)
+          : searchHistory
+      )
     );
   }
 
