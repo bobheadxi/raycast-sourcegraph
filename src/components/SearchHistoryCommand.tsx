@@ -8,7 +8,7 @@ import { SearchHistory } from "../searchHistory";
 import { LinkBuilder, Sourcegraph } from "../sourcegraph";
 import { ColorDefault } from "./colors";
 import ExpandableToast from "./ExpandableToast";
-import { copyShortcut, secondaryActionShortcut, tertiaryActionShortcut } from "./shortcuts";
+import { copyShortcut, deleteShortcut, secondaryActionShortcut, tertiaryActionShortcut } from "./shortcuts";
 
 const link = new LinkBuilder("search-history");
 
@@ -97,6 +97,7 @@ export default function SearchHistoryCommand({ src }: { src: Sourcegraph }) {
                     await SearchHistory.removeItem(src, item);
                     await state.revalidate();
                   }}
+                  shortcut={deleteShortcut}
                 />
 
                 {newSearchAction}
