@@ -1,4 +1,4 @@
-import { List, Action, ActionPanel, Icon } from "@raycast/api";
+import { List, Action, ActionPanel, Icon, useNavigation } from "@raycast/api";
 import { usePromise } from "@raycast/utils";
 import { DateTime } from "luxon";
 import { nanoid } from "nanoid";
@@ -7,6 +7,7 @@ import { SearchHistory } from "../searchHistory";
 
 import { LinkBuilder, Sourcegraph } from "../sourcegraph";
 import { ColorDefault } from "./colors";
+import ExpandableToast from "./ExpandableToast";
 import { copyShortcut, secondaryActionShortcut, tertiaryActionShortcut } from "./shortcuts";
 
 const link = new LinkBuilder("search-history");
@@ -17,6 +18,17 @@ function getQueryURL(src: Sourcegraph, query: string) {
 
 export default function SearchHistoryCommand({ src }: { src: Sourcegraph }) {
   const state = usePromise(async (src: Sourcegraph) => SearchHistory.loadHistory(src), [src]);
+
+  const { push } = useNavigation();
+  if (state.error) {
+    ExpandableToast(
+      push,
+      "Unexpected error",
+      `Failed to load search history: ${state.error.name}`,
+      `${state.error.message}\n\n${state.error.stack || ""}`
+    ).show();
+  }
+
   const [searchText, updateSearchText] = useState<string>();
 
   const newSearchAction = (
