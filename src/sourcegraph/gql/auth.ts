@@ -14,6 +14,7 @@ async function doGQLRequest<T>(abort: AbortSignal, src: Sourcegraph, body: strin
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     Accept: "application/json",
+    "X-Requested-With": "Raycast-Sourcegraph",
   };
   if (src.token) {
     headers["Authorization"] = `token ${src.token}`;
