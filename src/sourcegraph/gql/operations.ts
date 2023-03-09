@@ -21,6 +21,16 @@ export type Scalars = {
   PublishedValue: any;
 };
 
+/** Access request status enum */
+export enum AccessRequestStatus {
+  /** Access request was approved */
+  Approved = "APPROVED",
+  /** Access request is submitted and waiting for actions */
+  Pending = "PENDING",
+  /** Access request was rejected */
+  Rejected = "REJECTED",
+}
+
 /** A new external service. */
 export type AddExternalServiceInput = {
   /** The JSON configuration of the external service. */
@@ -57,7 +67,7 @@ export enum AnalyticsDateRange {
   Custom = "CUSTOM",
   /** Last month date range. */
   LastMonth = "LAST_MONTH",
-  /** Last 3 monthes date range. */
+  /** Last 3 months date range. */
   LastThreeMonths = "LAST_THREE_MONTHS",
   /** Last week date range. */
   LastWeek = "LAST_WEEK",
@@ -77,6 +87,24 @@ export enum AuditLogOperation {
   Create = "CREATE",
   /** Denotes this log entry represents an UPDATE query. */
   Modify = "MODIFY",
+}
+
+/** BackfillQueueOrderBy enumerates the ways a backfill queue list can be ordered. */
+export enum BackfillQueueOrderBy {
+  QueuePosition = "QUEUE_POSITION",
+  State = "STATE",
+}
+
+/** Enum of the possible background routine types */
+export enum BackgroundRoutineType {
+  /** Custom routine */
+  Custom = "CUSTOM",
+  /** DB-backed worker */
+  DbBacked = "DB_BACKED",
+  /** Periodic routine */
+  Periodic = "PERIODIC",
+  /** Periodic routine with metrics set up */
+  PeriodicWithMetrics = "PERIODIC_WITH_METRICS",
 }
 
 /** The state of the batch change. */
@@ -336,6 +364,16 @@ export enum CloneStatus {
   NotCloned = "NOT_CLONED",
 }
 
+/** CodeownersFileInput represents the input for ingesting codeowners files */
+export type CodeownersFileInput = {
+  /** fileContents is the text of the codeowners file */
+  fileContents: Scalars["String"];
+  /** The repo ID to ingest the file for. Cannot be set with repositoryName. */
+  repoID?: InputMaybe<Scalars["ID"]>;
+  /** The repo name to ingest the file for. Cannot be set with repositoryID. */
+  repoName?: InputMaybe<Scalars["String"]>;
+};
+
 /**
  * DEPRECATED: This type was renamed to SettingsEdit.
  * NOTE: GraphQL does not support @deprecated directives on INPUT_FIELD_DEFINITION (input fields).
@@ -385,8 +423,6 @@ export type CreateInsightsDashboardInput = {
  * all possible optional inputs with an enum to select the actual block input we want to use.
  */
 export type CreateNotebookBlockInput = {
-  /** Compute input. */
-  computeInput?: InputMaybe<Scalars["String"]>;
   /** File input. */
   fileInput?: InputMaybe<CreateFileBlockInput>;
   /** ID of the block. */
@@ -420,6 +456,17 @@ export type CreateSymbolBlockInput = {
   symbolKind: SymbolKind;
   /** The symbol name. */
   symbolName: Scalars["String"];
+};
+
+/**
+ * A repository to pass to the deleteCodeownersFiles mutation. Either repoID or repoName
+ * must be provided.
+ */
+export type DeleteCodeownersFilesInput = {
+  /** The repo ID to ingest the file for. Cannot be set with repositoryName. */
+  repoID?: InputMaybe<Scalars["ID"]>;
+  /** The repo name to ingest the file for. Cannot be set with repositoryID. */
+  repoName?: InputMaybe<Scalars["String"]>;
 };
 
 /** Represents the severity level of a diagnostic. */
@@ -470,6 +517,8 @@ export type Event = {
   insertID?: InputMaybe<Scalars["String"]>;
   /** The last sourcegraph URL visited by the user, stored in a browser cookie. */
   lastSourceURL?: InputMaybe<Scalars["String"]>;
+  /** The original referrer for a user */
+  originalReferrer?: InputMaybe<Scalars["String"]>;
   /**
    * Public argument information. PRIVACY: Do NOT include any potentially private information in this field.
    * These properties get sent to our analytics tools for Cloud, so must not include private information,
@@ -481,6 +530,10 @@ export type Event = {
    * Only captured and stored on Sourcegraph Cloud.
    */
   referrer?: InputMaybe<Scalars["String"]>;
+  /** The sessions first url for a user */
+  sessionFirstURL?: InputMaybe<Scalars["String"]>;
+  /** The session referrer for a user */
+  sessionReferrer?: InputMaybe<Scalars["String"]>;
   /** The source of the event. */
   source: EventSource;
   /** The URL when the event was logged. */
@@ -519,11 +572,14 @@ export enum ExecutorCompatibility {
 export enum ExecutorSecretScope {
   /** The secret is meant to be used with Batch Changes execution. */
   Batches = "BATCHES",
+  /** The secret is meant to be used with Auto-indexing. */
+  Codeintel = "CODEINTEL",
 }
 
 /** A specific kind of external service. */
 export enum ExternalServiceKind {
   Awscodecommit = "AWSCODECOMMIT",
+  Azuredevops = "AZUREDEVOPS",
   Bitbucketcloud = "BITBUCKETCLOUD",
   Bitbucketserver = "BITBUCKETSERVER",
   Gerrit = "GERRIT",
@@ -550,9 +606,9 @@ export enum ExternalServiceSyncJobState {
   Canceling = "CANCELING",
   /** Sync finished successfully. */
   Completed = "COMPLETED",
-  /** An error occured while syncing. Will be retried eventually. */
+  /** An error occurred while syncing. Will be retried eventually. */
   Errored = "ERRORED",
-  /** A fatal error occured while syncing. No retries will be made. */
+  /** A fatal error occurred while syncing. No retries will be made. */
   Failed = "FAILED",
   /** Currently syncing. */
   Processing = "PROCESSING",
@@ -663,6 +719,16 @@ export enum InferedPreciseSupportLevel {
   ProjectStructureSupported = "PROJECT_STRUCTURE_SUPPORTED",
 }
 
+/** Possible queue states */
+export enum InsightQueueItemState {
+  Completed = "COMPLETED",
+  Failed = "FAILED",
+  New = "NEW",
+  Processing = "PROCESSING",
+  Queued = "QUEUED",
+  Unknown = "UNKNOWN",
+}
+
 /** Input for the default values for filters and aggregates for an insight. */
 export type InsightViewControlsInput = {
   /** Input for the default filters for an insight. */
@@ -766,12 +832,18 @@ export type LineChartSearchInsightDataSeriesInput = {
   options: LineChartDataSeriesOptionsInput;
   /** The query string. */
   query: Scalars["String"];
-  /** The scope of repositories. */
-  repositoryScope: RepositoryScopeInput;
+  /**
+   * The scope of repositories. The repository scope can be provided at the LineChartSearchInsightInput level.
+   * If scope is provided here will take priority of any other scope provide at a higher level in the input.
+   */
+  repositoryScope?: InputMaybe<RepositoryScopeInput>;
   /** Unique ID for the series. Omit this field if it's a new series. */
   seriesId?: InputMaybe<Scalars["String"]>;
-  /** The scope of time. */
-  timeScope: TimeScopeInput;
+  /**
+   * The scope of time. This time scope can also be provided at the LineChartSearchInsightInput level.
+   * If the scope is provided here it will take priority over any other scope provided at a higher level in the input.
+   */
+  timeScope?: InputMaybe<TimeScopeInput>;
 };
 
 /** Input for a line chart search insight. */
@@ -782,6 +854,10 @@ export type LineChartSearchInsightInput = {
   dataSeries: Array<LineChartSearchInsightDataSeriesInput>;
   /** The options for this line chart. */
   options: LineChartOptionsInput;
+  /** The scope of repositories for the insight. If provided here it will apply to all series unless overwritten. */
+  repositoryScope?: InputMaybe<RepositoryScopeInput>;
+  /** The scope of time for the insight view. If provided here it will apply to all series unless overwritten. */
+  timeScope?: InputMaybe<TimeScopeInput>;
   /** The default values for filters and aggregates for this line chart. */
   viewControls?: InputMaybe<InsightViewControlsInput>;
 };
@@ -923,7 +999,7 @@ export type MonitorWebhookInput = {
   url: Scalars["String"];
 };
 
-/** An enum to describe the reasons why a search aggregations are not available */
+/** An enum to describe the reasons why search aggregations are not available */
 export enum NotAvailableReasonType {
   InvalidAggregationModeForQuery = "INVALID_AGGREGATION_MODE_FOR_QUERY",
   InvalidQuery = "INVALID_QUERY",
@@ -934,7 +1010,6 @@ export enum NotAvailableReasonType {
 
 /** Enum of possible block types. */
 export enum NotebookBlockType {
-  Compute = "COMPUTE",
   File = "FILE",
   Markdown = "MARKDOWN",
   Query = "QUERY",
@@ -974,16 +1049,167 @@ export enum OrganizationInvitationResponseType {
   Reject = "REJECT",
 }
 
+/** Input for the createOutboundWebhook mutation. */
+export type OutboundWebhookCreateInput = {
+  /**
+   * The event types the outbound webhook will receive.
+   *
+   * At least one event type must be provided.
+   */
+  eventTypes: Array<OutboundWebhookScopedEventTypeInput>;
+  /** The secret shared with the outbound webhook. */
+  secret: Scalars["String"];
+  /** The outbound webhook URL. */
+  url: Scalars["String"];
+};
+
+/** Event type input for the outbound webhook mutations. */
+export type OutboundWebhookScopedEventTypeInput = {
+  /**
+   * The event type, which must match a key returned from
+   * outboundWebhookEventTypes.
+   */
+  eventType: Scalars["String"];
+  /**
+   * An optional scope for the event type.
+   *
+   * Currently unused.
+   */
+  scope?: InputMaybe<Scalars["String"]>;
+};
+
+/** Input for the updateOutboundWebhook mutation. */
+export type OutboundWebhookUpdateInput = {
+  /**
+   * The event types the outbound webhook will receive. This list replaces the
+   * event types previously registered on the webhook.
+   *
+   * At least one event type must be provided.
+   */
+  eventTypes: Array<OutboundWebhookScopedEventTypeInput>;
+  /** The outbound webhook URL. */
+  url: Scalars["String"];
+};
+
+/** The only way we can recognize ownership at this point is through CODEOWNERS file entry. */
+export enum OwnershipReasonType {
+  CodeownersFileEntry = "CODEOWNERS_FILE_ENTRY",
+}
+
+/** Whether a package repo reference filter is part of the allowlist or blocklist */
+export enum PackageMatchBehaviour {
+  /** Allows a package repo reference to be synced. */
+  Allow = "ALLOW",
+  /** Blocks a package repo reference from syncing. */
+  Block = "BLOCK",
+}
+
+/** A package repo reference filter that matches names. */
+export type PackageNameFilterInput = {
+  /** Glob string to match names. */
+  packageGlob: Scalars["String"];
+};
+
+/**
+ * A kind of package repo reference.
+ * ExternalServiceKind, with a more specific set of values.
+ */
+export enum PackageRepoReferenceKind {
+  Gomodules = "GOMODULES",
+  Jvmpackages = "JVMPACKAGES",
+  Npmpackages = "NPMPACKAGES",
+  Pythonpackages = "PYTHONPACKAGES",
+  Rubypackages = "RUBYPACKAGES",
+  Rustpackages = "RUSTPACKAGES",
+}
+
+/** A package repo reference filter that matches versions for a specific name. */
+export type PackageVersionFilterInput = {
+  /** Exact package name to match. */
+  packageName: Scalars["String"];
+  /** Glob string to match versions. */
+  versionGlob: Scalars["String"];
+};
+
+/** A name or version matching filter for. One of either nameFilter or versionFilter must be provided. */
+export type PackageVersionOrNameFilterInput = {
+  /** Optional name-matching filter. */
+  nameFilter?: InputMaybe<PackageNameFilterInput>;
+  /** Optional package-specific version-matching filter. */
+  versionFilter?: InputMaybe<PackageVersionFilterInput>;
+};
+
+/**
+ * A namespace represents a distinct context within which permission policies
+ * are defined and enforced.
+ */
+export enum PermissionNamespace {
+  /** This represents the Batch Changes namespace. */
+  BatchChanges = "BATCH_CHANGES",
+}
+
 /** Status types of permissions providers. */
 export enum PermissionsProviderStatus {
   Error = "ERROR",
   Success = "SUCCESS",
 }
 
-/** Status types of permissions sync jobs. */
-export enum PermissionsSyncJobStatus {
-  Error = "ERROR",
-  Success = "SUCCESS",
+/** Permission sync job priority. */
+export enum PermissionsSyncJobPriority {
+  High = "HIGH",
+  Low = "LOW",
+  Medium = "MEDIUM",
+}
+
+/** State types of permission sync jobs. */
+export enum PermissionsSyncJobReason {
+  ReasonGithubOrgMemberAddedEvent = "REASON_GITHUB_ORG_MEMBER_ADDED_EVENT",
+  ReasonGithubOrgMemberRemovedEvent = "REASON_GITHUB_ORG_MEMBER_REMOVED_EVENT",
+  ReasonGithubRepoEvent = "REASON_GITHUB_REPO_EVENT",
+  ReasonGithubRepoMadePrivateEvent = "REASON_GITHUB_REPO_MADE_PRIVATE_EVENT",
+  ReasonGithubTeamAddedToRepoEvent = "REASON_GITHUB_TEAM_ADDED_TO_REPO_EVENT",
+  ReasonGithubTeamRemovedFromRepoEvent = "REASON_GITHUB_TEAM_REMOVED_FROM_REPO_EVENT",
+  ReasonGithubUserAddedEvent = "REASON_GITHUB_USER_ADDED_EVENT",
+  ReasonGithubUserEvent = "REASON_GITHUB_USER_EVENT",
+  ReasonGithubUserMembershipAddedEvent = "REASON_GITHUB_USER_MEMBERSHIP_ADDED_EVENT",
+  ReasonGithubUserMembershipRemovedEvent = "REASON_GITHUB_USER_MEMBERSHIP_REMOVED_EVENT",
+  ReasonGithubUserRemovedEvent = "REASON_GITHUB_USER_REMOVED_EVENT",
+  ReasonManualRepoSync = "REASON_MANUAL_REPO_SYNC",
+  ReasonManualUserSync = "REASON_MANUAL_USER_SYNC",
+  ReasonRepoNoPerms = "REASON_REPO_NO_PERMS",
+  ReasonRepoOutdatedPerms = "REASON_REPO_OUTDATED_PERMS",
+  ReasonRepoUpdatedFromCodeHost = "REASON_REPO_UPDATED_FROM_CODE_HOST",
+  ReasonUserAcceptedOrgInvite = "REASON_USER_ACCEPTED_ORG_INVITE",
+  ReasonUserAddedToOrg = "REASON_USER_ADDED_TO_ORG",
+  ReasonUserEmailRemoved = "REASON_USER_EMAIL_REMOVED",
+  ReasonUserEmailVerified = "REASON_USER_EMAIL_VERIFIED",
+  ReasonUserNoPerms = "REASON_USER_NO_PERMS",
+  ReasonUserOutdatedPerms = "REASON_USER_OUTDATED_PERMS",
+  ReasonUserRemovedFromOrg = "REASON_USER_REMOVED_FROM_ORG",
+}
+
+/** Sync reason groups of permission sync jobs. */
+export enum PermissionsSyncJobReasonGroup {
+  Manual = "MANUAL",
+  Schedule = "SCHEDULE",
+  Sourcegraph = "SOURCEGRAPH",
+  Webhook = "WEBHOOK",
+}
+
+/** State types of permissions sync jobs. */
+export enum PermissionsSyncJobState {
+  Canceled = "CANCELED",
+  Completed = "COMPLETED",
+  Errored = "ERRORED",
+  Failed = "FAILED",
+  Processing = "PROCESSING",
+  Queued = "QUEUED",
+}
+
+/** Type of search for permissions sync jobs: user or repository. */
+export enum PermissionsSyncJobsSearchType {
+  Repository = "REPOSITORY",
+  User = "USER",
 }
 
 /** Options for a pie chart */
@@ -1008,6 +1234,21 @@ export type PieChartSearchInsightInput = {
   /** The scope of repositories. */
   repositoryScope: RepositoryScopeInput;
 };
+
+/** Possible states for PreciseIndexes. */
+export enum PreciseIndexState {
+  Completed = "COMPLETED",
+  Deleted = "DELETED",
+  Deleting = "DELETING",
+  Indexing = "INDEXING",
+  IndexingCompleted = "INDEXING_COMPLETED",
+  IndexingErrored = "INDEXING_ERRORED",
+  Processing = "PROCESSING",
+  ProcessingErrored = "PROCESSING_ERRORED",
+  QueuedForIndexing = "QUEUED_FOR_INDEXING",
+  QueuedForProcessing = "QUEUED_FOR_PROCESSING",
+  UploadingIndex = "UPLOADING_INDEX",
+}
 
 /** Ownership level of the recommended precise code-intel indexer. */
 export enum PreciseSupportLevel {
@@ -1043,6 +1284,16 @@ export type RemoveInsightViewFromDashboardInput = {
   insightViewId: Scalars["ID"];
 };
 
+/** State types of repo embedding sync jobs. */
+export enum RepoEmbeddingJobState {
+  Canceled = "CANCELED",
+  Completed = "COMPLETED",
+  Errored = "ERRORED",
+  Failed = "FAILED",
+  Processing = "PROCESSING",
+  Queued = "QUEUED",
+}
+
 /** RepositoryOrderBy enumerates the ways a repositories list can be ordered. */
 export enum RepositoryOrderBy {
   /** deprecated (use the equivalent REPOSITORY_CREATED_AT) */
@@ -1061,6 +1312,20 @@ export enum RepositoryPermission {
 export type RepositoryScopeInput = {
   /** The list of repositories included in this scope. */
   repositories: Array<Scalars["String"]>;
+  /** A search query to select repositories for this scope. */
+  repositoryCriteria?: InputMaybe<Scalars["String"]>;
+};
+
+/** Input for saving a new view on an insight. */
+export type SaveInsightAsNewViewInput = {
+  /** The dashboard ID to associate this insight with once created. */
+  dashboard?: InputMaybe<Scalars["ID"]>;
+  /** The insight view ID we are creating a new view from. */
+  insightViewId: Scalars["ID"];
+  /** The options for this line chart. */
+  options: LineChartOptionsInput;
+  /** The default values for filters and aggregates for this line chart. */
+  viewControls?: InputMaybe<InsightViewControlsInput>;
 };
 
 /** Supported aggregation modes for search aggregations */
@@ -1244,6 +1509,8 @@ export enum SearchVersion {
 export type SeriesDisplayOptionsInput = {
   /** Max number of series to return. */
   limit?: InputMaybe<Scalars["Int"]>;
+  /** Max number of samples to return. */
+  numSamples?: InputMaybe<Scalars["Int"]>;
   /** Sort options for the series. */
   sortOptions?: InputMaybe<SeriesSortOptionsInput>;
 };
@@ -1401,6 +1668,55 @@ export enum SymbolKind {
   Variable = "VARIABLE",
 }
 
+/**
+ * Options to specify a user for team membership. Multiple options can be provided,
+ * with the following precedence order: (Other mismatches will be discarded)
+ * - UserID
+ * - Username
+ * - Email
+ * - External Account fields
+ *
+ * Examples:
+ * - If ID is set and no match, return.
+ * - If ID and username is set, and ID matches but username doesn't, match.
+ */
+export type TeamMemberInput = {
+  /** If the email is associated to a user and verified, the user account will be matched. */
+  email?: InputMaybe<Scalars["String"]>;
+  /**
+   * If the user has an associated external account, use this.
+   * externalAccountServiceID and externalAccountServiceType must be set and
+   * either of externalAccountAccountID externalAccountLogin are required as well.
+   * Account ID is the unique identifier on the external account platform.
+   */
+  externalAccountAccountID?: InputMaybe<Scalars["String"]>;
+  /**
+   * If the user has an associated external account, use this.
+   * externalAccountServiceID and externalAccountServiceType must be set and
+   * either of externalAccountAccountID externalAccountLogin are required as well.
+   * Account Login is usually the username on the external account platform.
+   */
+  externalAccountLogin?: InputMaybe<Scalars["String"]>;
+  /**
+   * If the user has an associated external account, use this.
+   * externalAccountServiceID and externalAccountServiceType must be set and
+   * either of externalAccountAccountID externalAccountLogin are required as well.
+   * Service ID for the GitHub OAuth provider, for example, is https://github.com/.
+   */
+  externalAccountServiceID?: InputMaybe<Scalars["String"]>;
+  /**
+   * If the user has an associated external account, use this.
+   * externalAccountServiceID and externalAccountServiceType must be set and
+   * either of externalAccountAccountID externalAccountLogin are required as well.
+   * Service Type for the GitHub OAuth provider, for example, is github.
+   */
+  externalAccountServiceType?: InputMaybe<Scalars["String"]>;
+  /** Explicitly define a user by ID. */
+  userID?: InputMaybe<Scalars["ID"]>;
+  /** Explicitly define a user by username in Sourcegraph. */
+  username?: InputMaybe<Scalars["String"]>;
+};
+
 /** A time scope defined using a time interval (ex. 5 days) */
 export type TimeIntervalStepInput = {
   /** The time unit for the interval. */
@@ -1456,6 +1772,10 @@ export type UpdateLineChartSearchInsightInput = {
   dataSeries: Array<LineChartSearchInsightDataSeriesInput>;
   /** The presentation options for this line chart. */
   presentationOptions: LineChartOptionsInput;
+  /** The scope of repositories for the insight, this scope will apply to all dataSeries unless another scope is provided by a series. */
+  repositoryScope?: InputMaybe<RepositoryScopeInput>;
+  /** The time scope for this insight, this scope will apply to all dataSeries unless another scope is provided by a series. */
+  timeScope?: InputMaybe<TimeScopeInput>;
   /** The default values for filters and aggregates for this line chart. */
   viewControls: InsightViewControlsInput;
 };
@@ -1741,7 +2061,6 @@ export type SearchNotebookFragment = {
     | { __typename?: "User"; namespaceName: string; url: string }
     | null;
   blocks: Array<
-    | { __typename: "ComputeBlock" }
     | {
         __typename: "FileBlock";
         fileInput: { __typename?: "FileBlockInput"; repositoryName: string; filePath: string };
@@ -1786,7 +2105,6 @@ export type GetNotebooksQuery = {
         | { __typename?: "User"; namespaceName: string; url: string }
         | null;
       blocks: Array<
-        | { __typename: "ComputeBlock" }
         | {
             __typename: "FileBlock";
             fileInput: { __typename?: "FileBlockInput"; repositoryName: string; filePath: string };
@@ -2244,6 +2562,21 @@ const result: PossibleTypesResultData = {
     ChangesetDescription: ["ExistingChangesetReference", "GitBranchChangesetDescription"],
     ChangesetSpec: ["HiddenChangesetSpec", "VisibleChangesetSpec"],
     ComputeResult: ["ComputeMatchContext", "ComputeText"],
+    Connection: [
+      "InsightBackfillQueueItemConnection",
+      "NewUsersConnection",
+      "PermissionsInfoRepositoriesConnection",
+      "PermissionsInfoUsersConnection",
+      "PermissionsSyncJobsConnection",
+      "RepoEmbeddingJobsConnection",
+      "SavedSearchesConnection",
+      "SiteConfigurationChangeConnection",
+    ],
+    ExternalServiceAvailability: [
+      "ExternalServiceAvailabilityUnknown",
+      "ExternalServiceAvailable",
+      "ExternalServiceUnavailable",
+    ],
     FeatureFlag: ["FeatureFlagBoolean", "FeatureFlagRollout"],
     File2: ["BatchSpecWorkspaceFile", "GitBlob", "VirtualFile"],
     GenericSearchResultInterface: ["CommitSearchResult", "Repository"],
@@ -2257,12 +2590,15 @@ const result: PossibleTypesResultData = {
     IncompleteDatapointAlert: ["GenericIncompleteDatapointAlert", "TimeoutDatapointAlert"],
     InsightDataSeriesDefinition: ["SearchInsightDataSeriesDefinition"],
     InsightPresentation: ["LineChartInsightViewPresentation", "PieChartInsightViewPresentation"],
+    InsightRepositoryDefinition: ["InsightRepositoryScope", "RepositorySearchScope"],
     InsightTimeScope: ["InsightIntervalTimeScope"],
     MonitorAction: ["MonitorEmail", "MonitorSlackWebhook", "MonitorWebhook"],
     MonitorTrigger: ["MonitorQuery"],
     Namespace: ["Org", "User"],
     Node: [
+      "AccessRequest",
       "AccessToken",
+      "BackgroundJob",
       "BatchChange",
       "BatchChangesCredential",
       "BatchSpec",
@@ -2270,6 +2606,7 @@ const result: PossibleTypesResultData = {
       "BulkOperation",
       "ChangesetEvent",
       "CodeIntelligenceConfigurationPolicy",
+      "CodeownersIngestedFile",
       "Executor",
       "ExecutorSecret",
       "ExecutorSecretAccessLog",
@@ -2297,21 +2634,34 @@ const result: PossibleTypesResultData = {
       "Org",
       "OrganizationInvitation",
       "OutOfBandMigration",
+      "OutboundRequest",
+      "OutboundWebhook",
+      "Permission",
       "PermissionsSyncJob",
+      "PreciseIndex",
       "ProductLicense",
       "ProductSubscription",
-      "RegistryExtension",
+      "RepoEmbeddingJob",
       "Repository",
+      "Role",
       "SavedSearch",
       "SearchContext",
+      "SiteConfigurationChange",
+      "Team",
       "User",
       "VisibleBatchSpecWorkspace",
       "VisibleChangesetSpec",
+      "Vulnerability",
+      "VulnerabilityMatch",
       "Webhook",
       "WebhookLog",
     ],
-    NotebookBlock: ["ComputeBlock", "FileBlock", "MarkdownBlock", "QueryBlock", "SymbolBlock"],
-    RegistryPublisher: ["Org", "User"],
+    NotebookBlock: ["FileBlock", "MarkdownBlock", "QueryBlock", "SymbolBlock"],
+    Ownable: ["GitBlob"],
+    Owner: ["Person", "Team"],
+    OwnershipReason: ["CodeownersFileEntry"],
+    PackageRepoOrVersionConnection: ["PackageRepoReferenceConnection", "PackageRepoReferenceVersionConnection"],
+    PermissionsSyncJobSubject: ["Repository", "User"],
     RepositoryComparisonInterface: ["PreviewRepositoryComparison", "RepositoryComparison"],
     RepositoryRedirect: ["Redirect", "Repository"],
     SearchAggregationResult: [
@@ -2321,7 +2671,14 @@ const result: PossibleTypesResultData = {
     ],
     SearchResult: ["CommitSearchResult", "FileMatch", "Repository"],
     SettingsSubject: ["DefaultSettings", "Org", "Site", "User"],
-    StatusMessage: ["CloningProgress", "ExternalServiceSyncError", "IndexingProgress", "SyncError"],
+    StatusMessage: [
+      "CloningProgress",
+      "ExternalServiceSyncError",
+      "GitUpdatesDisabled",
+      "IndexingProgress",
+      "SyncError",
+    ],
+    TeamMember: ["User"],
     TreeEntry: ["GitBlob", "GitTree"],
     TreeEntryLSIFData: ["GitBlobLSIFData", "GitTreeLSIFData"],
     VisibleApplyPreviewTargets: [
