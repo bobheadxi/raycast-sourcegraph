@@ -10,7 +10,7 @@ import {
   launchCommand,
   LaunchType,
 } from "@raycast/api";
-import React, { useState, Fragment, useMemo } from "react";
+import { ReactElement, ReactNode, useState, Fragment, useMemo } from "react";
 import { nanoid } from "nanoid";
 import { DateTime } from "luxon";
 
@@ -220,21 +220,25 @@ function escapeRegexp(text: string) {
   return text.replace(regexpRe, "\\$&");
 }
 
+/**
+ * makeDrilldownAction creates an Action for replacing the current search with
+ * a relevant fully qualified search clause.
+ */
 function makeDrilldownAction(
   name: string,
   setSearchText: (text: string) => void,
-  opts: { repo?: string; revision?: string; file?: string }
+  opts: { repository: string; revision?: string; path?: string }
 ) {
   const clauses: string[] = [];
-  if (opts.repo) {
-    let repoQuery = `r:^${escapeRegexp(opts.repo)}$`;
+  if (opts.repository) {
+    let repoQuery = `r:^${escapeRegexp(opts.repository)}$`;
     if (opts.revision) {
       repoQuery += `@${opts.revision}`;
     }
     clauses.push(repoQuery);
   }
-  if (opts.file) {
-    clauses.push(`f:${escapeRegexp(opts.file)}`);
+  if (opts.path) {
+    clauses.push(`f:${escapeRegexp(opts.path)}`);
   }
 
   return (
@@ -247,6 +251,23 @@ function makeDrilldownAction(
         setSearchText(`${clauses.join(" ")} `);
       }}
     />
+  );
+}
+
+/**
+ * makeFileActions creates a set of Actions for doing things with the file path
+ * of a result.
+ */
+function makeFileActions(src: Sourcegraph, opts: { path: string; repository: string; revision?: string }) {
+  return (
+    <ActionPanel.Section key={nanoid()} title="File Actions">
+      <Action.CopyToClipboard title={"Copy File Path"} key={nanoid()} content={opts.path} />
+      <Action.OpenInBrowser
+        title={"Open File in Browser"}
+        key={nanoid()}
+        url={`${src.instance}/${opts.repository}${opts.revision ? `@${opts.revision}` : ""}/-/blob/${opts.path}`}
+      />
+    </ActionPanel.Section>
   );
 }
 
@@ -292,7 +313,8 @@ function SearchResultItem({
   const accessories: List.Item.Accessory[] = [];
 
   // Action to drill down on the search result.
-  let drilldownAction: React.ReactElement | undefined;
+  let drilldownAction: ReactElement | undefined;
+  let fileActions: ReactElement | undefined;
   // Details about the match type, to present on icon hover
   const matchTypeDetails: string[] = [];
   // Details about the match, to present on title hover
@@ -341,7 +363,7 @@ function SearchResultItem({
         repoAccessory.text = "";
       }
       drilldownAction = makeDrilldownAction("Search Repository", setSearchText, {
-        repo: match.repository,
+        repository: match.repository,
         revision: firstRevision,
       });
       break;
@@ -353,22 +375,25 @@ function SearchResultItem({
       subtitleTooltip = match.authorDate;
       matchDetails.push(`by ${match.authorName}`);
       drilldownAction = makeDrilldownAction("Search Revision of Repository", setSearchText, {
-        repo: match.repository,
+        repository: match.repository,
         revision: match.oid, // a commit is always a revision
       });
       break;
 
-    case "path":
+    case "path": {
       icon.source = Icon.Document;
       title = match.path;
-      drilldownAction = makeDrilldownAction("Search File", setSearchText, {
-        repo: match.repository,
-        file: match.path,
+      const actionOpts = {
+        repository: match.repository,
+        path: match.path,
         revision: firstRevision,
-      });
+      };
+      drilldownAction = makeDrilldownAction("Search File", setSearchText, actionOpts);
+      fileActions = makeFileActions(src, actionOpts);
       break;
+    }
 
-    case "content":
+    case "content": {
       icon.source = Icon.Snippets;
       subtitle = match.path;
 
@@ -388,24 +413,31 @@ function SearchResultItem({
         matchDetails.push(count(match.lineMatches.length, "match", "matches"));
       }
 
-      drilldownAction = makeDrilldownAction("Search File", setSearchText, {
-        repo: match.repository,
-        file: match.path,
+      const actionOpts = {
+        repository: match.repository,
+        path: match.path,
         revision: firstRevision,
-      });
+      };
+      drilldownAction = makeDrilldownAction("Search File", setSearchText, actionOpts);
+      fileActions = makeFileActions(src, actionOpts);
       break;
+    }
 
-    case "symbol":
+    case "symbol": {
       icon.source = Icon.Code;
       title = match.symbols.map((s) => s.name).join(", ");
       subtitle = match.path;
       matchDetails.push(count(match.symbols.length, "match", "matches"));
-      drilldownAction = makeDrilldownAction("Search File", setSearchText, {
-        repo: match.repository,
-        file: match.path,
+
+      const actionOpts = {
+        repository: match.repository,
+        path: match.path,
         revision: firstRevision,
-      });
+      };
+      drilldownAction = makeDrilldownAction("Search File", setSearchText, actionOpts);
+      fileActions = makeFileActions(src, actionOpts);
       break;
+    }
   }
 
   // Add repo accessory as right-most detail
@@ -442,6 +474,7 @@ function SearchResultItem({
             ),
             extraActions: drilldownAction && [drilldownAction],
           })}
+          {fileActions || <></>}
           <ActionPanel.Section key={nanoid()} title="Query Actions">
             <Action.OpenInBrowser title="Open Query in Browser" url={queryURL} shortcut={tertiaryActionShortcut} />
             <Action.CopyToClipboard title="Copy Link to Query" content={queryURL} />
@@ -589,7 +622,7 @@ function ResultView({
   const navigationTitle = `View ${match.type} result`;
   const markdownTitle = bold(match.repository);
   let markdownContent = "";
-  const metadata: React.ReactNode[] = [
+  const metadata: ReactNode[] = [
     <Detail.Metadata.TagList title="Match type" key={nanoid()}>
       <Detail.Metadata.TagList.Item text={match.type} icon={icon} />
     </Detail.Metadata.TagList>,

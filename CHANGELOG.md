@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **search**: For search results that have associated file paths, you can now easily copy the path of the file associated with a result or open it in the browser.
+
 ## [Code Search History and improved search results metadata](https://github.com/raycast/extensions/pull/4018) - 2022-12-23
 
 - **search-history**: Introduce 'Code Search History' command - unique searches are now stored locally, and past searches can now be listed in this new command ([#19](https://github.com/bobheadxi/raycast-sourcegraph/pull/19))
