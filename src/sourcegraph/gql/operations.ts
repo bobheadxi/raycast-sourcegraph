@@ -206,6 +206,13 @@ export enum BulkOperationType {
   Reenqueue = "REENQUEUE",
 }
 
+/** A status message of a permissions sync job cancellation. */
+export enum CancelPermissionsSyncJobResultMessage {
+  Error = "ERROR",
+  NotFound = "NOT_FOUND",
+  Success = "SUCCESS",
+}
+
 /** The state of checks (e.g., for continuous integration) on a changeset. */
 export enum ChangesetCheckState {
   Failed = "FAILED",
@@ -364,6 +371,12 @@ export enum CloneStatus {
   NotCloned = "NOT_CLONED",
 }
 
+/** Describes the status of a permissions sync for a given provider (code host). */
+export enum CodeHostStatus {
+  Error = "ERROR",
+  Success = "SUCCESS",
+}
+
 /** CodeownersFileInput represents the input for ingesting codeowners files */
 export type CodeownersFileInput = {
   /** fileContents is the text of the codeowners file */
@@ -372,6 +385,20 @@ export type CodeownersFileInput = {
   repoID?: InputMaybe<Scalars["ID"]>;
   /** The repo name to ingest the file for. Cannot be set with repositoryID. */
   repoName?: InputMaybe<Scalars["String"]>;
+};
+
+/** Input wrapper for completions */
+export type CompletionsInput = {
+  /** Maximum number of tokens to sample */
+  maxTokensToSample: Scalars["Int"];
+  /** List of conversation messages */
+  messages: Array<Message>;
+  /** Temperature for sampling - higher means more random completions */
+  temperature: Scalars["Float"];
+  /** Number of highest probability completions to return */
+  topK: Scalars["Int"];
+  /** Probability threshold for inclusion in results */
+  topP: Scalars["Int"];
 };
 
 /**
@@ -546,6 +573,7 @@ export type Event = {
 export enum EventSource {
   Backend = "BACKEND",
   Codehostintegration = "CODEHOSTINTEGRATION",
+  Cody = "CODY",
   Ideextension = "IDEEXTENSION",
   Staticweb = "STATICWEB",
   Web = "WEB",
@@ -696,29 +724,6 @@ export enum HighlightResponseFormat {
   JsonScip = "JSON_SCIP",
 }
 
-/** Denotes the confidence in the correctness of the proposed index target. */
-export enum InferedPreciseSupportLevel {
-  /**
-   * An auto-indexing job configuration was able to be infered for this
-   * directory that has a high likelyhood of being complete enough to result
-   * in an LSIF index.
-   */
-  IndexJobInfered = "INDEX_JOB_INFERED",
-  /**
-   * The language is known to have an LSIF indexer associated with it
-   * but this may not be the directory from which it should be invoked.
-   * Relevant build tool configuration may be available at a parent directory.
-   */
-  LanguageSupported = "LANGUAGE_SUPPORTED",
-  /**
-   * Relevant build tool configuration files were located that indicate
-   * a good possibility of this directory being where an LSIF indexer
-   * could be invoked, however we have or can not infer a potentially complete
-   * auto indexing job configuration.
-   */
-  ProjectStructureSupported = "PROJECT_STRUCTURE_SUPPORTED",
-}
-
 /** Possible queue states */
 export enum InsightQueueItemState {
   Completed = "COMPLETED",
@@ -768,45 +773,6 @@ export type KeyPathSegment = {
   /** The name of the property in the object at this location to descend into. */
   property?: InputMaybe<Scalars["String"]>;
 };
-
-/** The state an LSIF index can be in. */
-export enum LsifIndexState {
-  /** This index was processed successfully. */
-  Completed = "COMPLETED",
-  /** This index failed to be processed. */
-  Errored = "ERRORED",
-  /** This index is being processed. */
-  Processing = "PROCESSING",
-  /** This index is queued to be processed later. */
-  Queued = "QUEUED",
-}
-
-/** The state an LSIF upload can be in. */
-export enum LsifUploadState {
-  /** This upload was processed successfully. */
-  Completed = "COMPLETED",
-  /**
-   * This upload is deleted and its metadata is reconstructed from existing
-   * audit log entries.
-   */
-  Deleted = "DELETED",
-  /**
-   * This upload is queued for deletion. This upload was previously in the
-   * COMPLETED state and evicted, replaced by a newer upload, or deleted by
-   * a user. This upload is able to answer code intelligence queries until
-   * the commit graph of the upload's repository is next calculated, at which
-   * point the upload will become unreachable.
-   */
-  Deleting = "DELETING",
-  /** This upload failed to be processed. */
-  Errored = "ERRORED",
-  /** This upload is being processed. */
-  Processing = "PROCESSING",
-  /** This upload is queued to be processed later. */
-  Queued = "QUEUED",
-  /** This upload is currently being transferred to Sourcegraph. */
-  Uploading = "UPLOADING",
-}
 
 /** Options for a line chart data series */
 export type LineChartDataSeriesOptionsInput = {
@@ -866,6 +832,14 @@ export type LineChartSearchInsightInput = {
 export type MarkdownOptions = {
   /** A dummy null value (empty input types are not allowed yet). */
   alwaysNil?: InputMaybe<Scalars["String"]>;
+};
+
+/** Message to or from the LLM */
+export type Message = {
+  /** Speaker of the message (human/assistant) */
+  speaker: SpeakerType;
+  /** Text content of the message */
+  text: Scalars["String"];
 };
 
 /** The input required to create an action. */
@@ -1148,12 +1122,6 @@ export enum PermissionNamespace {
   BatchChanges = "BATCH_CHANGES",
 }
 
-/** Status types of permissions providers. */
-export enum PermissionsProviderStatus {
-  Error = "ERROR",
-  Success = "SUCCESS",
-}
-
 /** Permission sync job priority. */
 export enum PermissionsSyncJobPriority {
   High = "HIGH",
@@ -1163,6 +1131,8 @@ export enum PermissionsSyncJobPriority {
 
 /** State types of permission sync jobs. */
 export enum PermissionsSyncJobReason {
+  ReasonExternalAccountAdded = "REASON_EXTERNAL_ACCOUNT_ADDED",
+  ReasonExternalAccountDeleted = "REASON_EXTERNAL_ACCOUNT_DELETED",
   ReasonGithubOrgMemberAddedEvent = "REASON_GITHUB_ORG_MEMBER_ADDED_EVENT",
   ReasonGithubOrgMemberRemovedEvent = "REASON_GITHUB_ORG_MEMBER_REMOVED_EVENT",
   ReasonGithubRepoEvent = "REASON_GITHUB_REPO_EVENT",
@@ -1193,6 +1163,7 @@ export enum PermissionsSyncJobReasonGroup {
   Manual = "MANUAL",
   Schedule = "SCHEDULE",
   Sourcegraph = "SOURCEGRAPH",
+  Unknown = "UNKNOWN",
   Webhook = "WEBHOOK",
 }
 
@@ -1248,19 +1219,6 @@ export enum PreciseIndexState {
   QueuedForIndexing = "QUEUED_FOR_INDEXING",
   QueuedForProcessing = "QUEUED_FOR_PROCESSING",
   UploadingIndex = "UPLOADING_INDEX",
-}
-
-/** Ownership level of the recommended precise code-intel indexer. */
-export enum PreciseSupportLevel {
-  /** When the recommended indexer is maintained by us. */
-  Native = "NATIVE",
-  /**
-   * When the recommended indexer is maintained by a third-party
-   * but is recommended over a native indexer, where one exists.
-   */
-  ThirdParty = "THIRD_PARTY",
-  /** When there is no known indexer. */
-  Unknown = "UNKNOWN",
 }
 
 /**
@@ -1334,17 +1292,6 @@ export enum SearchAggregationMode {
   CaptureGroup = "CAPTURE_GROUP",
   Path = "PATH",
   Repo = "REPO",
-}
-
-/**
- * Tiered list of types of search-based support for a language. This may be expanded as different
- * indexing methods are introduced.
- */
-export enum SearchBasedSupportLevel {
-  /** Universal-ctags is used for indexing this language. */
-  Basic = "BASIC",
-  /** The language has no configured search-based code-intel support. */
-  Unsupported = "UNSUPPORTED",
 }
 
 /** Input for editing an existing search context. */
@@ -1609,6 +1556,12 @@ export type SiteUsersNumberRangeInput = {
   /** Greater than or equal to */
   lte?: InputMaybe<Scalars["Float"]>;
 };
+
+/** Speaker type, human or assistant */
+export enum SpeakerType {
+  Assistant = "ASSISTANT",
+  Human = "HUMAN",
+}
 
 /** Input for a user satisfaction (NPS) survey submission. */
 export type SurveySubmissionInput = {
@@ -2621,8 +2574,6 @@ const result: PossibleTypesResultData = {
       "HiddenExternalChangeset",
       "InsightView",
       "InsightsDashboard",
-      "LSIFIndex",
-      "LSIFUpload",
       "Monitor",
       "MonitorActionEvent",
       "MonitorEmail",
@@ -2676,6 +2627,7 @@ const result: PossibleTypesResultData = {
       "ExternalServiceSyncError",
       "GitUpdatesDisabled",
       "IndexingProgress",
+      "NoRepositoriesDetected",
       "SyncError",
     ],
     TeamMember: ["User"],
