@@ -1,6 +1,5 @@
-import fetch from "cross-fetch";
-
 import { Sourcegraph } from "..";
+import { getProxiedFetch } from "./fetchProxy";
 
 export class AuthError extends Error {
   message: string;
@@ -20,7 +19,7 @@ async function doGQLRequest<T>(abort: AbortSignal, src: Sourcegraph, body: strin
     headers["Authorization"] = `token ${src.token}`;
   }
   return new Promise<T>((resolve, reject) => {
-    fetch(`${src.instance}/.api/graphql`, {
+    getProxiedFetch(src.proxy)(`${src.instance}/.api/graphql`, {
       method: "POST",
       headers: headers,
       body,
