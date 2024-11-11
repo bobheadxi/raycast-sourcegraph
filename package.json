@@ -43,6 +43,13 @@
       "type": "password"
     },
     {
+      "name": "customInstanceProxy",
+      "title": "Sourcegraph Instance: Proxy",
+      "description": "Optional proxy to use when connecting to a custom Sourcegraph instance. (Presently, only Unix domain sockets are supported.)",
+      "required": false,
+      "type": "textfield"
+    },
+    {
       "name": "featureSearchPatternDropdown",
       "title": "Experimental features",
       "label": "Search pattern dropdown",
