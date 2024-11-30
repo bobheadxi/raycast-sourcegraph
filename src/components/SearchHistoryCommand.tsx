@@ -27,7 +27,7 @@ export default function SearchHistoryCommand({ src }: { src: Sourcegraph }) {
       push,
       "Unexpected error",
       `Failed to load search history: ${state.error.name}`,
-      `${state.error.message}\n\n${state.error.stack || ""}`
+      `${state.error.message}\n\n${state.error.stack || ""}`,
     ).show();
   }
 
