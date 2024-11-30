@@ -1,6 +1,6 @@
 import { LaunchProps } from "@raycast/api";
 
-import DotComCommand from "./components/CloudCommand";
+import DotComCommand from "./components/DotComCommand";
 import SearchCommand from "./components/SearchCommand";
 
 export default function SearchCloud(props: LaunchProps) {
