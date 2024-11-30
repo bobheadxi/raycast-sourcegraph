@@ -141,20 +141,6 @@
       ]
     },
     {
-      "name": "findNotebooksDotCom",
-      "title": "Find Search Notebooks",
-      "subtitle": "Sourcegraph.com",
-      "description": "Browse search notebooks on Sourcegraph.com.",
-      "mode": "view",
-      "keywords": [
-        "sourcegraph",
-        "search",
-        "notebook",
-        "snb"
-      ],
-      "preferences": []
-    },
-    {
       "name": "findNotebooksInstance",
       "icon": "logo-bw.png",
       "title": "Find Search Notebooks",
