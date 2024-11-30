@@ -1,10 +1,11 @@
 import http, { Agent } from "http";
 import path from "path";
-import fetch, { RequestInit, RequestInfo } from "node-fetch";
+import nodeFetch, { RequestInit, RequestInfo } from "node-fetch";
+import crossFetch from "cross-fetch";
 
 // Returns a valid http.Agent, using a proxy when configured.
 export function getProxiedAgent(proxy?: string) {
-  if (proxy !== undefined) {
+  if (proxy) {
     if (proxy.startsWith("http://") || proxy.startsWith("https://")) {
       throw new Error(`The proxy provided (${proxy}) is not supported. Use a Unix socket proxy or unset this option.`);
     } else {
@@ -18,13 +19,18 @@ export function getProxiedAgent(proxy?: string) {
       return new Agent({ socketPath } as unknown as http.AgentOptions);
     }
   }
-  return http.globalAgent;
 }
 
 // Returns a fetch function that uses a proxy when configured.
-export function getProxiedFetch(proxy?: string): typeof fetch {
+export function getProxiedFetch(proxy?: string): typeof crossFetch {
   const agent = getProxiedAgent(proxy);
-  return (info: URL | RequestInfo, init?: RequestInit) => {
-    return fetch(info, { ...init, agent } as RequestInit);
+  if (!proxy) {
+    return crossFetch;
+  }
+  // YOLO, not sure how to get the types to interop but the actual passed parameters
+  // match those used in https://github.com/bobheadxi/raycast-sourcegraph/pull/21.
+  const proxiedFetch = (info: any, init?: any) => {
+    return nodeFetch(info as RequestInfo, { ...init, agent } as RequestInit);
   };
+  return proxiedFetch as unknown as typeof crossFetch;
 }

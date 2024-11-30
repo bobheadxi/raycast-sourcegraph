@@ -31,13 +31,13 @@ export interface Sourcegraph {
   featureFlags: ExtensionFeatureFlags;
 }
 
-const cloudURL = "https://sourcegraph.com";
+const dotComURL = "https://sourcegraph.com";
 
 /**
  * isSourcegraphDotCom returns true if this instance URL points to Sourcegraph.com.
  */
 export function isSourcegraphDotCom(instance: string) {
-  return instance === cloudURL;
+  return instance === dotComURL;
 }
 
 /**
@@ -72,7 +72,7 @@ interface Preferences {
 export function sourcegraphDotCom(): Sourcegraph {
   const prefs: Preferences = getPreferenceValues();
   const connect = {
-    instance: cloudURL,
+    instance: dotComURL,
     token: prefs.cloudToken,
   };
   return {

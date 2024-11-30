@@ -175,14 +175,14 @@
     "@apollo/client": "^3.11.10",
     "@raycast/api": "^1.86.1",
     "@raycast/utils": "^1.18.1",
-    "node-fetch": "^3.3.2",
+    "cross-fetch": "^4.0.0",
     "eventsource": "^2.0.2",
     "graphql": "^16.9.0",
     "luxon": "^3.5.0",
-    "nanoid": "^5.0.9"
+    "nanoid": "^5.0.9",
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
-    "patch-package": "^8.0.0",
     "@graphql-codegen/cli": "^5.0.3",
     "@graphql-codegen/fragment-matcher": "^5.0.2",
     "@graphql-codegen/introspection": "^4.0.3",
@@ -197,6 +197,7 @@
     "@typescript-eslint/parser": "^8.16.0",
     "eslint": "^9.16.0",
     "eslint-config-prettier": "^9.1.0",
+    "patch-package": "^8.0.0",
     "prettier": "^3.4.1",
     "typescript": "^5.7.2"
   },
