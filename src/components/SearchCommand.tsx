@@ -50,7 +50,7 @@ function initialSearchText(src: Sourcegraph, props?: LaunchProps): string {
 export default function SearchCommand({ src, props }: { src: Sourcegraph; props?: LaunchProps }) {
   const [searchText, setSearchText] = useState(initialSearchText(src, props));
   const [patternType, setPatternType] = useState<PatternType | undefined>(
-    src.featureFlags.searchPatternDropdown ? undefined : "literal"
+    src.featureFlags.searchPatternDropdown ? undefined : "literal",
   );
 
   const { state, search } = useSearch(src, MAX_RENDERED_RESULTS);
@@ -199,7 +199,7 @@ function resultActions(url: string, customActions?: CustomResultActions) {
   actions.push(
     // Can't seem to override the shortcut on this thing if it's the second action, so
     // add it as the third action instead.
-    <Action.CopyToClipboard key={nanoid()} title="Copy Link to Result" content={url} shortcut={copyShortcut} />
+    <Action.CopyToClipboard key={nanoid()} title="Copy Link to Result" content={url} shortcut={copyShortcut} />,
   );
   return (
     <ActionPanel.Section key={nanoid()} title="Result Actions">
@@ -227,7 +227,7 @@ function escapeRegexp(text: string) {
 function makeDrilldownAction(
   name: string,
   setSearchText: (text: string) => void,
-  opts: { repository: string; revision?: string; path?: string }
+  opts: { repository: string; revision?: string; path?: string },
 ) {
   const clauses: string[] = [];
   if (opts.repository) {
@@ -303,12 +303,15 @@ function SearchResultItem({
   // Icon to denote the type of the result
   const icon: Image.ImageLike = { source: Icon.Dot, tintColor: ColorDefault };
   // Repository context for the result. Comes last in accessories.
-  const repoAccessory: List.Item.Accessory = firstRevision
-    ? {
-        text: `${match.repository}@${firstRevision}`,
-        tooltip: `${match.repository}@${firstRevision}`,
-      }
-    : { text: match.repository, tooltip: match.repository };
+  let repoAccessory: List.Item.Accessory = { text: "", tooltip: "" };
+  if ("repository" in match) {
+    repoAccessory = firstRevision
+      ? {
+          text: `${match.repository}@${firstRevision}`,
+          tooltip: `${match.repository}@${firstRevision}`,
+        }
+      : { text: match.repository, tooltip: match.repository };
+  }
   // Additional accessories denoting details about this result.
   const accessories: List.Item.Accessory[] = [];
 
@@ -404,7 +407,7 @@ function SearchResultItem({
             c.content
               .split("\n")
               .map((l) => l.trim())
-              .join(" ... ")
+              .join(" ... "),
           )
           .join(" ... ");
         matchDetails.push(count(match.chunkMatches?.length, "match", "matches"));
@@ -620,33 +623,39 @@ function ResultView({
 
   const { match } = searchResult;
   const navigationTitle = `View ${match.type} result`;
-  const markdownTitle = bold(match.repository);
+  let markdownTitle: string;
   let markdownContent = "";
   const metadata: ReactNode[] = [
     <Detail.Metadata.TagList title="Match type" key={nanoid()}>
       <Detail.Metadata.TagList.Item text={match.type} icon={icon} />
     </Detail.Metadata.TagList>,
-    <Detail.Metadata.Link
-      title="Repository"
-      text={match.repository}
-      target={`https://${match.repository}`}
-      key={nanoid()}
-    />,
   ];
+  if ("repository" in match) {
+    metadata.push(
+      <Detail.Metadata.Link
+        title="Repository"
+        text={match.repository}
+        target={`https://${match.repository}`}
+        key={nanoid()}
+      />,
+    );
+  }
 
   switch (match.type) {
     // Match types that have multi result view
 
     case "content":
     case "symbol":
+      markdownTitle = bold(match.repository);
       return <MultiResultView searchResult={{ url: searchResult.url, match }} key={nanoid()} />;
 
     // Match types that use markdown view
 
     case "repo":
+      markdownTitle = bold(match.repository);
       markdownContent = match.description || "";
       metadata.push(
-        <Detail.Metadata.Label title="Visibility" text={match.private ? "Private" : "Public"} key={nanoid()} />
+        <Detail.Metadata.Label title="Visibility" text={match.private ? "Private" : "Public"} key={nanoid()} />,
       );
       if (!fileContents.called) {
         getFileContents({
@@ -663,6 +672,7 @@ function ResultView({
       break;
 
     case "path":
+      markdownTitle = bold(match.repository);
       markdownContent = `${codeBlock(match.path)}\n\n---\n\n`;
       if (!fileContents.called) {
         getFileContents({
@@ -681,6 +691,7 @@ function ResultView({
       break;
 
     case "commit": {
+      markdownTitle = bold(match.repository);
       markdownContent = match.message;
       metadata.push(
         <Detail.Metadata.Label title="Author" text={match.authorName} key={nanoid()} />,
@@ -689,16 +700,17 @@ function ResultView({
           title="Committed"
           text={DateTime.fromISO(match.authorDate).toRelative() || "Unknown"}
           key={nanoid()}
-        />
+        />,
       );
       break;
     }
 
     default:
+      markdownTitle = bold(match.type);
       markdownContent = `Unsupported result type - full data:\n\n${codeBlock(JSON.stringify(match, null, "  "))}`;
   }
 
-  if (match.repoStars) {
+  if ("repoStars" in match) {
     metadata.push(<Detail.Metadata.Label title="Stars" text={`${match.repoStars}`} key={nanoid()} />);
   }
 
