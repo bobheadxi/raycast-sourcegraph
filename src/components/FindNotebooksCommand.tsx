@@ -9,7 +9,7 @@ import {
   NotebooksOrderBy,
   SearchNotebookFragment as SearchNotebook,
 } from "../sourcegraph/gql/operations";
-import { bold, codeBlock, inlineCode, italic, quoteBlock } from "../markdown";
+import { bold, codeBlock, italic, quoteBlock } from "../markdown";
 
 import { copyShortcut } from "./shortcuts";
 import { ColorDefault, ColorEmphasis, ColorPrivate } from "./colors";

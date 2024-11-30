@@ -45,7 +45,7 @@ export async function performSearch(
   src: Sourcegraph,
   query: string,
   patternType: PatternType,
-  handlers: SearchHandlers
+  handlers: SearchHandlers,
 ): Promise<void> {
   if (query.length === 0) {
     return;
@@ -112,7 +112,7 @@ export async function performSearch(
               });
           }
           return { url: matchURL, match };
-        })
+        }),
       );
     });
 
@@ -132,7 +132,7 @@ export async function performSearch(
               query: { addition: f.value },
             };
           }),
-        false
+        false,
       );
     });
 
@@ -181,7 +181,7 @@ export async function performSearch(
               query: p.query,
             };
           }),
-          true
+          true,
         );
       } else if (event.data.description) {
         // Alert description often contains a suggestion, hopefully it's useful if no
@@ -192,7 +192,7 @@ export async function performSearch(
               title: event.data.description,
             },
           ],
-          true
+          true,
         );
       }
     });
