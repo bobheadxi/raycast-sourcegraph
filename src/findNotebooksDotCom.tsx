@@ -1,4 +1,4 @@
-import DotComCommand from "./components/CloudCommand";
+import DotComCommand from "./components/DotComCommand";
 import FindNotebooksCommand from "./components/FindNotebooksCommand";
 
 export default function FindNotebooksCloud() {
