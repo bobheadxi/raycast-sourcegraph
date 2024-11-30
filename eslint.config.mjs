@@ -15,7 +15,12 @@ const compat = new FlatCompat({
 });
 
 export default [{
-    ignores: ["src/sourcegraph/gql/mutations", "src/sourcegraph/gql/queries"],
+    ignores: [
+        "src/sourcegraph/gql/mutations/*",
+        "src/sourcegraph/gql/queries/*",
+        "src/sourcegraph/gql/operations.ts",
+        "src/sourcegraph/stream-search/*",
+    ],
 }, ...compat.extends("eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"), {
     plugins: {
         "@typescript-eslint": typescriptEslint,
