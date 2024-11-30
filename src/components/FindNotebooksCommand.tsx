@@ -154,12 +154,10 @@ ${
               const symbol = quoteBlock(
                 `${italic(b.symbolInput.symbolKind.toLocaleLowerCase())} ${bold(b.symbolInput.symbolName)} ${
                   b.symbolInput.symbolContainerName
-                }`
+                }`,
               );
               return `${symbol}\n${codeBlock(`${b.symbolInput.repositoryName} > ${b.symbolInput.filePath}`)}`;
             }
-            default:
-              return quoteBlock(`Unsupported block type: ${inlineCode(b.__typename)}`);
           }
         })
         .join("\n\n")
