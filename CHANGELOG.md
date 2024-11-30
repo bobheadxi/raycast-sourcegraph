@@ -4,6 +4,7 @@
 
 - **search**: For search results that have associated file paths, you can now easily copy the path of the file associated with a result or open it in the browser.
 - **all**: Proxying requests over Unix domain socket for custom Sourcegraph instances is now supported via the new `Sourcegraph Instance: Proxy` option; note that HTTP proxies are not yet supported ([#21](https://github.com/bobheadxi/raycast-sourcegraph/pull/21))
+- **internal**: Updated dependencies.
 
 ## [Code Search History and improved search results metadata](https://github.com/raycast/extensions/pull/4018) - 2022-12-23
 
