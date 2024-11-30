@@ -2,6 +2,7 @@ import EventSource from "eventsource";
 
 import { getMatchUrl, SearchEvent, SearchMatch, AlertKind, LATEST_VERSION } from "./stream";
 import { LinkBuilder, Sourcegraph } from "..";
+import { getProxiedAgent } from "../gql/fetchProxy";
 
 export interface SearchResult {
   url: string;
@@ -66,7 +67,12 @@ export async function performSearch(
     headers["Authorization"] = `token ${src.token}`;
   }
 
-  const stream = new EventSource(requestURL, { headers });
+  // There's a bit of TypeScript trickery here, as we've added the agent
+  // override with a patch to the eventsource package.
+  const stream = new EventSource(requestURL, {
+    headers,
+    agent: getProxiedAgent(src.proxy),
+  } as unknown as EventSource.EventSourceInitDict);
   return new Promise((resolve) => {
     /**
      * All events that indicate the end of the request should use this to resolve.
