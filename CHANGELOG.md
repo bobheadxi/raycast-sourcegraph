@@ -3,6 +3,7 @@
 ## Unreleased
 
 - **search**: For search results that have associated file paths, you can now easily copy the path of the file associated with a result or open it in the browser.
+- **shortcuts**: The `Cmd-Enter` shortcut used for options like "Open Query in Browser" is now `Cmd-Shift-Enter` to avoid conflicts with reserved Raycast shortcuts.
 - **all**: Proxying requests over Unix domain socket for custom Sourcegraph instances is now supported via the new `Sourcegraph Instance: Proxy` option; note that HTTP proxies are not yet supported ([#21](https://github.com/bobheadxi/raycast-sourcegraph/pull/21))
 - **notebooks**: Notebooks have been disabled on Sourcegraph.com for some time now, so the command for interacting with public notebooks on Sourcegraph.com has been removed. The "Find Search Notebooks" command for custom instances is still available for the time being.
 - **internal**: Updated dependencies.
