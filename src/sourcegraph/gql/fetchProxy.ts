@@ -29,6 +29,7 @@ export function getProxiedFetch(proxy?: string): typeof crossFetch {
   }
   // YOLO, not sure how to get the types to interop but the actual passed parameters
   // match those used in https://github.com/bobheadxi/raycast-sourcegraph/pull/21.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const proxiedFetch = (info: any, init?: any) => {
     return nodeFetch(info as RequestInfo, { ...init, agent } as RequestInit);
   };
