@@ -1,5 +1,5 @@
 import { ActionPanel, List, Action, Icon, Detail, useNavigation } from "@raycast/api";
-import { useState, Fragment, useMemo } from "react";
+import { useState, Fragment, useMemo, useEffect } from "react";
 import { DateTime } from "luxon";
 import { nanoid } from "nanoid";
 
@@ -14,6 +14,7 @@ import { bold, codeBlock, italic, quoteBlock } from "../markdown";
 import { copyShortcut } from "./shortcuts";
 import { ColorDefault, ColorEmphasis, ColorPrivate } from "./colors";
 import ExpandableToast from "./ExpandableToast";
+import { useTelemetry } from "../hooks/telemetry";
 
 const link = new LinkBuilder("notebooks");
 
@@ -21,6 +22,9 @@ const link = new LinkBuilder("notebooks");
  * FindNotebooksCommand is the shared search notebooks command.
  */
 export default function FindNotebooksCommand({ src }: { src: Sourcegraph }) {
+  const { recorder } = useTelemetry(src);
+  useEffect(() => recorder.recordEvent("findNotebooks", "start"), []);
+
   const [searchText, setSearchText] = useState("");
   const { loading, error, data } = useGetNotebooksQuery({
     client: src.client,

@@ -51,9 +51,18 @@
     },
     {
       "name": "featureSearchPatternDropdown",
-      "title": "Experimental features",
+      "title": "Additional features",
       "label": "Search pattern dropdown",
       "description": "Enable the search pattern dropdown in the search command.",
+      "required": false,
+      "type": "checkbox",
+      "default": false
+    },
+    {
+      "name": "featureDisableTelemetry",
+      "title": "Additional features",
+      "label": "Disable telemetry",
+      "description": "Telemetry is only reported to the connected Sourcegraph instance, but can be disabled with this toggle.",
       "required": false,
       "type": "checkbox",
       "default": false
@@ -175,6 +184,7 @@
     "@apollo/client": "^3.11.10",
     "@raycast/api": "^1.86.1",
     "@raycast/utils": "^1.18.1",
+    "@sourcegraph/telemetry": "^0.18.0",
     "cross-fetch": "^4.0.0",
     "eventsource": "^2.0.2",
     "graphql": "^16.9.0",

@@ -2813,6 +2813,18 @@ export type GetNotebooksQuery = {
   };
 };
 
+export type RecordEventsMutationVariables = Exact<{
+  events: Array<TelemetryEventInput> | TelemetryEventInput;
+}>;
+
+export type RecordEventsMutation = {
+  __typename?: "Mutation";
+  telemetry: {
+    __typename?: "TelemetryMutation";
+    recordEvents?: { __typename?: "EmptyResponse"; alwaysNil?: string | null } | null;
+  };
+};
+
 export const OperationIdFragmentDoc = gql`
   fragment OperationID on BulkOperation {
     id
@@ -3265,6 +3277,46 @@ export type GetNotebooksQueryHookResult = ReturnType<typeof useGetNotebooksQuery
 export type GetNotebooksLazyQueryHookResult = ReturnType<typeof useGetNotebooksLazyQuery>;
 export type GetNotebooksSuspenseQueryHookResult = ReturnType<typeof useGetNotebooksSuspenseQuery>;
 export type GetNotebooksQueryResult = Apollo.QueryResult<GetNotebooksQuery, GetNotebooksQueryVariables>;
+export const RecordEventsDocument = gql`
+  mutation RecordEvents($events: [TelemetryEventInput!]!) {
+    telemetry {
+      recordEvents(events: $events) {
+        alwaysNil
+      }
+    }
+  }
+`;
+export type RecordEventsMutationFn = Apollo.MutationFunction<RecordEventsMutation, RecordEventsMutationVariables>;
+
+/**
+ * __useRecordEventsMutation__
+ *
+ * To run a mutation, you first call `useRecordEventsMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRecordEventsMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [recordEventsMutation, { data, loading, error }] = useRecordEventsMutation({
+ *   variables: {
+ *      events: // value for 'events'
+ *   },
+ * });
+ */
+export function useRecordEventsMutation(
+  baseOptions?: Apollo.MutationHookOptions<RecordEventsMutation, RecordEventsMutationVariables>,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<RecordEventsMutation, RecordEventsMutationVariables>(RecordEventsDocument, options);
+}
+export type RecordEventsMutationHookResult = ReturnType<typeof useRecordEventsMutation>;
+export type RecordEventsMutationResult = Apollo.MutationResult<RecordEventsMutation>;
+export type RecordEventsMutationOptions = Apollo.BaseMutationOptions<
+  RecordEventsMutation,
+  RecordEventsMutationVariables
+>;
 
 export interface PossibleTypesResultData {
   possibleTypes: {

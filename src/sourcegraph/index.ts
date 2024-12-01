@@ -64,6 +64,7 @@ interface Preferences {
   // Feature flags
 
   featureSearchPatternDropdown?: boolean;
+  featureDisableTelemetry?: boolean;
 }
 
 /**
@@ -128,10 +129,12 @@ export class LinkBuilder {
 
 interface ExtensionFeatureFlags {
   searchPatternDropdown: boolean;
+  disableTelemetry: boolean;
 }
 
 function newFeatureFlags(prefs: Preferences): ExtensionFeatureFlags {
   return {
     searchPatternDropdown: !!prefs.featureSearchPatternDropdown,
+    disableTelemetry: !!prefs.featureDisableTelemetry,
   };
 }

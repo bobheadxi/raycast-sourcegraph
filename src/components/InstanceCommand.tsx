@@ -98,7 +98,7 @@ export default function InstanceCommand({
     );
   }
 
-  useEffect(checkAuthEffect(src));
+  useEffect(checkAuthEffect(src), []);
 
   return <Command src={src} props={props} />;
 }

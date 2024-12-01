@@ -10,7 +10,7 @@ import {
   launchCommand,
   LaunchType,
 } from "@raycast/api";
-import { ReactElement, ReactNode, useState, Fragment, useMemo } from "react";
+import { ReactElement, ReactNode, useState, Fragment, useMemo, useEffect } from "react";
 import { nanoid } from "nanoid";
 import { DateTime } from "luxon";
 
@@ -29,6 +29,7 @@ import { useSearch } from "../hooks/search";
 import { ColorDefault, ColorEmphasis, ColorPrivate } from "./colors";
 import { copyShortcut, drilldownShortcut, tertiaryActionShortcut } from "./shortcuts";
 import { SearchHistory } from "../searchHistory";
+import { useTelemetry } from "../hooks/telemetry";
 
 const link = new LinkBuilder("search");
 
@@ -48,6 +49,9 @@ function initialSearchText(src: Sourcegraph, props?: LaunchProps): string {
  * SearchCommand is the shared search command implementation.
  */
 export default function SearchCommand({ src, props }: { src: Sourcegraph; props?: LaunchProps }) {
+  const { recorder } = useTelemetry(src);
+  useEffect(() => recorder.recordEvent("search", "start"), []);
+
   const [searchText, setSearchText] = useState(initialSearchText(src, props));
   const [patternType, setPatternType] = useState<PatternType | undefined>(
     src.featureFlags.searchPatternDropdown ? undefined : "literal",
