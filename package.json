@@ -2,7 +2,7 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "sourcegraph",
   "title": "Sourcegraph",
-  "description": "Search your code and 2M+ public repositories on Sourcegraph.",
+  "description": "Search your code and public repositories with Sourcegraph.",
   "icon": "command-icon.png",
   "author": "bobheadxi",
   "license": "MIT",
@@ -73,7 +73,7 @@
       "name": "searchDotCom",
       "title": "Search Code",
       "subtitle": "Sourcegraph.com",
-      "description": "Search 2M+ public repositories on Sourcegraph.com",
+      "description": "Search public repositories on Sourcegraph.com",
       "mode": "view",
       "keywords": [
         "sourcegraph",

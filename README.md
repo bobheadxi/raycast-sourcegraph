@@ -63,7 +63,7 @@ You can create an access token under the "Access tokens" tab in your user settin
 
 ### Search Code
 
-Get results as you type on [code search](https://about.sourcegraph.com/code-search) over your code and 2M+ public repositories.
+Get results as you type on [code search](https://about.sourcegraph.com/code-search) over your code and many public repositories.
 
 #### Search contexts
 

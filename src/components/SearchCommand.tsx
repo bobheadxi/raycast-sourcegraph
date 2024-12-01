@@ -401,7 +401,7 @@ function SearchResultItem({
     }
 
     case "content": {
-      icon.source = Icon.Snippets;
+      icon.source = Icon.Paragraph;
       subtitle = match.path;
 
       // Support both lineMatches and chunkMatches
