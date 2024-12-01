@@ -30,7 +30,7 @@
     {
       "name": "customInstance",
       "title": "Sourcegraph Instance: Instance URL",
-      "description": "Required to use use 'Sourcegraph Instance' commands - URL of the Sourcegraph instance you want to connect to",
+      "description": "Required to use use 'Sourcegraph Instance' commands - URL of the Sourcegraph instance you want to connect to.",
       "placeholder": "https://sourcegraph.my-company.com",
       "required": false,
       "type": "textfield"
@@ -38,7 +38,7 @@
     {
       "name": "customInstanceToken",
       "title": "Sourcegraph Instance: Access token",
-      "description": "Required to use 'Sourcegraph Instance' commands - available under 'Profile' -> 'Access token' on the Sourcegraph instance",
+      "description": "Required to use 'Sourcegraph Instance' commands - available under 'Profile' -> 'Access token' on your Sourcegraph instance.",
       "required": false,
       "type": "password"
     },
