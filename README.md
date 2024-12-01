@@ -63,6 +63,8 @@ You can create an access token under the "Access tokens" tab in your user settin
 
 ### Search Code
 
+![search demo](metadata/1-search.png)
+
 Get results as you type on [code search](https://about.sourcegraph.com/code-search) over your code and many public repositories.
 
 #### Search contexts
@@ -71,8 +73,6 @@ Get results as you type on [code search](https://about.sourcegraph.com/code-sear
 To get started, you can try the [public Sourcegraph.com search contexts](https://sourcegraph.com/contexts), or configure your own in your Sourcegraph.com account or Sourcegraph instance's "Contexts" page!
 
 The Sourcegraph Raycast extension allows you to set a default context for your searches in the "Search Code" command preferences.
-
-![search demo](metadata/1-search.png)
 
 ### Code Search History
 
