@@ -10,7 +10,7 @@ import {
   launchCommand,
   LaunchType,
 } from "@raycast/api";
-import { ReactElement, ReactNode, useState, Fragment, useMemo, useEffect } from "react";
+import { ReactElement, ReactNode, useState, Fragment, useEffect } from "react";
 import { nanoid } from "nanoid";
 import { DateTime } from "luxon";
 
