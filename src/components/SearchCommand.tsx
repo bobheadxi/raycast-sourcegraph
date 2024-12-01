@@ -9,6 +9,7 @@ import {
   LaunchProps,
   launchCommand,
   LaunchType,
+  Keyboard,
 } from "@raycast/api";
 import { ReactElement, ReactNode, useState, Fragment, useEffect } from "react";
 import { nanoid } from "nanoid";
@@ -278,7 +279,12 @@ function makeDrilldownAction(
 function makeFileActions(src: Sourcegraph, opts: { path: string; repository: string; revision?: string }) {
   return (
     <ActionPanel.Section key={nanoid()} title="File Actions">
-      <Action.CopyToClipboard title={"Copy File Path"} key={nanoid()} content={opts.path} />
+      <Action.CopyToClipboard
+        title={"Copy File Path"}
+        key={nanoid()}
+        content={opts.path}
+        shortcut={Keyboard.Shortcut.Common.CopyPath}
+      />
       <Action.OpenInBrowser
         title={"Open File in Browser"}
         key={nanoid()}
