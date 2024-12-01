@@ -47,38 +47,19 @@ export function instanceName(src: Sourcegraph) {
   return `${isSourcegraphDotCom(src.instance) ? "Sourcegraph.com" : new URL(src.instance).hostname}`;
 }
 
-interface Preferences {
-  // Preferences for Sourcegraph.com - it's still called Cloud to avoid breaking existing
-  // configuration.
-
-  cloudToken?: string;
-  cloudDefaultContext?: string;
-
-  // Configuration for custom instance commands.
-
-  customInstance?: string;
-  customInstanceToken?: string;
-  customInstanceDefaultContext?: string;
-  customInstanceProxy?: string;
-
-  // Feature flags
-
-  featureSearchPatternDropdown?: boolean;
-  featureDisableTelemetry?: boolean;
-}
-
 /**
  * sourcegraphDotCom returns the user's configuration for connecting to Sourcegraph.com.
  */
 export function sourcegraphDotCom(): Sourcegraph {
-  const prefs: Preferences = getPreferenceValues();
+  const prefs = getPreferenceValues<Preferences>();
+  const searchPrefs = getPreferenceValues<Preferences.SearchDotCom>();
   const connect = {
     instance: dotComURL,
     token: prefs.cloudToken,
   };
   return {
     ...connect,
-    defaultContext: prefs.cloudDefaultContext,
+    defaultContext: searchPrefs.cloudDefaultContext,
     client: newApolloClient(connect),
     featureFlags: newFeatureFlags(prefs),
   };
@@ -88,10 +69,11 @@ export function sourcegraphDotCom(): Sourcegraph {
  * sourcegraphSelfHosted returns the configured Sourcegraph instance.
  */
 export function sourcegraphInstance(): Sourcegraph | null {
-  const prefs: Preferences = getPreferenceValues();
+  const prefs = getPreferenceValues<Preferences>();
   if (!prefs.customInstance) {
     return null;
   }
+  const searchPrefs = getPreferenceValues<Preferences.SearchInstance>();
   const connect = {
     instance: prefs.customInstance.replace(/\/$/, ""),
     token: prefs.customInstanceToken,
@@ -99,7 +81,7 @@ export function sourcegraphInstance(): Sourcegraph | null {
   };
   return {
     ...connect,
-    defaultContext: prefs.customInstanceDefaultContext,
+    defaultContext: searchPrefs.customInstanceDefaultContext,
     client: newApolloClient(connect),
     featureFlags: newFeatureFlags(prefs),
   };
