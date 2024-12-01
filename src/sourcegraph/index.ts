@@ -134,7 +134,7 @@ interface ExtensionFeatureFlags {
 
 function newFeatureFlags(prefs: Preferences): ExtensionFeatureFlags {
   return {
-    searchPatternDropdown: !!prefs.featureSearchPatternDropdown,
+    searchPatternDropdown: prefs.featureSearchPatternDropdown !== false, // default true
     disableTelemetry: !!prefs.featureDisableTelemetry,
   };
 }

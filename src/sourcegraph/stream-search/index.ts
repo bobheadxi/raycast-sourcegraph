@@ -38,7 +38,16 @@ export interface SearchHandlers {
   onProgress: (progress: Progress) => void;
 }
 
-export type PatternType = "literal" | "regexp" | "structural" | "lucky";
+// Copied by hand from https://sourcegraph.sourcegraph.com/search?q=repo:%5Egithub%5C.com/sourcegraph/sourcegraph%24+f:graphql+%22enum+SearchPatternType+%7B%22&patternType=keyword&case=yes&sm=0
+export type PatternType =
+  | "standard"
+  | "literal"
+  | "regexp"
+  | "structural"
+  | "lucky"
+  | "keyword"
+  | "codycontext"
+  | "nls";
 
 export async function performSearch(
   abort: AbortSignal,

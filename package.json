@@ -45,7 +45,7 @@
     {
       "name": "customInstanceProxy",
       "title": "Sourcegraph Instance: Proxy",
-      "description": "Optional proxy to use when connecting to a custom Sourcegraph instance. (Presently, only Unix domain sockets are supported.)",
+      "description": "Optional proxy to use when connecting to a custom Sourcegraph instance - presently, only Unix domain sockets are supported.",
       "required": false,
       "type": "textfield"
     },
@@ -53,14 +53,13 @@
       "name": "featureSearchPatternDropdown",
       "title": "Additional features",
       "label": "Search pattern dropdown",
-      "description": "Enable the search pattern dropdown in the search command.",
+      "description": "Toggle the search pattern dropdown in the search command.",
       "required": false,
       "type": "checkbox",
-      "default": false
+      "default": true
     },
     {
       "name": "featureDisableTelemetry",
-      "title": "Additional features",
       "label": "Disable telemetry",
       "description": "Telemetry is only reported to the connected Sourcegraph instance, but can be disabled with this toggle.",
       "required": false,

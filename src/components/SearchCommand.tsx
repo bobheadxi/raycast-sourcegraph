@@ -54,11 +54,13 @@ export default function SearchCommand({ src, props }: { src: Sourcegraph; props?
 
   const [searchText, setSearchText] = useState(initialSearchText(src, props));
   const [patternType, setPatternType] = useState<PatternType | undefined>(
-    src.featureFlags.searchPatternDropdown ? undefined : "literal",
+    src.featureFlags.searchPatternDropdown ? undefined : "standard",
   );
 
   const { state, search } = useSearch(src, MAX_RENDERED_RESULTS);
-  useMemo(() => {
+
+  // Search whenever the search text or patttern type changes.
+  useEffect(() => {
     if (patternType) {
       search(searchText, patternType);
     }
@@ -157,28 +159,38 @@ export default function SearchCommand({ src, props }: { src: Sourcegraph; props?
 function SearchDropdown({ setPatternType }: { setPatternType: (pt: PatternType) => void }) {
   const patternTypes: { type: PatternType; name: string; icon: Image.ImageLike }[] = [
     {
-      type: "lucky",
-      name: "Smart search",
-      icon: Icon.Bolt,
+      type: "standard",
+      name: "Standard",
+      icon: Icon.MagnifyingGlass,
     },
     {
       type: "literal",
-      name: "Literal search",
-      icon: Icon.Bubble,
+      name: "Literal",
+      icon: Icon.QuotationMarks,
     },
     {
       type: "regexp",
-      name: "Regular expression search",
-      icon: Icon.Dot,
+      name: "RegExp",
+      icon: Icon.Code,
+    },
+    {
+      type: "keyword",
+      name: "Keyword",
+      icon: Icon.Text,
     },
     {
       type: "structural",
-      name: "Structural search",
+      name: "Structural",
       icon: Icon.Terminal,
     },
   ];
   return (
-    <List.Dropdown tooltip="Search pattern syntax" onChange={(v) => setPatternType(v as PatternType)} storeValue>
+    <List.Dropdown
+      tooltip="Search pattern"
+      onChange={(v) => setPatternType(v as PatternType)}
+      storeValue
+      placeholder="Choose a pattern type..."
+    >
       {patternTypes.map((pt) => (
         <List.Dropdown.Item key={pt.type} title={pt.name} value={pt.type} icon={pt.icon} />
       ))}

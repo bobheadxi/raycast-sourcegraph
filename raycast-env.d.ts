@@ -14,11 +14,11 @@ type ExtensionPreferences = {
   "customInstance"?: string,
   /** Sourcegraph Instance: Access token - Required to use 'Sourcegraph Instance' commands - available under 'Profile' -> 'Access token' on the Sourcegraph instance */
   "customInstanceToken"?: string,
-  /** Sourcegraph Instance: Proxy - Optional proxy to use when connecting to a custom Sourcegraph instance. (Presently, only Unix domain sockets are supported.) */
+  /** Sourcegraph Instance: Proxy - Optional proxy to use when connecting to a custom Sourcegraph instance - presently, only Unix domain sockets are supported. */
   "customInstanceProxy"?: string,
-  /** Additional features - Enable the search pattern dropdown in the search command. */
+  /** Additional features - Toggle the search pattern dropdown in the search command. */
   "featureSearchPatternDropdown": boolean,
-  /** Additional features - Telemetry is only reported to the connected Sourcegraph instance, but can be disabled with this toggle. */
+  /** undefined - Telemetry is only reported to the connected Sourcegraph instance, but can be disabled with this toggle. */
   "featureDisableTelemetry": boolean
 }
 
