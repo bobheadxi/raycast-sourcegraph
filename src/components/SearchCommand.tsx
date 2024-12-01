@@ -30,6 +30,7 @@ import { ColorDefault, ColorEmphasis, ColorError, ColorPrivate, ColorSubdued } f
 import { copyShortcut, drilldownShortcut, tertiaryActionShortcut } from "./shortcuts";
 import { SearchHistory } from "../searchHistory";
 import { useTelemetry } from "../hooks/telemetry";
+import path from "path";
 
 const link = new LinkBuilder("search");
 
@@ -653,11 +654,24 @@ function ResultView({
 
   const { match } = searchResult;
   const navigationTitle = `View ${match.type} result`;
-  let markdownTitle: string;
   let markdownContent = "";
   const metadata: ReactNode[] = [
     <Detail.Metadata.TagList title="Match type" key={nanoid()}>
-      <Detail.Metadata.TagList.Item text={match.type} icon={icon} />
+      <Detail.Metadata.TagList.Item text={sentenceCase(match.type)} icon={icon} />
+      {"repoStars" in match && (
+        <Detail.Metadata.TagList.Item
+          text={`${match.repoStars}`}
+          icon={Icon.Star}
+          color={Color.Yellow}
+          key={nanoid()}
+        />
+      )}
+      {"private" in match && (
+        <Detail.Metadata.TagList.Item
+          text={match.private ? "Private" : "Public"}
+          color={match.private ? ColorPrivate : ColorDefault}
+        />
+      )}
     </Detail.Metadata.TagList>,
   ];
   if ("repository" in match) {
@@ -676,17 +690,24 @@ function ResultView({
 
     case "content":
     case "symbol":
-      markdownTitle = bold(match.repository);
       return <MultiResultView searchResult={{ url: searchResult.url, match }} key={nanoid()} />;
 
     // Match types that use markdown view
 
     case "repo":
-      markdownTitle = bold(match.repository);
-      markdownContent = match.description || "";
-      metadata.push(
-        <Detail.Metadata.Label title="Visibility" text={match.private ? "Private" : "Public"} key={nanoid()} />,
-      );
+      markdownContent = `${bold(match.repository)}`;
+      if (match.description) {
+        markdownContent += ` - ${match.description}\n`;
+      }
+      if (match.topics) {
+        metadata.push(
+          <Detail.Metadata.TagList title="Topics" key={nanoid()}>
+            {match.topics.map((topic) => (
+              <Detail.Metadata.TagList.Item text={topic} color={ColorSubdued} key={nanoid()} />
+            ))}
+          </Detail.Metadata.TagList>,
+        );
+      }
       if (!fileContents.called) {
         getFileContents({
           variables: {
@@ -702,8 +723,10 @@ function ResultView({
       break;
 
     case "path":
-      markdownTitle = bold(match.repository);
-      markdownContent = `${codeBlock(match.path)}\n\n---\n\n`;
+      metadata.push(
+        <Detail.Metadata.Link title="File" text={path.basename(match.path)} key={nanoid()} target={searchResult.url} />,
+      );
+      markdownContent = `${bold(match.path)}\n\n---\n\n`;
       if (!fileContents.called) {
         getFileContents({
           variables: {
@@ -721,11 +744,10 @@ function ResultView({
       break;
 
     case "commit": {
-      markdownTitle = bold(match.repository);
       markdownContent = match.message;
       metadata.push(
         <Detail.Metadata.Label title="Author" text={match.authorName} key={nanoid()} />,
-        <Detail.Metadata.Label title="Commit" text={match.oid} key={nanoid()} />,
+        <Detail.Metadata.Link title="Commit" text={match.oid} target={searchResult.url} key={nanoid()} />,
         <Detail.Metadata.Label
           title="Committed"
           text={DateTime.fromISO(match.authorDate).toRelative() || "Unknown"}
@@ -736,18 +758,13 @@ function ResultView({
     }
 
     default:
-      markdownTitle = bold(sentenceCase(match.type));
-      markdownContent = `Unsupported result type - full data:\n\n${codeBlock(JSON.stringify(match, null, "  "))}`;
-  }
-
-  if ("repoStars" in match) {
-    metadata.push(<Detail.Metadata.Label title="Stars" text={`${match.repoStars}`} key={nanoid()} />);
+      markdownContent = `${bold(sentenceCase(match.type))}\n\n---\n\nUnsupported result type - full data:\n\n${codeBlock(JSON.stringify(match, null, "  "))}`;
   }
 
   return (
     <Detail
       navigationTitle={navigationTitle}
-      markdown={`${markdownTitle}\n\n${markdownContent}`}
+      markdown={markdownContent}
       actions={<ActionPanel>{resultActions(searchResult.url)}</ActionPanel>}
       metadata={
         <Detail.Metadata>
