@@ -26,7 +26,7 @@ import { bold, codeBlock, quoteBlock } from "../markdown";
 import { count, sentenceCase } from "../text";
 import { useSearch } from "../hooks/search";
 
-import { ColorDefault, ColorEmphasis, ColorPrivate } from "./colors";
+import { ColorDefault, ColorEmphasis, ColorError, ColorPrivate, ColorSubdued } from "./colors";
 import { copyShortcut, drilldownShortcut, tertiaryActionShortcut } from "./shortcuts";
 import { SearchHistory } from "../searchHistory";
 import { useTelemetry } from "../hooks/telemetry";
@@ -377,7 +377,7 @@ function SearchResultItem({
 
     case "commit":
       icon.source = Icon.SpeechBubbleActive;
-      title = match.message;
+      title = match.message || "No message";
       subtitle = DateTime.fromISO(match.authorDate).toRelative() || match.authorDate;
       subtitleTooltip = match.authorDate;
       matchDetails.push(`by ${match.authorName}`);
@@ -445,6 +445,19 @@ function SearchResultItem({
       fileActions = makeFileActions(src, actionOpts);
       break;
     }
+
+    default:
+      icon.source = Icon.Ellipsis;
+      icon.tintColor = ColorSubdued;
+      title = sentenceCase(match.type);
+      subtitle = `${JSON.stringify(match)}`;
+      accessories.push({
+        icon: {
+          source: Icon.QuestionMark,
+          tintColor: ColorError,
+        },
+        tooltip: "Sorry! This result type is unknown to this extension.",
+      });
   }
 
   // Add repo accessory as right-most detail
@@ -455,7 +468,8 @@ function SearchResultItem({
   return (
     <List.Item
       title={{
-        value: title.slice(0, combinedThreshold),
+        // Just in case, make sure at least SOMETHING is set to the title.
+        value: title.slice(0, combinedThreshold) || sentenceCase(match.type),
         tooltip: matchDetails.join(", "),
       }}
       subtitle={{
@@ -710,7 +724,7 @@ function ResultView({
     }
 
     default:
-      markdownTitle = bold(match.type);
+      markdownTitle = bold(sentenceCase(match.type));
       markdownContent = `Unsupported result type - full data:\n\n${codeBlock(JSON.stringify(match, null, "  "))}`;
   }
 

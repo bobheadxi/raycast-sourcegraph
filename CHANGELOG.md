@@ -2,9 +2,10 @@
 
 ## Unreleased
 
-- **search**: For search results that have associated file paths, you can now easily copy the path of the file associated with a result or open it in the browser.
+- **search**: For search results that have associated file paths, you can now easily copy the path of the file associated with a result or open it in the browser with the new `Copy File Path` and `Open File in Browser` actions.
 - **shortcuts**: The `Cmd-Enter` shortcut used for options like "Open Query in Browser" is now `Cmd-Shift-Enter` to avoid conflicts with reserved Raycast shortcuts.
 - **all**: Proxying requests over Unix domain socket for custom Sourcegraph instances is now supported via the new `Sourcegraph Instance: Proxy` option; note that HTTP proxies are not yet supported ([#21](https://github.com/bobheadxi/raycast-sourcegraph/pull/21))
+- **search**: Fixed cases where a title may be missing in results, and improved handling of unknown result types.
 - **notebooks**: Notebooks have been disabled on Sourcegraph.com for some time now, so the command for interacting with public notebooks on Sourcegraph.com has been removed. The "Find Search Notebooks" command for custom instances is still available for the time being.
 - **internal**: The extension now exports some basic telemetry to the connected Sourcegraph instance only. If you are using a self-hosted or on-prem instance, telemetry will be managed according to the instance's telemetry settings. This can be disabled in the extension preferences.
 - **internal**: Updated dependencies.
