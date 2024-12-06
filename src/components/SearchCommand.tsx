@@ -115,7 +115,7 @@ export default function SearchCommand({ src, props }: { src: Sourcegraph; props?
               icon={{ source: Icon.Window }}
               actions={
                 <ActionPanel>
-                  <Action.OpenInBrowser url={getQueryURL(src, searchText)} />
+                  <Action.OpenInBrowser url={getQueryURL(src, searchText, patternType)} />
                 </ActionPanel>
               }
             />
@@ -144,6 +144,7 @@ export default function SearchCommand({ src, props }: { src: Sourcegraph; props?
             key={`result-item-${i}`}
             searchResult={searchResult}
             searchText={searchText}
+            patternType={patternType}
             src={src}
             setSearchText={setSearchText}
           />
@@ -226,8 +227,12 @@ function resultActions(url: string, customActions?: CustomResultActions) {
   );
 }
 
-function getQueryURL(src: Sourcegraph, query: string) {
-  return link.new(src, "/search", new URLSearchParams({ q: query }));
+function getQueryURL(src: Sourcegraph, query: string, pattern: PatternType | undefined) {
+  const params: Record<string, string> = { q: query };
+  if (pattern) {
+    params.patternType = pattern;
+  }
+  return link.new(src, "/search", new URLSearchParams(params));
 }
 
 // https://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript
@@ -297,15 +302,17 @@ function makeFileActions(src: Sourcegraph, opts: { path: string; repository: str
 function SearchResultItem({
   searchResult,
   searchText,
+  patternType,
   src,
   setSearchText,
 }: {
   searchResult: SearchResult;
   searchText: string;
+  patternType: PatternType | undefined;
   src: Sourcegraph;
   setSearchText: (text: string) => void;
 }) {
-  const queryURL = getQueryURL(src, searchText);
+  const queryURL = getQueryURL(src, searchText, patternType);
   const { match } = searchResult;
 
   // Branches is a common property for setting a revision

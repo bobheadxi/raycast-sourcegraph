@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **search**: Opening a query in browser now correctly preserves the selected pattern type from the pattern type selector.
+
 ## [Search improvements, pattern selector, and proxy support](https://github.com/raycast/extensions/pull/15625) - 2024-11-30
 
 - **search**: The search pattern selector is now enabled by default, allowing you to easily toggle between standard, literal, regexp, and other search patterns. This can be disabled in the extension preferences if you find the dropdown takes up too much space in the search bar.
