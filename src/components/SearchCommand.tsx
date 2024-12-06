@@ -10,6 +10,7 @@ import {
   launchCommand,
   LaunchType,
   Keyboard,
+  getSelectedText,
 } from "@raycast/api";
 import { ReactElement, ReactNode, useState, Fragment, useEffect } from "react";
 import { nanoid } from "nanoid";
@@ -58,6 +59,21 @@ export default function SearchCommand({ src, props }: { src: Sourcegraph; props?
   const [patternType, setPatternType] = useState<PatternType | undefined>(
     src.featureFlags.searchPatternDropdown ? undefined : "standard",
   );
+
+  // Apply the selected search text to the search input once.
+  useEffect(() => {
+    async function useSelectedAsSearchText() {
+      try {
+        const selected = await getSelectedText();
+        if (selected) {
+          setSearchText(searchText ? `${searchText} ${selected}` : selected);
+        }
+      } catch {
+        // do nothing
+      }
+    }
+    useSelectedAsSearchText();
+  }, []);
 
   const { state, search } = useSearch(src, MAX_RENDERED_RESULTS);
 
