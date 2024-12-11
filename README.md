@@ -54,7 +54,7 @@ To search your private code, please reach out [get a demo of the single-tenant s
 
 ### Sourcegraph Instance
 
-To start searching code on a custom Sourcegraph instance (e.g. [self-hosted](https://docs.sourcegraph.com/admin/install) or [managed](https://docs.sourcegraph.com/admin/deploy/managed)), you can set up access through the 'Sourcegraph Instance' variants of this extensions's commands by configuring the "Sourcegraph Instance: Instance URL" and "Sourcegraph Instance: Access token" fields in the Sourcegraph Raycast extension preferences.
+To start searching code on a custom Sourcegraph instance (e.g. [self-hosted](https://sourcegraph.com/docs/admin/deploy) or [managed](https://sourcegraph.com/docs/cloud)), you can set up access through the 'Sourcegraph Instance' variants of this extensions's commands by configuring the "Sourcegraph Instance: Instance URL" and "Sourcegraph Instance: Access token" fields in the Sourcegraph Raycast extension preferences.
 You can create an access token under the "Access tokens" tab in your user settings on your Sourcegraph instance.
 
 <br />
@@ -69,7 +69,7 @@ Get results as you type on [code search](https://about.sourcegraph.com/code-sear
 
 #### Search contexts
 
-[Search contexts](https://docs.sourcegraph.com/code_search/explanations/features#search-contexts) allow you to narrow down your search to code you care about.
+[Search contexts](https://sourcegraph.com/docs/code-search/features#search-contexts) allow you to narrow down your search to code you care about.
 To get started, you can try the [public Sourcegraph.com search contexts](https://sourcegraph.com/contexts), or configure your own in your Sourcegraph.com account or Sourcegraph instance's "Contexts" page!
 
 The Sourcegraph Raycast extension allows you to set a default context for your searches in the "Search Code" command preferences.
@@ -93,7 +93,7 @@ Batch changes are currently only supported on [Sourcegraph Instance](#sourcegrap
 
 ### Find Search Notebooks
 
-Browse and preview [search notebooks](https://docs.sourcegraph.com/notebooks) straight from Raycast.
+Browse and preview [search notebooks](https://sourcegraph.com/docs/notebooks) straight from Raycast.
 Notebooks enable powerful live – and persistent – documentation, shareable with your organization or the world.
 
 Notebooks are currently only supported on [Sourcegraph Instance](#sourcegraph-instance).
