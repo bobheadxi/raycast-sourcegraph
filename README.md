@@ -50,7 +50,7 @@ To configure your own [search contexts](#search-contexts), create search noteboo
 Once you have an account, you can create an access token under the "Access tokens" tab in your user settings on [Sourcegraph.com](https://sourcegraph.com/user/settings).
 Copy that access token to the "Sourcegraph.com: Access token" field in the Sourcegraph Raycast extension preferences to authenticate your search queries.
 
-To search your private code, please reach out [get a demo of the single-tenant solution](https://about.sourcegraph.com/demo) or [try out a self-hosted installation of Sourcegraph](https://about.sourcegraph.com/get-started/self-hosted).
+To search your private code, please reach out [get a demo of the single-tenant solution](https://sourcegraph.com/contact/request-info) or [try out a self-hosted installation of Sourcegraph](https://about.sourcegraph.com/get-started/self-hosted).
 
 ### Sourcegraph Instance
 
