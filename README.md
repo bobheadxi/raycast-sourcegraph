@@ -9,7 +9,7 @@
 </h1>
 
 <p align="center">
-  Search code, browse notebooks, and manage batch changes on <a href="https://about.sourcegraph.com">Sourcegraph</a> with <a href="https://www.raycast.com">Raycast</a>.
+  Search code, manage batch changes, and browse notebooks on <a href="https://about.sourcegraph.com">Sourcegraph</a> with <a href="https://www.raycast.com">Raycast</a>.
 </p>
 
 <p align="center">
