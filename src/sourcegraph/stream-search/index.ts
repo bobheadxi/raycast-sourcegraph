@@ -3,6 +3,7 @@ import EventSource from "eventsource";
 import { getMatchUrl, SearchEvent, SearchMatch, AlertKind, LATEST_VERSION } from "./stream";
 import { LinkBuilder, Sourcegraph } from "..";
 import { getProxiedAgent } from "../gql/fetchProxy";
+import { LocalStorage } from "@raycast/api";
 
 export interface SearchResult {
   url: string;
@@ -74,6 +75,11 @@ export async function performSearch(
   };
   if (src.token) {
     headers["Authorization"] = `token ${src.token}`;
+  }
+  // sourcegraphDotCom() constructor sets the anonymous user ID so only read it here.
+  const anonymousUserID = (await LocalStorage.getItem("anonymous-user-id")) as string;
+  if (anonymousUserID) {
+    headers["X-Sourcegraph-Actor-Anonymous-UID"] = anonymousUserID;
   }
 
   // There's a bit of TypeScript trickery here, as we've added the agent
