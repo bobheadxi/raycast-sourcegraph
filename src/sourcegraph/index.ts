@@ -79,7 +79,7 @@ export async function sourcegraphDotCom(): Promise<Sourcegraph> {
 }
 
 /**
- * sourcegraphSelfHosted returns the configured Sourcegraph instance.
+ * sourcegraphInstance returns the configured Sourcegraph instance.
  */
 export function sourcegraphInstance(): Sourcegraph | null {
   const prefs = getPreferenceValues<Preferences>();
