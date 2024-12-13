@@ -3,6 +3,8 @@
 ## Unreleased
 
 - **search**: Opening a query in browser now correctly preserves the selected pattern type from the pattern type selector.
+- **dotcom**: When using 'Public code on Sourcegraph.com' commands, if an access token is not provided a random anonymous user ID is now generated and used with API requests and telemetry for diagnostics. Telemetry can be disabled in the extension preferences.
+- **all**: 'Sourcegraph.com' commands are now called 'Public code on Sourcegraph.com', and 'Sourcegraph instance' commands are now just referred to as 'Sourcegraph' commands.
 
 ## [Search improvements, pattern selector, and proxy support](https://github.com/raycast/extensions/pull/15625) - 2024-11-30
 
