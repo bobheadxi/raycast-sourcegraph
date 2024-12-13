@@ -24,7 +24,7 @@ export default function InstanceCommand({
   Command: React.FunctionComponent<{ src: Sourcegraph; props?: LaunchProps }>;
   props?: LaunchProps;
 }) {
-  const tryDotComMessage = "Alternatively, you can try the 'Sourcegraph.com' commands first.";
+  const tryDotComMessage = "Alternatively, you can try the 'Sourcegraph.com' commands for public code first.";
 
   const setupGuideAction = (
     <Action.OpenInBrowser
