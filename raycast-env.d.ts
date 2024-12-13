@@ -8,7 +8,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 type ExtensionPreferences = {
-  /** Sourcegraph.com: Access token - Configures 'Sourcegraph.com' commands - available under 'Profile' -> 'Access token' on Sourcegraph.com */
+  /** Public code on Sourcegraph.com: Access token - Configures 'Sourcegraph.com' commands - available under 'Profile' -> 'Access token' on Sourcegraph.com */
   "cloudToken"?: string,
   /** Sourcegraph: URL - Required to use 'Sourcegraph' commands - Sourcegraph URL you want to connect to. */
   "customInstance"?: string,
