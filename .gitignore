@@ -7,3 +7,5 @@ package-lock.json
 
 # Generated with `npm run gql-schema`
 src/sourcegraph/gql/schema.json
+
+.env
