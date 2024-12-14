@@ -3,6 +3,7 @@
 ## Unreleased
 
 - **search**: Opening a query in browser now correctly preserves the selected pattern type from the pattern type selector.
+- **search**: Loading view is now improved. Typing during ongoing searches should also feel less jittery, as the suggestion view is now less likely to show up randomly.
 - **dotcom**: When using 'Public code on Sourcegraph.com' commands, if an access token is not provided a random anonymous user ID is now generated and used with API requests and telemetry for diagnostics. Telemetry can be disabled in the extension preferences.
 - **all**: 'Sourcegraph.com' commands are now called 'Public code on Sourcegraph.com', and 'Sourcegraph instance' commands are now just referred to as 'Sourcegraph' commands.
 

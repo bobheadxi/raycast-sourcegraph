@@ -51,7 +51,7 @@ export type PatternType =
   | "nls";
 
 export async function performSearch(
-  abort: AbortSignal,
+  abort: AbortController,
   src: Sourcegraph,
   query: string,
   patternType: PatternType,
@@ -67,7 +67,7 @@ export async function performSearch(
     ["q", query],
     ["v", LATEST_VERSION],
     ["t", patternType],
-    ["display", "200"],
+    ["display", "1500"],
   ]);
   const requestURL = link.new(src, "/.api/search/stream", parameters);
   const headers: { [key: string]: string } = {
@@ -94,11 +94,12 @@ export async function performSearch(
      */
     const resolveStream = () => {
       stream.close();
+      abort.abort();
       resolve();
     };
 
     // signal cancelling
-    abort.addEventListener("abort", resolveStream);
+    abort.signal.addEventListener("abort", resolveStream);
 
     // matches from the Sourcegraph API
     stream.addEventListener("matches", (message) => {
