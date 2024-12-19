@@ -1,6 +1,6 @@
 # Changelog
 
-## [Search bug fix] - 2024-12-19
+## [Bug fixes] - 2024-12-19
 
 - **search**: Fix some issues where results do not reset when a search returns no results or fails.
 
