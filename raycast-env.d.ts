@@ -18,7 +18,7 @@ type ExtensionPreferences = {
   "customInstanceProxy"?: string,
   /** Additional features - Toggle the search pattern dropdown in the search command. */
   "featureSearchPatternDropdown": boolean,
-  /** undefined - Telemetry is only reported to the connected Sourcegraph instance, but can be disabled with this toggle. */
+  /** undefined - Telemetry is only reported to the connected Sourcegraph instance or workspace, but can be disabled with this toggle. */
   "featureDisableTelemetry": boolean
 }
 
