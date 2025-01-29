@@ -19,6 +19,6 @@ rsync -rv \
 pushd "$RAYCAST_EXTENSIONS_DIR" || exit
 git add .
 git status
-git commit -m "Publish raycast-sourcegraph@$EXTENSION_VERSION" -m "Version: https://github.com/bobheadxi/raycast-sourcegraph/commit/$EXTENSION_VERSION" --allow-empty
+git commit -m "Publish raycast-sourcegraph@$EXTENSION_VERSION" -m "Version: https://github.com/bobheadxi/raycast-sourcegraph/tree/$EXTENSION_VERSION" --allow-empty
 git push origin HEAD
 popd || exit
