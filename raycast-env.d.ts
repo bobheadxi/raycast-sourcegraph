@@ -10,11 +10,11 @@
 type ExtensionPreferences = {
   /** Public code on Sourcegraph.com: Access token - Configures 'Sourcegraph.com' commands - available under 'Profile' -> 'Access token' on Sourcegraph.com */
   "cloudToken"?: string,
-  /** Sourcegraph: URL - Required to use 'Sourcegraph' commands - Sourcegraph URL you want to connect to. */
+  /** Sourcegraph connection: URL - Required to use 'Sourcegraph' commands - Sourcegraph URL you want to connect to. */
   "customInstance"?: string,
-  /** Sourcegraph: Access token - Required to use 'Sourcegraph' commands - available under 'Profile' -> 'Access token' in Sourcegraph. */
+  /** Sourcegraph connection: Access token - Required to use 'Sourcegraph' commands - available under 'Profile' -> 'Access token' in Sourcegraph. */
   "customInstanceToken"?: string,
-  /** Sourcegraph: Proxy - Optional proxy to use when using a custom Sourcegraph connection - presently, only Unix domain sockets are supported. */
+  /** Sourcegraph connection: Proxy - Optional proxy to use when using a custom Sourcegraph connection - presently, only Unix domain sockets are supported. */
   "customInstanceProxy"?: string,
   /** Additional features - Toggle the search pattern dropdown in the search command. */
   "featureSearchPatternDropdown": boolean,

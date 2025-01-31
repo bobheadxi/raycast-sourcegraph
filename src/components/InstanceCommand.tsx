@@ -29,7 +29,7 @@ export default function InstanceCommand({
 }) {
   const alternativeActionsCTA = `---
 
-Don't have a Sourcegraph connection? Try **[Sourcegraph workspaces](https://workspaces.sourcegraph.com)**: an AI & search experience for your private code.
+Don't have a Sourcegraph instance or workspace? Try **[Sourcegraph workspaces](https://workspaces.sourcegraph.com)**: an AI & search experience for your private code.
 
 Alternatively, you can try the 'Search Public Code' command for public code search on [Sourcegraph.com](https://sourcegraph.com/search) for free with the 'Cmd-Shift-O' shortcut.`;
 
