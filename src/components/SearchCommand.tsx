@@ -152,7 +152,7 @@ export default function SearchCommand({ src, props }: { src: Sourcegraph; props?
               icon={{ source: Icon.Book }}
               actions={<ActionPanel>{openSearchSyntaxAction}</ActionPanel>}
             />
-            {isSourcegraphDotCom(src.instance) && (
+            {isSourcegraphDotCom(src.instance) && !src.hasCustomSourcegraphConnection && (
               <List.Item
                 title="Create a Sourcegraph workspace"
                 subtitle="Get an AI & search experience for your private code"
