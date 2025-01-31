@@ -162,7 +162,7 @@ export default function SearchCommand({ src, props }: { src: Sourcegraph; props?
                     <Action.OpenInBrowser
                       icon={Icon.Window}
                       title="Learn more"
-                      url="https://workspaces.sourcegraph.com/plan"
+                      url="https://workspaces.sourcegraph.com"
                     />
                   </ActionPanel>
                 }
