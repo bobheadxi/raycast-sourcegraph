@@ -152,6 +152,22 @@ export default function SearchCommand({ src, props }: { src: Sourcegraph; props?
               icon={{ source: Icon.Book }}
               actions={<ActionPanel>{openSearchSyntaxAction}</ActionPanel>}
             />
+            {isSourcegraphDotCom(src.instance) && (
+              <List.Item
+                title="Create a Sourcegraph workspace"
+                subtitle="Get an AI & search experience for your private code"
+                icon={{ source: Icon.Gift, tintColor: "F34E3F" }}
+                actions={
+                  <ActionPanel>
+                    <Action.OpenInBrowser
+                      icon={Icon.Window}
+                      title="Learn more"
+                      url="https://workspaces.sourcegraph.com/plan"
+                    />
+                  </ActionPanel>
+                }
+              />
+            )}
           </Fragment>
         </List.Section>
       )}
