@@ -156,7 +156,7 @@ export default function SearchCommand({ src, props }: { src: Sourcegraph; props?
               <List.Item
                 title="Create a Sourcegraph workspace"
                 subtitle="Get an AI & search experience for your private code"
-                icon={{ source: Icon.Gift, tintColor: ColorEmphasis }}
+                icon={{ source: Icon.Stars, tintColor: ColorEmphasis }}
                 actions={
                   <ActionPanel>
                     <Action.OpenInBrowser

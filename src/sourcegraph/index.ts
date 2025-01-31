@@ -83,7 +83,7 @@ export async function sourcegraphDotCom(): Promise<Sourcegraph> {
     defaultContext: searchPrefs.cloudDefaultContext,
     client: newApolloClient(connect),
     featureFlags: newFeatureFlags(prefs),
-    hasCustomSourcegraphConnection: true,
+    hasCustomSourcegraphConnection: !!(prefs.customInstance && prefs.customInstanceToken),
   };
 }
 
@@ -106,7 +106,7 @@ export function sourcegraphInstance(): Sourcegraph | null {
     defaultContext: searchPrefs.customInstanceDefaultContext,
     client: newApolloClient(connect),
     featureFlags: newFeatureFlags(prefs),
-    hasCustomSourcegraphConnection: !!(prefs.customInstance && prefs.customInstanceToken),
+    hasCustomSourcegraphConnection: true,
   };
 }
 
