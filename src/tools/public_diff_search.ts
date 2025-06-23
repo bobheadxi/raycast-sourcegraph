@@ -17,31 +17,14 @@ type Input = {
  * This tool searches the actual content of code changes (additions, deletions, modifications) in open source projects.
  * Use when you need to find specific code changes, bug fixes, or see how code evolved over time in public repositories.
  */
-export default async function main(params: Input) {
+export default async function tool(params: Input) {
   const { query, maxResults = 20 } = params;
-  try {
-    // Create Sourcegraph client for public code search
-    const src = await sourcegraphDotCom();
+  // Create Sourcegraph client for public code search
+  const src = await sourcegraphDotCom();
 
-    // Perform the diff search
-    const results = await executeDiffSearch(src, query, maxResults);
+  // Perform the diff search
+  const results = await executeDiffSearch(src, query, maxResults);
 
-    // Format results for AI consumption
-    const formattedResults = formatSearchResults(results, src);
-
-    return {
-      success: true,
-      results: formattedResults,
-      totalCount: results.length,
-      query,
-      instance: src.instance,
-      searchType: "diff",
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error occurred",
-      query,
-    };
-  }
+  // Format results for AI consumption
+  return formatSearchResults(results);
 }

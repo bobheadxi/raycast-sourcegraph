@@ -1,5 +1,5 @@
 import { sourcegraphInstance } from "../sourcegraph";
-import { executeFileRead } from "./shared/search";
+import { executeFileRead } from "./shared/fileread";
 
 type Input = {
   /**
@@ -44,50 +44,22 @@ type Input = {
  * - Read from branch: repository="myorg/api", path="src/main.go", revision="feature-auth"
  * - Read old version: repository="myorg/api", path="package.json", revision="HEAD~5"
  */
-export default async function main(params: Input) {
+export default async function tool(params: Input) {
   const { repository, path, revision } = params;
-  try {
-    // Create Sourcegraph client for custom instance
-    const src = sourcegraphInstance();
-
-    if (!src) {
-      return {
-        success: false,
-        error: "No custom Sourcegraph instance configured. Please configure your Sourcegraph instance in preferences.",
-        repository,
-        path,
-      };
-    }
-
-    // Read the file contents
-    const result = await executeFileRead(src, repository, path, revision);
-
-    if (!result) {
-      return {
-        success: false,
-        error: "File not found or could not be read",
-        repository,
-        path,
-        revision,
-      };
-    }
-
-    return {
-      success: true,
-      content: result.content,
-      url: result.url,
-      repository: result.repository,
-      path: result.path,
-      revision: result.revision,
-      instance: src.instance,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error occurred",
-      repository,
-      path,
-      revision,
-    };
+  // Create Sourcegraph client for custom instance
+  const src = sourcegraphInstance();
+  if (!src) {
+    throw new Error(
+      "No custom Sourcegraph instance configured. Please configure your Sourcegraph instance in preferences.",
+    );
   }
+
+  // Read the file contents
+  const result = await executeFileRead(src, repository, path, revision);
+
+  if (!result) {
+    throw new Error("File not found or could not be read");
+  }
+
+  return result;
 }

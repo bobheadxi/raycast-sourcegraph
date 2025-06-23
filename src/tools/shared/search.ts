@@ -1,7 +1,6 @@
 import { Sourcegraph } from "../../sourcegraph";
 import { performSearch, PatternType, SearchResult } from "../../sourcegraph/stream-search";
 import { SearchMatch, ContentMatch, SymbolMatch } from "../../sourcegraph/stream-search/stream";
-import { BlobContentsFragment, useGetFileContentsLazyQuery } from "../../sourcegraph/gql/operations";
 
 /**
  * Execute a keyword search query against a Sourcegraph instance
@@ -99,7 +98,7 @@ export async function executeSearch(
 /**
  * Format search results into a structured format suitable for AI consumption
  */
-export function formatSearchResults(results: SearchMatch[], src: Sourcegraph): unknown[] {
+export function formatSearchResults(results: SearchMatch[]): unknown[] {
   return results.map((result) => {
     if (result.type === "content") {
       const contentMatch = result as ContentMatch;
@@ -107,7 +106,6 @@ export function formatSearchResults(results: SearchMatch[], src: Sourcegraph): u
         type: "content",
         repository: contentMatch.repository,
         file: contentMatch.path,
-        url: `${src.instance}${contentMatch.repository}/-/blob/${contentMatch.path}`,
         matches:
           contentMatch.chunkMatches?.map((chunk) => ({
             content: chunk.content,
@@ -121,78 +119,24 @@ export function formatSearchResults(results: SearchMatch[], src: Sourcegraph): u
         type: "symbol",
         repository: symbolMatch.repository,
         file: symbolMatch.path,
-        url: `${src.instance}${symbolMatch.repository}/-/blob/${symbolMatch.path}`,
         symbols:
           symbolMatch.symbols?.map((symbol) => ({
             name: symbol.name,
             kind: symbol.kind,
             line: symbol.line,
             containerName: symbol.containerName,
-            url: symbol.url,
           })) || [],
       };
     } else if (result.type === "repo") {
       return {
         type: "repository",
         repository: result.repository,
-        url: `${src.instance}${result.repository}`,
         description: result.description,
         stars: result.repoStars,
       };
     } else if (result.type === "path") {
-      return {
-        type: "path",
-        repository: result.repository,
-        file: result.path,
-        url: `${src.instance}${result.repository}/-/blob/${result.path}`,
-        language: result.language,
-      };
+      return { type: "path", repository: result.repository, file: result.path, language: result.language };
     }
-    return {
-      type: result.type,
-      repository: "repository" in result ? result.repository : undefined,
-      raw: result,
-    };
+    return { type: result.type, repository: "repository" in result ? result.repository : undefined, raw: result };
   });
-}
-
-/**
- * Read the contents of a specific file from a Sourcegraph instance
- */
-export async function executeFileRead(
-  src: Sourcegraph,
-  repository: string,
-  path: string,
-  revision?: string,
-): Promise<{ content: string; url: string; repository: string; path: string; revision?: string } | null> {
-  try {
-    // Use the GraphQL query to get file contents
-    const [getFileContents] = useGetFileContentsLazyQuery({
-      client: src.client,
-    });
-
-    const { data } = await getFileContents({
-      variables: {
-        repo: repository,
-        path,
-        rev: revision || "HEAD",
-      },
-    });
-
-    if (!data?.repository?.commit?.blob?.content) {
-      return null;
-    }
-
-    const blob = data.repository.commit.blob as BlobContentsFragment;
-
-    return {
-      content: blob.content,
-      url: `${src.instance}${repository}/-/blob/${path}${revision ? `?rev=${revision}` : ""}`,
-      repository,
-      path,
-      revision,
-    };
-  } catch (error) {
-    throw new Error(`Failed to read file: ${error instanceof Error ? error.message : "Unknown error"}`);
-  }
 }

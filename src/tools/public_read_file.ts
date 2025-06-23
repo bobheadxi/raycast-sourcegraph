@@ -1,5 +1,5 @@
 import { sourcegraphDotCom } from "../sourcegraph";
-import { executeFileRead } from "./shared/search";
+import { executeFileRead } from "./shared/fileread";
 
 type Input = {
   /**
@@ -21,41 +21,17 @@ type Input = {
  * This tool retrieves the full text content of any file in open source repositories.
  * Use when you need to examine the complete source code of a specific file in public projects.
  */
-export default async function main(params: Input) {
+export default async function tool(params: Input) {
   const { repository, path, revision } = params;
-  try {
-    // Create Sourcegraph client for public code search
-    const src = await sourcegraphDotCom();
+  // Create Sourcegraph client for public code search
+  const src = await sourcegraphDotCom();
 
-    // Read the file contents
-    const result = await executeFileRead(src, repository, path, revision);
+  // Read the file contents
+  const result = await executeFileRead(src, repository, path, revision);
 
-    if (!result) {
-      return {
-        success: false,
-        error: "File not found or could not be read",
-        repository,
-        path,
-        revision,
-      };
-    }
-
-    return {
-      success: true,
-      content: result.content,
-      url: result.url,
-      repository: result.repository,
-      path: result.path,
-      revision: result.revision,
-      instance: src.instance,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error occurred",
-      repository,
-      path,
-      revision,
-    };
+  if (!result) {
+    throw new Error("File not found or could not be read");
   }
+
+  return result;
 }

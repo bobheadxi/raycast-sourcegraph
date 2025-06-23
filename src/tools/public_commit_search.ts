@@ -56,31 +56,14 @@ type Input = {
  * - `repo:^github\.com/golang/ author:.*@google.com>$ performance` - Go team optimizations
  * - `message:"breaking change" repo:^github\.com/vuejs/` - Vue.js breaking changes
  */
-export default async function main(params: Input) {
+export default async function tool(params: Input) {
   const { query, maxResults = 20 } = params;
-  try {
-    // Create Sourcegraph client for public code search
-    const src = await sourcegraphDotCom();
+  // Create Sourcegraph client for public code search
+  const src = await sourcegraphDotCom();
 
-    // Perform the commit search
-    const results = await executeCommitSearch(src, query, maxResults);
+  // Perform the commit search
+  const results = await executeCommitSearch(src, query, maxResults);
 
-    // Format results for AI consumption
-    const formattedResults = formatSearchResults(results, src);
-
-    return {
-      success: true,
-      results: formattedResults,
-      totalCount: results.length,
-      query,
-      instance: src.instance,
-      searchType: "commit",
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error occurred",
-      query,
-    };
-  }
+  // Format results for AI consumption
+  return formatSearchResults(results);
 }
