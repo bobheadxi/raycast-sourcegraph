@@ -1,5 +1,5 @@
 import { Sourcegraph } from "../../sourcegraph";
-import { performSearch, PatternType, SearchResult } from "../../sourcegraph/stream-search";
+import { performSearch, PatternType, SearchResult, Alert, Suggestion } from "../../sourcegraph/stream-search";
 import { SearchMatch, ContentMatch, SymbolMatch } from "../../sourcegraph/stream-search/stream";
 
 /**
@@ -9,21 +9,21 @@ export async function executeKeywordSearch(
   src: Sourcegraph,
   query: string,
   maxResults: number,
-): Promise<SearchMatch[]> {
+): Promise<SearchResults> {
   return executeSearch(src, query, "keyword", maxResults);
 }
 
 /**
  * Execute an NLS (natural language) search query against a Sourcegraph instance
  */
-export async function executeNLSSearch(src: Sourcegraph, query: string, maxResults: number): Promise<SearchMatch[]> {
+export async function executeNLSSearch(src: Sourcegraph, query: string, maxResults: number): Promise<SearchResults> {
   return executeSearch(src, query, "nls", maxResults);
 }
 
 /**
  * Execute a commit search query against a Sourcegraph instance
  */
-export async function executeCommitSearch(src: Sourcegraph, query: string, maxResults: number): Promise<SearchMatch[]> {
+export async function executeCommitSearch(src: Sourcegraph, query: string, maxResults: number): Promise<SearchResults> {
   const commitQuery = `type:commit ${query}`;
   return executeSearch(src, commitQuery, "keyword", maxResults);
 }
@@ -31,9 +31,15 @@ export async function executeCommitSearch(src: Sourcegraph, query: string, maxRe
 /**
  * Execute a diff search query against a Sourcegraph instance
  */
-export async function executeDiffSearch(src: Sourcegraph, query: string, maxResults: number): Promise<SearchMatch[]> {
+export async function executeDiffSearch(src: Sourcegraph, query: string, maxResults: number): Promise<SearchResults> {
   const diffQuery = `type:diff ${query}`;
   return executeSearch(src, diffQuery, "keyword", maxResults);
+}
+
+export interface SearchResults {
+  matches: SearchMatch[];
+  alerts: Alert[];
+  suggestions: Suggestion[];
 }
 
 /**
@@ -44,9 +50,11 @@ export async function executeSearch(
   query: string,
   patternType: PatternType,
   maxResults: number,
-): Promise<SearchMatch[]> {
+): Promise<SearchResults> {
   return new Promise((resolve, reject) => {
     const results: SearchMatch[] = [];
+    const alerts: Alert[] = [];
+    const suggestions: Suggestion[] = [];
     let hasCompleted = false;
     const abortController = new AbortController();
 
@@ -62,16 +70,20 @@ export async function executeSearch(
         if (results.length >= maxResults) {
           hasCompleted = true;
           abortController.abort();
-          resolve(results.slice(0, maxResults));
+          resolve({ matches: results.slice(0, maxResults), alerts, suggestions });
         }
       },
-      onSuggestions: () => {}, // Not needed for tool
-      onAlert: () => {}, // Just ignore alerts for the tool
+      onSuggestions: (suggestionsData: Suggestion[]) => {
+        suggestions.push(...suggestionsData);
+      },
+      onAlert: (alert: Alert) => {
+        alerts.push(alert);
+      },
       onProgress: () => {}, // Not needed for tool
       onDone: () => {
         if (!hasCompleted) {
           hasCompleted = true;
-          resolve(results);
+          resolve({ matches: results, alerts, suggestions });
         }
       },
     };
@@ -89,7 +101,7 @@ export async function executeSearch(
       if (!hasCompleted) {
         hasCompleted = true;
         abortController.abort();
-        resolve(results);
+        resolve({ matches: results, alerts, suggestions });
       }
     }, 30000);
   });
@@ -98,55 +110,64 @@ export async function executeSearch(
 /**
  * Format search results into a structured format suitable for AI consumption
  */
-export function formatSearchResults(results: SearchMatch[], src: Sourcegraph): unknown[] {
-  return results.map((result) => {
-    if (result.type === "content") {
-      const contentMatch = result as ContentMatch;
-      return {
-        type: "content",
-        repository: contentMatch.repository,
-        file: contentMatch.path,
-        url: `${src.instance}${contentMatch.repository}/-/blob/${contentMatch.path}`,
-        matches:
-          contentMatch.chunkMatches?.map((chunk) => ({
-            content: chunk.content,
-            contentTruncated: chunk.contentTruncated,
-            ranges: chunk.ranges,
-          })) || [],
-      };
-    } else if (result.type === "symbol") {
-      const symbolMatch = result as SymbolMatch;
-      return {
-        type: "symbol",
-        repository: symbolMatch.repository,
-        file: symbolMatch.path,
-        url: `${src.instance}${symbolMatch.repository}/-/blob/${symbolMatch.path}`,
-        symbols:
-          symbolMatch.symbols?.map((symbol) => ({
-            name: symbol.name,
-            kind: symbol.kind,
-            line: symbol.line,
-            containerName: symbol.containerName,
-            url: symbol.url,
-          })) || [],
-      };
-    } else if (result.type === "repo") {
-      return {
-        type: "repository",
-        repository: result.repository,
-        url: `${src.instance}${result.repository}`,
-        description: result.description,
-        stars: result.repoStars,
-      };
-    } else if (result.type === "path") {
-      return {
-        type: "path",
-        repository: result.repository,
-        file: result.path,
-        url: `${src.instance}${result.repository}/-/blob/${result.path}`,
-        language: result.language,
-      };
+export function formatSearchResults(
+  searchResults: SearchResults,
+  src: Sourcegraph,
+): { matches: unknown[]; alerts: Alert[]; suggestions: Suggestion[] } {
+  const matches = searchResults.matches.map((result) => {
+    switch (result.type) {
+      case "content": {
+        const contentMatch = result as ContentMatch;
+        return {
+          type: "content",
+          repository: contentMatch.repository,
+          file: contentMatch.path,
+          url: `${src.instance}${contentMatch.repository}/-/blob/${contentMatch.path}`,
+          matches:
+            contentMatch.chunkMatches?.map((chunk) => ({
+              content: chunk.content,
+              contentTruncated: chunk.contentTruncated,
+              ranges: chunk.ranges,
+            })) || [],
+        };
+      }
+      case "symbol": {
+        const symbolMatch = result as SymbolMatch;
+        return {
+          type: "symbol",
+          repository: symbolMatch.repository,
+          file: symbolMatch.path,
+          url: `${src.instance}${symbolMatch.repository}/-/blob/${symbolMatch.path}`,
+          symbols:
+            symbolMatch.symbols?.map((symbol) => ({
+              name: symbol.name,
+              kind: symbol.kind,
+              line: symbol.line,
+              containerName: symbol.containerName,
+              url: symbol.url,
+            })) || [],
+        };
+      }
+      case "repo":
+        return {
+          type: "repository",
+          repository: result.repository,
+          url: `${src.instance}${result.repository}`,
+          description: result.description,
+          stars: result.repoStars,
+        };
+      case "path":
+        return {
+          type: "path",
+          repository: result.repository,
+          file: result.path,
+          url: `${src.instance}${result.repository}/-/blob/${result.path}`,
+          language: result.language,
+        };
+      default:
+        return { type: result.type, repository: "repository" in result ? result.repository : undefined, raw: result };
     }
-    return { type: result.type, repository: "repository" in result ? result.repository : undefined, raw: result };
   });
+
+  return { matches, alerts: searchResults.alerts, suggestions: searchResults.suggestions };
 }
