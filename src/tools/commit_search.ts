@@ -59,6 +59,7 @@ export default async function tool(params: Input) {
   const { query, maxResults = 20 } = params;
   // Create Sourcegraph client for custom instance
   const src = sourcegraphInstance();
+
   if (!src) {
     throw new Error(
       "No custom Sourcegraph instance configured. Please configure your Sourcegraph instance in preferences.",
@@ -69,5 +70,5 @@ export default async function tool(params: Input) {
   const results = await executeCommitSearch(src, query, maxResults);
 
   // Format results for AI consumption
-  return formatSearchResults(results);
+  return formatSearchResults(results, src);
 }

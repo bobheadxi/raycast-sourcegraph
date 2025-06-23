@@ -65,5 +65,5 @@ export default async function tool(params: Input) {
   const results = await executeCommitSearch(src, query, maxResults);
 
   // Format results for AI consumption
-  return formatSearchResults(results);
+  return formatSearchResults(results, src);
 }

@@ -98,7 +98,7 @@ export async function executeSearch(
 /**
  * Format search results into a structured format suitable for AI consumption
  */
-export function formatSearchResults(results: SearchMatch[]): unknown[] {
+export function formatSearchResults(results: SearchMatch[], src: Sourcegraph): unknown[] {
   return results.map((result) => {
     if (result.type === "content") {
       const contentMatch = result as ContentMatch;
@@ -106,6 +106,7 @@ export function formatSearchResults(results: SearchMatch[]): unknown[] {
         type: "content",
         repository: contentMatch.repository,
         file: contentMatch.path,
+        url: `${src.instance}${contentMatch.repository}/-/blob/${contentMatch.path}`,
         matches:
           contentMatch.chunkMatches?.map((chunk) => ({
             content: chunk.content,
@@ -119,23 +120,32 @@ export function formatSearchResults(results: SearchMatch[]): unknown[] {
         type: "symbol",
         repository: symbolMatch.repository,
         file: symbolMatch.path,
+        url: `${src.instance}${symbolMatch.repository}/-/blob/${symbolMatch.path}`,
         symbols:
           symbolMatch.symbols?.map((symbol) => ({
             name: symbol.name,
             kind: symbol.kind,
             line: symbol.line,
             containerName: symbol.containerName,
+            url: symbol.url,
           })) || [],
       };
     } else if (result.type === "repo") {
       return {
         type: "repository",
         repository: result.repository,
+        url: `${src.instance}${result.repository}`,
         description: result.description,
         stars: result.repoStars,
       };
     } else if (result.type === "path") {
-      return { type: "path", repository: result.repository, file: result.path, language: result.language };
+      return {
+        type: "path",
+        repository: result.repository,
+        file: result.path,
+        url: `${src.instance}${result.repository}/-/blob/${result.path}`,
+        language: result.language,
+      };
     }
     return { type: result.type, repository: "repository" in result ? result.repository : undefined, raw: result };
   });

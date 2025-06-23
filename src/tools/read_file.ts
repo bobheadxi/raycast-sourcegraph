@@ -56,7 +56,6 @@ export default async function tool(params: Input) {
 
   // Read the file contents
   const result = await executeFileRead(src, repository, path, revision);
-
   if (!result) {
     throw new Error("File not found or could not be read");
   }
