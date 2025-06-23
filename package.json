@@ -206,9 +206,9 @@
       "description": "Read complete file contents from private repositories at any git revision. Supports branches, tags, commit SHAs, relative refs (HEAD~1), multiple revisions (v1:v2), and temporal syntax (at.time()). Get full source code from any point in history."
     },
     {
-    "name": "public_keyword_code_search",
-    "title": "Public Keyword Code Search", 
-    "description": "FALLBACK TOOL: Search public repositories using keyword patterns with boolean operators (AND/OR/NOT), regex patterns (/pattern/), exact phrases (\"text\"), and comprehensive filters. Use only when private search yields no results or user requests open source examples."
+      "name": "public_keyword_code_search",
+      "title": "Public Keyword Code Search",
+      "description": "FALLBACK TOOL: Search public repositories using keyword patterns with boolean operators (AND/OR/NOT), regex patterns (/pattern/), exact phrases (\"text\"), and comprehensive filters. Use only when private search yields no results or user requests open source examples."
     },
     {
       "name": "public_nls_code_search",
