@@ -24,6 +24,16 @@ type Input = {
    * Defaults to "HEAD" if not specified.
    */
   revision?: string;
+  /**
+   * Starting line number for partial file read (1-indexed).
+   * If not specified, reads from the beginning of the file.
+   */
+  startLine?: number;
+  /**
+   * Ending line number for partial file read (1-indexed, inclusive).
+   * If not specified, reads to the end of the file.
+   */
+  endLine?: number;
 };
 
 /**
@@ -43,9 +53,10 @@ type Input = {
  * - Read from tag: repository="myorg/api", path="README.md", revision="v1.0.0"
  * - Read from branch: repository="myorg/api", path="src/main.go", revision="feature-auth"
  * - Read old version: repository="myorg/api", path="package.json", revision="HEAD~5"
+ * - Read specific lines: repository="myorg/api", path="src/main.go", startLine=10, endLine=50
  */
 export default async function tool(params: Input) {
-  const { repository, path, revision } = params;
+  const { repository, path, revision, startLine, endLine } = params;
   // Create Sourcegraph client for custom instance
   const src = sourcegraphInstance();
   if (!src) {
@@ -55,7 +66,7 @@ export default async function tool(params: Input) {
   }
 
   // Read the file contents
-  const result = await executeFileRead(src, repository, path, revision);
+  const result = await executeFileRead(src, repository, path, revision, startLine, endLine);
   if (!result) {
     throw new Error("File not found or could not be read");
   }

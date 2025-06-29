@@ -14,6 +14,16 @@ type Input = {
    * Git revision (branch, tag, or commit SHA). Defaults to "HEAD" (latest).
    */
   revision?: string;
+  /**
+   * Starting line number for partial file read (1-indexed).
+   * If not specified, reads from the beginning of the file.
+   */
+  startLine?: number;
+  /**
+   * Ending line number for partial file read (1-indexed, inclusive).
+   * If not specified, reads to the end of the file.
+   */
+  endLine?: number;
 };
 
 /**
@@ -22,12 +32,12 @@ type Input = {
  * Use when you need to examine the complete source code of a specific file in public projects.
  */
 export default async function tool(params: Input) {
-  const { repository, path, revision } = params;
+  const { repository, path, revision, startLine, endLine } = params;
   // Create Sourcegraph client for public code search
   const src = await sourcegraphDotCom();
 
   // Read the file contents
-  const result = await executeFileRead(src, repository, path, revision);
+  const result = await executeFileRead(src, repository, path, revision, startLine, endLine);
 
   if (!result) {
     throw new Error("File not found or could not be read");
