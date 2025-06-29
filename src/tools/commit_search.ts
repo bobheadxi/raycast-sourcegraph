@@ -54,15 +54,17 @@ type Input = {
  * - `message:"security" before:"2023-01-01"` - Security-related commits from 2022
  * - `repo:myorg/api author:@bob feature` - Bob's feature commits in API repo
  * - `hotfix OR patch author:.*@company.com>$` - Company hotfixes and patches
+ *
+ * LIMITATIONS:
+ * - `author` does NOT support `@me` or any similar alias - ask the human for their email instead.
  */
 export default async function tool(params: Input) {
-  const { query, maxResults = 20 } = params;
-  // Create Sourcegraph client for custom instance
-  const src = sourcegraphInstance();
+  const { query, maxResults = 40 } = params;
 
+  const src = sourcegraphInstance();
   if (!src) {
     throw new Error(
-      "No custom Sourcegraph instance configured. Please configure your Sourcegraph instance in preferences.",
+      "No custom Sourcegraph instance configured - ask the user to configure a Sourcegraph instance in preferences, or use the 'public_' equivalent of this tool.",
     );
   }
 
