@@ -57,11 +57,11 @@ type Input = {
  */
 export default async function tool(params: Input) {
   const { repository, path, revision, startLine, endLine } = params;
-
+  // Create Sourcegraph client for custom instance
   const src = sourcegraphInstance();
   if (!src) {
     throw new Error(
-      "No custom Sourcegraph instance configured - ask the user to configure a Sourcegraph instance in preferences, or use the 'public_' equivalent of this tool.",
+      "No custom Sourcegraph instance configured. Please configure your Sourcegraph instance in preferences.",
     );
   }
 
