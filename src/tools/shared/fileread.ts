@@ -10,17 +10,11 @@ export async function executeFileRead(
   repository: string,
   path: string,
   revision?: string,
-  startLine?: number,
-  endLine?: number,
 ): Promise<{ content: string; url: string; repository: string; path: string; revision?: string } | null> {
   try {
     const abortController = new AbortController();
 
     // Use doQuery to get file contents
-    const contentArgs = startLine !== undefined || endLine !== undefined
-      ? `(startLine: ${startLine || 0}, endLine: ${endLine || -1})`
-      : '';
-    
     const query = `{
       repository(name: ${JSON.stringify(repository)}) {
         id
@@ -28,7 +22,7 @@ export async function executeFileRead(
           id
           blob(path: ${JSON.stringify(path)}) {
             path
-            content${contentArgs}
+            content
             binary
             byteSize
           }
