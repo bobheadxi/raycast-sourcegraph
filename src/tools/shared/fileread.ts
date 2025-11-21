@@ -17,11 +17,10 @@ export async function executeFileRead(
     const abortController = new AbortController();
 
     // Use doQuery to get file contents
-    const contentArgs =
-      startLine !== undefined || endLine !== undefined
-        ? `(startLine: ${startLine || 0}, endLine: ${endLine || -1})`
-        : "";
-
+    const contentArgs = startLine !== undefined || endLine !== undefined
+      ? `(startLine: ${startLine || 0}, endLine: ${endLine || -1})`
+      : '';
+    
     const query = `{
       repository(name: ${JSON.stringify(repository)}) {
         id
