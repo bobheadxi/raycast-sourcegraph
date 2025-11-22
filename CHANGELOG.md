@@ -1,6 +1,6 @@
 # Changelog
 
-## Deep Search - TODO
+## [Deep Search] - {PR_MERGE_DATE}
 
 - **deepsearch**: Added new commands 'Ask Deep Search' and 'View Deep Search Conversations' to interact with Sourcegraph's new [agentic, natural language code search](https://sourcegraph.com/deep-search).
 
