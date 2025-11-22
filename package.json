@@ -184,21 +184,6 @@
       ]
     },
     {
-      "name": "findNotebooksInstance",
-      "title": "Find Search Notebooks",
-      "subtitle": "Sourcegraph",
-      "description": "Browse search notebooks in Sourcegraph.",
-      "mode": "view",
-      "keywords": [
-        "sourcegraph",
-        "search",
-        "notebook",
-        "snb"
-      ],
-      "disabledByDefault": true,
-      "preferences": []
-    },
-    {
       "name": "manageBatchChangesInstance",
       "title": "Manage Batch Changes",
       "subtitle": "Sourcegraph",

@@ -73,7 +73,7 @@ export type DeepSearchResultDetailProps =
 
 function useDeepSearchConversation(src: Sourcegraph, props: DeepSearchResultDetailProps) {
   const [conversation, setConversation] = useState<DeepSearchConversation | null>(
-    "conversation" in props && props.conversation ? props.conversation : null,
+    props.conversation ? props.conversation : null,
   );
   const [error, setError] = useState<string | null>(null);
 
@@ -110,7 +110,7 @@ function useDeepSearchConversation(src: Sourcegraph, props: DeepSearchResultDeta
 
     async function run() {
       try {
-        if ("conversation" in props && props.conversation) {
+        if (props.conversation) {
           setConversation(props.conversation);
           const latest = props.conversation.questions.at(-1);
           if (!latest || latest.status === "completed" || latest.status === "failed") {
@@ -120,7 +120,7 @@ function useDeepSearchConversation(src: Sourcegraph, props: DeepSearchResultDeta
           return;
         }
 
-        if ("conversationId" in props && props.conversationId != null) {
+        if (props.conversationId != null) {
           const initial = await fetchDeepSearchConversation(src, props.conversationId);
           if (didCancel) return;
           setConversation(initial);
@@ -134,7 +134,7 @@ function useDeepSearchConversation(src: Sourcegraph, props: DeepSearchResultDeta
         }
 
         // Start new deep search
-        if (!("question" in props) || !props.question) {
+        if (!props.question) {
           throw new Error("No question or conversation provided to DeepSearchResultDetail");
         }
 
@@ -163,8 +163,8 @@ function useDeepSearchConversation(src: Sourcegraph, props: DeepSearchResultDeta
     };
   }, [
     src,
-    "conversationId" in props ? props.conversationId : undefined,
-    "question" in props ? props.question : undefined,
+    props.conversationId,
+    props.question,
     // We don't include props.conversation because it's an object and might change refs.
     // We assume if we are passed a conversation object, it's the initial state.
   ]);
@@ -217,7 +217,7 @@ export function DeepSearchConversationDetail(props: DeepSearchResultDetailProps)
 
   // If we are still loading the conversation or have an error (and no conversation), show the basic detail view
   if (!conversation || !selectedQuestion) {
-    const question = ("question" in props && props.question) || conversation?.questions[0]?.question || "";
+    const question = props.question || conversation?.questions[0]?.question || "";
     const statusTag = mapStatusToTag(status);
     const date = conversation?.created_at
       ? DateTime.fromISO(conversation.created_at).toLocaleString(DateTime.DATETIME_MED)

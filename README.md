@@ -45,7 +45,7 @@ Some configuration is required to use certain features, most notably the [varian
 ### Sourcegraph.com
 
 No setup is required to connect to [Sourcegraph.com](https://sourcegraph.com/search) through the 'Sourcegraph.com' variants of this extensions's commands.
-To configure your own [search contexts](#search-contexts), create search notebooks, and more, [sign up for a Sourcegraph.com account](https://sourcegraph.com/sign-up)!
+To configure your own [search contexts](#search-contexts), [sign up for a Sourcegraph.com account](https://sourcegraph.com/sign-up)!
 
 Once you have an account, you can create an access token under the ["Access tokens" tab in your user settings on Sourcegraph.com](https://sourcegraph.com/user/settings/tokens/new).
 Copy that access token to the "Sourcegraph.com: Access token" field in the Sourcegraph Raycast extension preferences to authenticate your search queries.
@@ -109,16 +109,6 @@ or [Sourcegraph Cloud instance](https://sourcegraph.com/docs/cloud).
 > To use this command, you must also enable it in the Raycast Sourcegraph extension preferences.
 
 ![batch changes](metadata/3-batch-change-manage.png)
-
-### Find Search Notebooks
-
-Browse and preview [search notebooks](https://sourcegraph.com/docs/notebooks) straight from Raycast.
-Notebooks enable powerful live – and persistent – documentation, shareable with your organization or the world.
-
-> [!NOTE]
-> Notebooks are currently only supported when connected to a [self-hosted Sourcegraph instance](https://sourcegraph.com/docs/admin/deploy)
-or [Sourcegraph Cloud instance](https://sourcegraph.com/docs/cloud).
-> To use this command, you must also enable it in the Raycast Sourcegraph extension preferences.
 
 <br />
 

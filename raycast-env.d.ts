@@ -46,8 +46,6 @@ declare namespace Preferences {
   export type SearchHistoryDotCom = ExtensionPreferences & {}
   /** Preferences accessible in the `searchHistoryInstance` command */
   export type SearchHistoryInstance = ExtensionPreferences & {}
-  /** Preferences accessible in the `findNotebooksInstance` command */
-  export type FindNotebooksInstance = ExtensionPreferences & {}
   /** Preferences accessible in the `manageBatchChangesInstance` command */
   export type ManageBatchChangesInstance = ExtensionPreferences & {}
 }
@@ -65,8 +63,6 @@ declare namespace Arguments {
   export type SearchHistoryDotCom = {}
   /** Arguments passed to the `searchHistoryInstance` command */
   export type SearchHistoryInstance = {}
-  /** Arguments passed to the `findNotebooksInstance` command */
-  export type FindNotebooksInstance = {}
   /** Arguments passed to the `manageBatchChangesInstance` command */
   export type ManageBatchChangesInstance = {}
 }
