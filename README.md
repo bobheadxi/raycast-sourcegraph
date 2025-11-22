@@ -54,16 +54,25 @@ To search your private code, please reach out [get a demo of the single-tenant s
 
 ### Sourcegraph instance or workspace
 
-To start searching code on a custom Sourcegraph instance or workspace:
+To start searching code on your own Sourcegraph instance or workspace:
 
 - [Sourcegraph workspace](https://workspaces.sourcegraph.com/)
-- [self-hosted Sourcegraph instance](https://sourcegraph.com/docs/admin/deploy)
-- [Sourcegraph Cloud instance](https://sourcegraph.com/docs/cloud)
+- [Sourcegraph Cloud](https://sourcegraph.com/docs/cloud)
+- [Self-Hosted Sourcegraph](https://sourcegraph.com/docs/admin/deploy)
 
-You can set up access through the 'Sourcegraph' variants of this extensions's commands by configuring the "Sourcegraph: URL" and "Sourcegraph Instance: Access token" fields in the Sourcegraph Raycast extension preferences.
-You can create an access token under the "Access tokens" tab in your user settings in Sourcegraph.
+You can set up access through the 'Sourcegraph' variants of this extensions's commands by configuring the "Sourcegraph: URL" in the Sourcegraph Raycast extension preferences, as well as one of the following:
 
-For example, you can configure `example.sourcegraph.app` as a URL and go to `https://example.sourcegraph.app/user/settings/tokens/new` to create an access token for use in this extension.
+- **Access token**: You can create an access token (`sgp_...`) under the "Access tokens" tab in your user settings in Sourcegraph, and set it in the "Sourcegraph Instance: Access token" field in the extension preferences.
+  - For example, you can configure `example.sourcegraph.app` as a URL and go to `https://example.sourcegraph.app/user/settings/tokens/new` to create an access token for use in this extension.
+- **OAuth**: Your Sourcegraph administrator can provide a client ID (`sgo_...`) for the "Sourcegraph Instance: OAuth Client ID" field in the extension preferences.
+  - Sourcegraph administrators can create an OAuth client in the "Site Admin" -> "OAuth Clients" section in Sourcegraph with the following configuration:
+    - Application name: `Raycast Sourcegraph`
+    - Client type: `Public`
+    - Redirect URIs: `raycast://oauth?package_name=sourcegraph`
+    - Scopes: `user:all`
+  - For more information about Sourcegraph OAuth clients, refer to [our documentation](https://sourcegraph.com/docs/admin/oauth_apps).
+
+Note that workspaces only support access tokens, not OAuth apps.
 
 <br />
 

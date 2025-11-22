@@ -1,4 +1,5 @@
-import { Sourcegraph, getAnonymousUserID } from "../";
+import { Sourcegraph } from "../";
+import { getAPIHeaders } from "../api";
 import { getProxiedFetch } from "../gql/fetchProxy";
 
 // Deep Search API Types
@@ -66,21 +67,8 @@ export interface DeepSearchRequestBody {
 }
 
 async function buildDeepSearchHeaders(src: Sourcegraph): Promise<Record<string, string>> {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    "X-Requested-With": "raycast-sourcegraph 0.0.0",
-  };
-
-  if (src.token) {
-    headers["Authorization"] = `token ${src.token}`;
-  }
-
-  // Mirror streaming search & dotCom anonymous ID usage
-  const anonymousUserID = await getAnonymousUserID();
-  if (anonymousUserID) {
-    headers["X-Sourcegraph-Actor-Anonymous-UID"] = anonymousUserID;
-  }
-
+  const headers = getAPIHeaders(src);
+  headers["Content-Type"] = "application/json";
   return headers;
 }
 

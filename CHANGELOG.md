@@ -3,6 +3,7 @@
 ## [Deep Search] - {PR_MERGE_DATE}
 
 - **deepsearch**: Added new commands 'Ask Deep Search' and 'View Deep Search Conversations' to interact with Sourcegraph's new [agentic, natural language code search](https://sourcegraph.com/deep-search).
+- **oauth**: You can now authenticate the extension using [Sourcegraph OAuth Apps](https://sourcegraph.com/docs/admin/oauth_apps) by removing your access token in the extension preferences, and adding your Sourcegraph OAuth app client ID. To learn more, refer to the [updated setup guide](https://www.raycast.com/bobheadxi/sourcegraph#setup).
 
 ## [Branding updates and workspaces](https://github.com/raycast/extensions/pull/16793) - 2025-02-03
 

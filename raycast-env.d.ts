@@ -12,8 +12,10 @@ type ExtensionPreferences = {
   "cloudToken"?: string,
   /** Sourcegraph connection: URL - Required to use 'Sourcegraph' commands - Sourcegraph URL you want to connect to. */
   "customInstance"?: string,
-  /** Sourcegraph connection: Access token - Required to use 'Sourcegraph' commands - available under 'Profile' -> 'Access token' in Sourcegraph. */
+  /** Sourcegraph connection: Access token - Available under 'Profile' -> 'Access token' in Sourcegraph. If set, takes precedence over the OAuth. */
   "customInstanceToken"?: string,
+  /** Sourcegraph connection: OAuth Client ID - The Client ID for the Sourcegraph OAuth app created by your Sourcegraph administrator. To set up a client, go to 'Site Admin' -> 'OAuth Clients' in Sourcegraph, and create a public client with the redirect URI 'raycast://oauth?package_name=sourcegraph' and 'user:all' scope. */
+  "customInstanceOAuthClientID"?: string,
   /** Sourcegraph connection: Proxy - Optional proxy to use when using a custom Sourcegraph connection - presently, only Unix domain sockets are supported. */
   "customInstanceProxy"?: string,
   /** Additional features - Toggle the search pattern dropdown in the search command. */

@@ -38,9 +38,16 @@
     {
       "name": "customInstanceToken",
       "title": "Sourcegraph connection: Access token",
-      "description": "Required to use 'Sourcegraph' commands - available under 'Profile' -> 'Access token' in Sourcegraph.",
+      "description": "Available under 'Profile' -> 'Access token' in Sourcegraph. If set, takes precedence over the OAuth.",
       "required": false,
       "type": "password"
+    },
+    {
+      "name": "customInstanceOAuthClientID",
+      "title": "Sourcegraph connection: OAuth Client ID",
+      "description": "The Client ID for the Sourcegraph OAuth app created by your Sourcegraph administrator. To set up a client, go to 'Site Admin' -> 'OAuth Clients' in Sourcegraph, and create a public client with the redirect URI 'raycast://oauth?package_name=sourcegraph' and 'user:all' scope.",
+      "required": false,
+      "type": "textfield"
     },
     {
       "name": "customInstanceProxy",
