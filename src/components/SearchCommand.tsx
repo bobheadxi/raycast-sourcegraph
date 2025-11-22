@@ -195,9 +195,7 @@ export default function SearchCommand({ src, props }: { src: Sourcegraph; props?
 }
 
 /**
- * Dropdown, currently for pattern type. I'm a bit torn on whether to place contexts or
- * pattern type here, and the dropdown element itself is quite wide, so this is behind
- * a feature flag for now.
+ * Dropdown, currently for pattern type.
  */
 function SearchDropdown({ setPatternType }: { setPatternType: (pt: PatternType) => void }) {
   const patternTypes: { type: PatternType; name: string; icon: Image.ImageLike }[] = [
@@ -205,7 +203,6 @@ function SearchDropdown({ setPatternType }: { setPatternType: (pt: PatternType) 
     { type: "literal", name: "Literal", icon: Icon.QuotationMarks },
     { type: "regexp", name: "RegExp", icon: Icon.Code },
     { type: "keyword", name: "Keyword", icon: Icon.Text },
-    { type: "structural", name: "Structural", icon: Icon.Terminal },
   ];
   return (
     <List.Dropdown
