@@ -26,6 +26,10 @@ type ExtensionPreferences = {
 declare type Preferences = ExtensionPreferences
 
 declare namespace Preferences {
+  /** Preferences accessible in the `deepSearchInstance` command */
+  export type DeepSearchInstance = ExtensionPreferences & {}
+  /** Preferences accessible in the `deepSearchConversationsInstance` command */
+  export type DeepSearchConversationsInstance = ExtensionPreferences & {}
   /** Preferences accessible in the `searchDotCom` command */
   export type SearchDotCom = ExtensionPreferences & {
   /** Default search context - Default search context to set on all queries */
@@ -47,6 +51,10 @@ declare namespace Preferences {
 }
 
 declare namespace Arguments {
+  /** Arguments passed to the `deepSearchInstance` command */
+  export type DeepSearchInstance = {}
+  /** Arguments passed to the `deepSearchConversationsInstance` command */
+  export type DeepSearchConversationsInstance = {}
   /** Arguments passed to the `searchDotCom` command */
   export type SearchDotCom = {}
   /** Arguments passed to the `searchInstance` command */

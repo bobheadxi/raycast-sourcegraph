@@ -69,6 +69,34 @@
   ],
   "commands": [
     {
+      "name": "deepSearchInstance",
+      "title": "Ask Deep Search",
+      "subtitle": "Sourcegraph",
+      "description": "Ask deep questions about code on your Sourcegraph instance.",
+      "mode": "view",
+      "keywords": [
+        "sourcegraph",
+        "deep search",
+        "code search",
+        "ai"
+      ],
+      "disabledByDefault": false
+    },
+    {
+      "name": "deepSearchConversationsInstance",
+      "title": "View Deep Search Conversations",
+      "subtitle": "Sourcegraph",
+      "description": "List and manage Deep Search conversations.",
+      "mode": "view",
+      "keywords": [
+        "sourcegraph",
+        "deep search",
+        "list",
+        "history"
+      ],
+      "disabledByDefault": false
+    },
+    {
       "name": "searchDotCom",
       "title": "Search Public Code",
       "subtitle": "Sourcegraph",
@@ -181,8 +209,8 @@
   ],
   "dependencies": {
     "@apollo/client": "^3.11.10",
-    "@raycast/api": "^1.100.3",
-    "@raycast/utils": "^2.0.1",
+    "@raycast/api": "^1.103.7",
+    "@raycast/utils": "^2.2.2",
     "@sourcegraph/telemetry": "^0.18.0",
     "@types/uuid": "^10.0.0",
     "cross-fetch": "^4.0.0",
