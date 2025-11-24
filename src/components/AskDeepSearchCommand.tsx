@@ -10,9 +10,10 @@ import {
   Toast,
   showToast,
   Color,
+  popToRoot,
 } from "@raycast/api";
 import { DateTime } from "luxon";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Sourcegraph, instanceName, LinkBuilder } from "../sourcegraph";
 import { useTelemetry } from "../hooks/telemetry";
@@ -49,13 +50,23 @@ export default function AskDeepSearchCommand({ src }: { src: Sourcegraph; props?
                 await showToast({ title: "Please enter a question", style: Toast.Style.Failure });
                 return;
               }
-              push(<DeepSearchConversationDetail src={src} question={question} />);
+              push(<DeepSearchConversationDetail src={src} question={question} />, () => {
+                // Don't return to the form again on pop
+                popToRoot();
+              });
             }}
           />
         </ActionPanel>
       }
     >
-      <Form.TextArea id="question" title="Question" placeholder="Explain how authentication works in..." autoFocus />
+      <Form.TextArea
+        id="question"
+        title="Question"
+        placeholder="Explain how authentication works in..."
+        autoFocus
+        enableMarkdown={true}
+        info="Ask, plan, or search your codebases. Use @ to specify files and repositories."
+      />
     </Form>
   );
 }
@@ -326,6 +337,7 @@ function DeepSearchQuestionDetailView({
         showMetadata ? (
           <Detail.Metadata>
             <Detail.Metadata.Label title="Question" text={questionText} />
+            <Detail.Metadata.Separator />
             {date && <Detail.Metadata.Label title="Date" text={date} />}
             <Detail.Metadata.TagList title="Status">
               <Detail.Metadata.TagList.Item text={statusTag.value} color={statusTag.color} />
