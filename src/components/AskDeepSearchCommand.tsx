@@ -13,7 +13,7 @@ import {
   popToRoot,
 } from "@raycast/api";
 import { DateTime } from "luxon";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Sourcegraph, instanceName, LinkBuilder } from "../sourcegraph";
 import { useTelemetry } from "../hooks/telemetry";
@@ -86,6 +86,7 @@ function useDeepSearchConversation(src: Sourcegraph, props: DeepSearchResultDeta
   const [conversation, setConversation] = useState<DeepSearchConversation | null>(
     props.conversation ? props.conversation : null,
   );
+  const startedRef = useRef<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Derived values
@@ -148,6 +149,11 @@ function useDeepSearchConversation(src: Sourcegraph, props: DeepSearchResultDeta
         if (!props.question) {
           throw new Error("No question or conversation provided to DeepSearchResultDetail");
         }
+
+        if (startedRef.current === props.question) {
+          return;
+        }
+        startedRef.current = props.question;
 
         const started = await startDeepSearch(src, { question: props.question });
         if (didCancel) return;
