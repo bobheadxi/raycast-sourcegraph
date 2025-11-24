@@ -12,7 +12,7 @@ type ExtensionPreferences = {
   "cloudToken"?: string,
   /** Sourcegraph connection: URL - Required to use 'Sourcegraph' commands - Sourcegraph URL you want to connect to. */
   "customInstance"?: string,
-  /** Sourcegraph connection: Access token - Available under 'Profile' -> 'Access token' in Sourcegraph. If set, takes precedence over OAuth. */
+  /** Sourcegraph connection: Access token - If set, takes precedence over OAuth login. Available under 'Profile' -> 'Access token' in Sourcegraph. */
   "customInstanceToken"?: string,
   /** Sourcegraph connection: Proxy - Optional proxy to use when using a custom Sourcegraph connection - presently, only Unix domain sockets are supported. */
   "customInstanceProxy"?: string,

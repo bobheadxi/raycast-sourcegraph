@@ -38,7 +38,7 @@
     {
       "name": "customInstanceToken",
       "title": "Sourcegraph connection: Access token",
-      "description": "Available under 'Profile' -> 'Access token' in Sourcegraph. If set, takes precedence over OAuth.",
+      "description": "If set, takes precedence over OAuth login. Available under 'Profile' -> 'Access token' in Sourcegraph.",
       "required": false,
       "type": "password"
     },
