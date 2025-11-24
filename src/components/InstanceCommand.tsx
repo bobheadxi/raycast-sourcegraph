@@ -6,6 +6,7 @@ import {
   openExtensionPreferences,
   updateCommandMetadata,
   LaunchProps,
+  useNavigation,
 } from "@raycast/api";
 import { useEffect, useState, useRef } from "react";
 import { OAuthService, usePromise } from "@raycast/utils";
@@ -13,6 +14,7 @@ import { OAuthService, usePromise } from "@raycast/utils";
 import checkAuthEffect from "../hooks/checkAuthEffect";
 import { bold } from "../markdown";
 import { sourcegraphInstance, Sourcegraph, instanceName, usesOAuth } from "../sourcegraph";
+import ExpandableToast from "./ExpandableToast";
 
 const ALTERNATIVE_ACTIONS_CTA = `---
 
@@ -66,7 +68,7 @@ function OAuthDetail({ src, revalidate }: { src: Sourcegraph & { oauth: OAuthSer
             title="Sign In"
             icon={Icon.LockUnlocked}
             onAction={async () => {
-              await src.oauth?.authorize();
+              await src.oauth.authorize();
               revalidate();
             }}
           />
@@ -123,14 +125,7 @@ function InstanceCommandContent({
         navigationTitle="Not authenticated to Sourcegraph"
         markdown={`${bold(
           `⚠️ Authentication is required for '${src.instance}'`,
-        )}\n\nPlease configure one of the following in the extension preferences:
-
-- **Access token**: Create an access token (\`sgp_...\`) under the "Access tokens" tab in your user settings in Sourcegraph (e.g. [${src.instance}/user/settings/tokens/new](${src.instance}/user/settings/tokens/new)).
-- **OAuth**: Your administrator can provide a client ID (\`sgo_...\`) for the "Sourcegraph Instance: OAuth Client ID" preference. Administrators can create one in "Site Admin" -> "OAuth Clients" with:
-  - Application name: \`Raycast Sourcegraph\`
-  - Client type: \`Public\`
-  - Redirect URIs: \`raycast://oauth?package_name=sourcegraph\`
-  - Scopes: \`user:all\`
+        )}\n\nPlease create an access token (\`sgp_...\`) under the "Access tokens" tab in your user settings in Sourcegraph (e.g. [${src.instance}/user/settings/tokens/new](${src.instance}/user/settings/tokens/new)).
 
 ${ALTERNATIVE_ACTIONS_CTA}`}
         actions={
@@ -159,7 +154,14 @@ export default function InstanceCommand({
   Command: React.FunctionComponent<{ src: Sourcegraph; props?: LaunchProps }>;
   props?: LaunchProps;
 }) {
-  const { data: src, isLoading, revalidate } = usePromise(sourcegraphInstance);
+  const { push } = useNavigation();
+  const { data: src, isLoading, error, revalidate } = usePromise(sourcegraphInstance);
+
+  useEffect(() => {
+    if (error) {
+      ExpandableToast(push, "Connection Failed", "Could not connect to Sourcegraph", String(error)).show();
+    }
+  }, [error, push]);
 
   if (isLoading) {
     return <Detail isLoading={true} />;

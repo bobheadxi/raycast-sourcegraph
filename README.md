@@ -9,7 +9,7 @@
 </h1>
 
 <p align="center">
-  Search code, manage batch changes, and browse notebooks on <a href="https://about.sourcegraph.com">Sourcegraph</a> with <a href="https://www.raycast.com">Raycast</a>.
+  Deep Search, Code Search, and Batch Changes on <a href="https://about.sourcegraph.com">Sourcegraph</a> with <a href="https://www.raycast.com">Raycast</a>.
 </p>
 
 <p align="center">
@@ -64,15 +64,7 @@ You can set up access through the 'Sourcegraph' variants of this extensions's co
 
 - **Access token**: You can create an access token (`sgp_...`) under the "Access tokens" tab in your user settings in Sourcegraph, and set it in the "Sourcegraph Instance: Access token" field in the extension preferences.
   - For example, you can configure `example.sourcegraph.app` as a URL and go to `https://example.sourcegraph.app/user/settings/tokens/new` to create an access token for use in this extension.
-- **OAuth**: Your Sourcegraph administrator can provide a client ID (`sgo_...`) for the "Sourcegraph Instance: OAuth Client ID" field in the extension preferences.
-  - Sourcegraph administrators can create an OAuth client in the "Site Admin" -> "OAuth Clients" section in Sourcegraph with the following configuration:
-    - Application name: `Raycast Sourcegraph`
-    - Client type: `Public`
-    - Redirect URIs: `raycast://oauth?package_name=sourcegraph`
-    - Scopes: `user:all`
-  - For more information about Sourcegraph OAuth clients, refer to [our documentation](https://sourcegraph.com/docs/admin/oauth_apps).
-
-Note that workspaces only support access tokens, not OAuth apps.
+- **OAuth**: If your Sourcegraph version supports it (any version newer than v6.10.0), you can authenticate via OAuth without additional configuration by omitting the "Sourcegraph Instance: Access token" field in the extension preferences..
 
 <br />
 

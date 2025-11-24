@@ -17,7 +17,7 @@
     "search",
     "code",
     "codesearch",
-    "code search"
+    "ai"
   ],
   "preferences": [
     {
@@ -38,16 +38,9 @@
     {
       "name": "customInstanceToken",
       "title": "Sourcegraph connection: Access token",
-      "description": "Available under 'Profile' -> 'Access token' in Sourcegraph. If set, takes precedence over the OAuth.",
+      "description": "Available under 'Profile' -> 'Access token' in Sourcegraph. If set, takes precedence over OAuth.",
       "required": false,
       "type": "password"
-    },
-    {
-      "name": "customInstanceOAuthClientID",
-      "title": "Sourcegraph connection: OAuth Client ID",
-      "description": "The Client ID for the Sourcegraph OAuth app created by your Sourcegraph administrator. To set up a client, go to 'Site Admin' -> 'OAuth Clients' in Sourcegraph, and create a public client with the redirect URI 'raycast://oauth?package_name=sourcegraph' and 'user:all' scope.",
-      "required": false,
-      "type": "textfield"
     },
     {
       "name": "customInstanceProxy",
@@ -79,7 +72,7 @@
       "name": "deepSearchInstance",
       "title": "Ask Deep Search",
       "subtitle": "Sourcegraph",
-      "description": "Ask deep questions about code on your Sourcegraph instance.",
+      "description": "Agentic, natural language code search on a Sourcegraph instance or workspace.",
       "mode": "view",
       "keywords": [
         "sourcegraph",

@@ -2,17 +2,19 @@ import { getPreferenceValues, LocalStorage, OAuth } from "@raycast/api";
 import { OAuthService } from "@raycast/utils";
 import { v4 as uuidv4 } from "uuid";
 import { newApolloClient } from "./gql/apollo";
+import { checkHasBuiltinOAuth as checkHasBuiltinOAuthClient } from "./version";
 import type { Sourcegraph, ExtensionFeatureFlags } from "./types";
 
 export type { Sourcegraph, ExtensionFeatureFlags };
 
-const dotComURL = "https://sourcegraph.com";
+const DOTCOM_URL = "https://sourcegraph.com";
+const BUILTIN_CLIENT_ID = "sgo_cid_sourcegraphraycast";
 
 /**
  * isSourcegraphDotCom returns true if this instance URL points to Sourcegraph.com.
  */
 export function isSourcegraphDotCom(instance: string) {
-  return instance === dotComURL;
+  return instance === DOTCOM_URL;
 }
 
 /**
@@ -54,7 +56,7 @@ export async function sourcegraphDotCom(): Promise<Sourcegraph> {
   }
 
   const connect = {
-    instance: dotComURL,
+    instance: DOTCOM_URL,
     token: prefs.cloudToken,
     anonymousUserID,
   };
@@ -80,26 +82,29 @@ export async function sourcegraphInstance(): Promise<Sourcegraph | null> {
 
   let token = prefs.customInstanceToken;
   let oauth: OAuthService | undefined;
-
-  if (!token && prefs.customInstanceOAuthClientID) {
-    const instanceName = new URL(instance).host;
-    const client = new OAuth.PKCEClient({
-      redirectMethod: OAuth.RedirectMethod.App,
-      providerName: "Sourcegraph",
-      providerIcon: "command-icon.png",
-      providerId: "sourcegraph",
-      description: `Connect your '${instanceName}' account`,
-    });
-    oauth = new OAuthService({
-      client,
-      clientId: prefs.customInstanceOAuthClientID,
-      scope: "user:all",
-      authorizeUrl: `${instance}/.auth/idp/oauth/authorize`,
-      tokenUrl: `${instance}/.auth/idp/oauth/token`,
-      bodyEncoding: "url-encoded",
-    });
-    const tokens = await client.getTokens();
-    token = tokens?.accessToken;
+  if (!token) {
+    // Conditionally enable OAuth based on version
+    const supportsBuiltInClient = await checkHasBuiltinOAuthClient(instance, prefs);
+    if (supportsBuiltInClient) {
+      const instanceName = new URL(instance).host;
+      const client = new OAuth.PKCEClient({
+        redirectMethod: OAuth.RedirectMethod.App,
+        providerName: "Sourcegraph",
+        providerIcon: "command-icon.png",
+        providerId: "sourcegraph",
+        description: `Connect your '${instanceName}' account.`,
+      });
+      oauth = new OAuthService({
+        client,
+        clientId: BUILTIN_CLIENT_ID,
+        scope: "user:all",
+        authorizeUrl: `${instance}/.auth/idp/oauth/authorize`,
+        tokenUrl: `${instance}/.auth/idp/oauth/token`,
+        bodyEncoding: "url-encoded",
+      });
+      const tokens = await client.getTokens();
+      token = tokens?.accessToken;
+    }
   }
 
   const anonymousUserID = await getAnonymousUserID();
