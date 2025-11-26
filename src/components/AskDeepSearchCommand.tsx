@@ -65,7 +65,7 @@ export default function AskDeepSearchCommand({ src }: { src: Sourcegraph; props?
         placeholder="Explain how authentication works in..."
         autoFocus
         enableMarkdown={true}
-        info="Ask, plan, or search your codebases. Use @ to specify files and repositories."
+        info="Ask, plan, or search your codebases."
       />
     </Form>
   );
