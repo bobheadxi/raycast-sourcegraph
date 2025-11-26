@@ -84,7 +84,7 @@
     },
     {
       "name": "deepSearchConversationsInstance",
-      "title": "View Deep Search Conversations",
+      "title": "Deep Search Conversations",
       "subtitle": "Sourcegraph",
       "description": "List and manage Deep Search conversations.",
       "mode": "view",
