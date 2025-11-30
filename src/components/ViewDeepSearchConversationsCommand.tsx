@@ -111,12 +111,13 @@ export default function ViewDeepSearchConversationsCommand({ src }: { src: Sourc
   );
 }
 
-function statusColor(status: DeepSearchStatus): Color.ColorLike {
+function statusColor(status: DeepSearchStatus, hasError: boolean): Color.ColorLike {
+  if (hasError) {
+    return Color.Red;
+  }
   switch (status) {
     case "completed":
       return Color.Green;
-    case "failed":
-      return Color.Red;
     case "processing":
       return Color.Blue;
     case "pending":
@@ -149,6 +150,7 @@ function ConversationListItem({
     subtitle = "";
   }
   const status = latestQuestion?.status ?? "pending";
+  const hasError = !!latestQuestion?.error;
   const time = DateTime.fromISO(conversation.updated_at);
 
   const updatedRelative = time.toRelative() || conversation.updated_at;
@@ -160,11 +162,11 @@ function ConversationListItem({
     },
   ];
 
-  if (status !== "completed") {
+  if (status !== "completed" || hasError) {
     accessories.unshift({
       tag: {
-        value: sentenceCase(status),
-        color: statusColor(status),
+        value: hasError ? "Failed" : sentenceCase(status),
+        color: statusColor(status, hasError),
       },
     });
   }
