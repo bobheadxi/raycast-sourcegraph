@@ -8,6 +8,11 @@ import type { Sourcegraph, ExtensionFeatureFlags } from "./types";
 export type { Sourcegraph, ExtensionFeatureFlags };
 
 const DOTCOM_URL = "https://sourcegraph.com";
+
+/**
+ * BUILTIN_CLIENT_ID is the Raycast client baked into Sourcegraph since the
+ * version specified in checkHasBuiltinOAuth
+ */
 const BUILTIN_CLIENT_ID = "sgo_cid_sourcegraphraycast";
 
 /**
@@ -100,10 +105,17 @@ export async function sourcegraphInstance(): Promise<Sourcegraph | null> {
         scope: "user:all",
         authorizeUrl: `${instance}/.auth/idp/oauth/authorize`,
         tokenUrl: `${instance}/.auth/idp/oauth/token`,
+        refreshTokenUrl: `${instance}/.auth/idp/oauth/token`,
         bodyEncoding: "url-encoded",
       });
-      const tokens = await client.getTokens();
-      token = tokens?.accessToken;
+      const storedTokenSet = await client.getTokens();
+      if (storedTokenSet?.accessToken) {
+        if (storedTokenSet.refreshToken && storedTokenSet.isExpired()) {
+          token = await oauth.authorize();
+        } else {
+          token = storedTokenSet.accessToken;
+        }
+      }
     }
   }
 
