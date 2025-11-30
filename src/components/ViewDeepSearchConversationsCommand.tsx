@@ -21,7 +21,7 @@ import {
   DeepSearchStatus,
 } from "../sourcegraph/deep-search";
 import { ColorDefault } from "./colors";
-import { DeepSearchConversationDetail } from "./RunDeepSearchCommand";
+import { DeepSearchConversationDetail } from "./AskDeepSearchCommand";
 import { sentenceCase } from "../text";
 import { copyShortcut, deleteShortcut, drilldownShortcut, tertiaryActionShortcut } from "./shortcuts";
 import { useTelemetry } from "../hooks/telemetry";
@@ -97,10 +97,6 @@ export default function ViewDeepSearchConversationsCommand({ src }: { src: Sourc
       onSearchTextChange={setSearchText}
       searchBarPlaceholder={`Filter recent Deep Search conversations on ${instanceName(src)}`}
     >
-      <List.EmptyView
-        title={isLoading ? "Loading conversations..." : "No conversations found"}
-        description={isLoading ? undefined : "Start a new Deep Search to see it here"}
-      />
       <List.Section title="Conversations" subtitle={`${filtered.length} thread${filtered.length === 1 ? "" : "s"}`}>
         {filtered.map((conversation) => (
           <ConversationListItem

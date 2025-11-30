@@ -72,7 +72,7 @@
       "name": "deepSearchInstance",
       "title": "Ask Deep Search",
       "subtitle": "Sourcegraph",
-      "description": "Agentic, natural language code search on a Sourcegraph instance or workspace.",
+      "description": "Agentic, natural language code search.",
       "mode": "view",
       "keywords": [
         "sourcegraph",
