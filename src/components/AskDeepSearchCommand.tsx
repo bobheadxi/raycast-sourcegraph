@@ -11,6 +11,7 @@ import {
   showToast,
   Color,
   popToRoot,
+  open,
 } from "@raycast/api";
 import { DateTime } from "luxon";
 import { useEffect, useRef, useState } from "react";
@@ -34,6 +35,18 @@ export default function AskDeepSearchCommand({ src }: { src: Sourcegraph; props?
   useEffect(() => recorder.recordEvent("askDeepSearch", "start"), []);
 
   const { push } = useNavigation();
+  const questionRef = useRef("");
+
+  const openInBrowserUrl = () => {
+    const trimmed = questionRef.current.trim();
+    if (trimmed) {
+      const params = new URLSearchParams();
+      params.set("q", trimmed);
+      params.set("template", "true");
+      return link.new(src, "/deepsearch", params);
+    }
+    return link.new(src, "/deepsearch");
+  };
 
   return (
     <Form
@@ -45,16 +58,22 @@ export default function AskDeepSearchCommand({ src }: { src: Sourcegraph; props?
             icon={Icon.MagnifyingGlass}
             title="Ask Deep Search"
             onSubmit={async (values: { question: string }) => {
-              const question = values.question.trim();
-              if (!question) {
+              const q = values.question.trim();
+              if (!q) {
                 await showToast({ title: "Please enter a question", style: Toast.Style.Failure });
                 return;
               }
-              push(<DeepSearchConversationDetail src={src} question={question} />, () => {
+              push(<DeepSearchConversationDetail src={src} question={q} />, () => {
                 // Don't return to the form again on pop
                 popToRoot();
               });
             }}
+          />
+          <Action
+            icon={Icon.Globe}
+            title="Open in Browser"
+            shortcut={tertiaryActionShortcut}
+            onAction={() => open(openInBrowserUrl())}
           />
         </ActionPanel>
       }
@@ -66,6 +85,7 @@ export default function AskDeepSearchCommand({ src }: { src: Sourcegraph; props?
         autoFocus
         enableMarkdown={true}
         info="Ask, plan, or search your codebases."
+        onChange={(v) => (questionRef.current = v)}
       />
     </Form>
   );

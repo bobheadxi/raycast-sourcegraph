@@ -97,6 +97,10 @@ export default function ViewDeepSearchConversationsCommand({ src }: { src: Sourc
       onSearchTextChange={setSearchText}
       searchBarPlaceholder={`Filter recent Deep Search conversations on ${instanceName(src)}`}
     >
+      {isLoading && conversations.length === 0 && (
+        <List.EmptyView title="Loading..." description="Fetching recent conversations" />
+      )}
+
       <List.Section title="Conversations" subtitle={`${filtered.length} thread${filtered.length === 1 ? "" : "s"}`}>
         {filtered.map((conversation) => (
           <ConversationListItem
