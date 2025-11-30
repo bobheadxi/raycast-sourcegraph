@@ -102,19 +102,24 @@ export async function sourcegraphInstance(): Promise<Sourcegraph | null> {
       oauth = new OAuthService({
         client,
         clientId: BUILTIN_CLIENT_ID,
-        scope: "user:all",
+        scope: ["user:all", "offline_access"],
         authorizeUrl: `${instance}/.auth/idp/oauth/authorize`,
         tokenUrl: `${instance}/.auth/idp/oauth/token`,
         refreshTokenUrl: `${instance}/.auth/idp/oauth/token`,
         bodyEncoding: "url-encoded",
       });
+
+      // Determine if we can use our current token, or if we need to refresh our
+      // token
       const storedTokenSet = await client.getTokens();
-      if (storedTokenSet?.accessToken) {
-        if (storedTokenSet.refreshToken && storedTokenSet.isExpired()) {
-          token = await oauth.authorize();
-        } else {
-          token = storedTokenSet.accessToken;
-        }
+      const REFRESH_BUFFER_SECONDS = 60;
+      const needsRefresh =
+        storedTokenSet?.isExpired() ||
+        (storedTokenSet?.expiresIn !== undefined && storedTokenSet.expiresIn <= REFRESH_BUFFER_SECONDS);
+      if (needsRefresh) {
+        token = await oauth.authorize();
+      } else if (storedTokenSet) {
+        token = storedTokenSet.accessToken;
       }
     }
   }
