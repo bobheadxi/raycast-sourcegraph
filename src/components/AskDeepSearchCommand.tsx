@@ -238,7 +238,7 @@ export function DeepSearchConversationDetail(props: DeepSearchResultDetailProps)
 
     return (
       <Detail
-        navigationTitle="Deep Search Conversation"
+        navigationTitle={question}
         isLoading={isLoading}
         metadata={
           <Detail.Metadata>
