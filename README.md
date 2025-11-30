@@ -21,7 +21,7 @@
   <a href="#contributing"><strong>Contributing</strong></a>
 </p>
 
-![search demo](metadata/1-search.png)
+![deepsearch demo](metadata/0-deepsearch.png)
 
 <br />
 
