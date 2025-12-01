@@ -139,7 +139,7 @@
       "name": "manageBatchChangesInstance",
       "title": "Manage Batch Changes",
       "subtitle": "Sourcegraph",
-      "description": "Manage batch changes in Sourcegraph.",
+      "description": "Manage Batch Changes in Sourcegraph.",
       "mode": "view",
       "keywords": [
         "sourcegraph",
