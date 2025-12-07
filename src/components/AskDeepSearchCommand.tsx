@@ -20,12 +20,13 @@ import { useTelemetry } from "../hooks/telemetry";
 import {
   startDeepSearch,
   fetchDeepSearchConversation,
+  addDeepSearchFollowUp,
   DeepSearchConversation,
   DeepSearchQuestion,
   DeepSearchStatus,
 } from "../sourcegraph/deep-search";
 import ExpandableToast from "./ExpandableToast";
-import { copyShortcut, tertiaryActionShortcut } from "./shortcuts";
+import { copyShortcut, secondaryActionShortcut, tertiaryActionShortcut } from "./shortcuts";
 
 const link = new LinkBuilder("deep-search");
 
@@ -274,12 +275,14 @@ export function DeepSearchConversationDetail(props: DeepSearchResultDetailProps)
 
   // Mode 1: Specific question requested OR only one question exists -> Show Detail
   if (props.questionId != null || !hasMultipleQuestions) {
+    const isLastQuestion = selectedQuestion.id === questions[questions.length - 1]?.id;
     return (
       <DeepSearchQuestionDetailView
         src={src}
         conversation={conversation}
         question={selectedQuestion}
         isLoading={isLoading}
+        showFollowUpAction={isLastQuestion}
       />
     );
   }
@@ -302,11 +305,13 @@ function DeepSearchQuestionDetailView({
   conversation,
   question,
   isLoading,
+  showFollowUpAction,
 }: {
   src: Sourcegraph;
   conversation: DeepSearchConversation;
   question: DeepSearchQuestion;
   isLoading: boolean;
+  showFollowUpAction: boolean;
 }) {
   const { push } = useNavigation();
 
@@ -376,12 +381,20 @@ function DeepSearchQuestionDetailView({
                 url={conversationUrl}
                 shortcut={tertiaryActionShortcut}
               />
-              <Action.CopyToClipboard title="Copy Link" content={conversationUrl} />
             </>
+          )}
+          {showFollowUpAction && question.status === "completed" && !question.error && (
+            <Action
+              title="Ask Follow-up Question"
+              icon={Icon.Message}
+              onAction={() => push(<FollowUpQuestionForm src={src} conversation={conversation} />)}
+              shortcut={secondaryActionShortcut}
+            />
           )}
           {question.answer && (
             <Action.CopyToClipboard title="Copy Answer" content={question.answer} shortcut={copyShortcut} />
           )}
+          {conversationUrl && <Action.CopyToClipboard title="Copy Link" content={conversationUrl} />}
           <Action
             title={showMetadata ? "Hide Metadata" : "Show Metadata"}
             icon={showMetadata ? Icon.EyeDisabled : Icon.Eye}
@@ -391,6 +404,50 @@ function DeepSearchQuestionDetailView({
         </ActionPanel>
       }
     />
+  );
+}
+
+function FollowUpQuestionForm({ src, conversation }: { src: Sourcegraph; conversation: DeepSearchConversation }) {
+  const { push, pop } = useNavigation();
+
+  return (
+    <Form
+      navigationTitle="Ask Follow-up Question"
+      actions={
+        <ActionPanel>
+          <Action.SubmitForm
+            icon={Icon.Message}
+            title="Ask Follow-up"
+            onSubmit={async (values: { question: string }) => {
+              const q = values.question.trim();
+              if (!q) {
+                await showToast({ title: "Please enter a question", style: Toast.Style.Failure });
+                return;
+              }
+              try {
+                const updated = await addDeepSearchFollowUp(src, conversation.id, { question: q });
+                pop();
+                push(<DeepSearchConversationDetail src={src} conversation={updated} />);
+              } catch (e) {
+                await showToast({
+                  title: "Failed to add follow-up",
+                  message: e instanceof Error ? e.message : String(e),
+                  style: Toast.Style.Failure,
+                });
+              }
+            }}
+          />
+        </ActionPanel>
+      }
+    >
+      <Form.TextArea
+        id="question"
+        title="Follow-up Question"
+        placeholder="Ask a follow-up question..."
+        autoFocus
+        enableMarkdown={true}
+      />
+    </Form>
   );
 }
 
@@ -405,8 +462,11 @@ function DeepSearchConversationListView({
   isLoading: boolean;
   onOpenQuestion: (q: DeepSearchQuestion) => void;
 }) {
+  const { push } = useNavigation();
   const conversationUrl =
     conversation.share_url || (conversation.id ? link.new(src, `/deepsearch/${conversation.read_token}`) : null);
+  const latestQuestion = conversation.questions[conversation.questions.length - 1];
+  const canAskFollowUp = latestQuestion?.status === "completed" && !latestQuestion?.error;
 
   return (
     <List
@@ -447,6 +507,15 @@ function DeepSearchConversationListView({
                       shortcut={tertiaryActionShortcut}
                     />
                   )}
+                  {canAskFollowUp && (
+                    <Action
+                      title="Ask Follow-up Question"
+                      icon={Icon.Message}
+                      onAction={() => push(<FollowUpQuestionForm src={src} conversation={conversation} />)}
+                      shortcut={secondaryActionShortcut}
+                    />
+                  )}
+                  {conversationUrl && <Action.CopyToClipboard title="Copy Link" content={conversationUrl} />}
                 </ActionPanel>
               }
             />
