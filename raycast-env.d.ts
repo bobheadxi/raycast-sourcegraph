@@ -8,13 +8,15 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 type ExtensionPreferences = {
-  /** Sourcegraph connection: URL - Required to use 'Sourcegraph' commands - Sourcegraph URL you want to connect to. */
-  "customInstance"?: string,
-  /** Sourcegraph connection: Access token - If set, takes precedence over OAuth login. Available under 'Profile' -> 'Access token' in Sourcegraph. */
+  /** Sourcegraph URL - Sourcegraph URL you want to connect to: visit https://workspaces.sourcegraph.com to get your own Sourcegraph subscription.
+
+If you just want to use 'Search Public Code', you can enter an arbitrary value here. */
+  "customInstance": string,
+  /** Sourcegraph access token (optional) - If set, takes precedence over OAuth login. Available under 'Profile' -> 'Access token' in Sourcegraph. */
   "customInstanceToken"?: string,
-  /** Sourcegraph connection: Proxy - Optional proxy to use when using a custom Sourcegraph connection - presently, only Unix domain sockets are supported. */
+  /** Sourcegraph connection proxy - Optional proxy to use when using a custom Sourcegraph connection - presently, only Unix domain sockets are supported. */
   "customInstanceProxy"?: string,
-  /** Public code on Sourcegraph.com: Access token - Configures 'Sourcegraph.com' commands - available under 'Profile' -> 'Access token' on Sourcegraph.com */
+  /** Public code search access token (optional) - Configures 'Search Public Code' and 'Search Public Code History' - available under 'Profile' -> 'Access token' on Sourcegraph.com */
   "cloudToken"?: string,
   /** Additional features - Toggle the search pattern dropdown in the search command. */
   "featureSearchPatternDropdown": boolean,
