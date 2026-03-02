@@ -1,6 +1,6 @@
 # Changelog
 
-## [Setup improvements](https://github.com/raycast/extensions/pull/25950) - {PR_MERGE_DATE}
+## [Setup improvements](https://github.com/raycast/extensions/pull/25950) - 2026-03-01
 
 - **setup**: The "Sourcegraph URL" is now an extension-level required option. This change improves the setup experience for users accessing their own Sourcegraph instance. If you are only using 'Search Public Code', you can enter an arbitrary value when prompted.
 - **oauth**: When logging out, the extension now pops you back to root to refresh command states.
