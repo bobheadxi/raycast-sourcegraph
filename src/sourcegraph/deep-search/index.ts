@@ -64,6 +64,7 @@ export interface DeepSearchConversation {
 
 export interface DeepSearchRequestBody {
   question: string;
+  conversation_id?: number;
 }
 
 async function buildDeepSearchHeaders(src: Sourcegraph): Promise<Record<string, string>> {
@@ -120,6 +121,32 @@ export async function deleteDeepSearchConversation(src: Sourcegraph, id: number)
     const text = await resp.text().catch(() => "");
     throw new Error(`Deep Search DELETE failed (${resp.status}): ${text || resp.statusText}`);
   }
+}
+
+export async function addDeepSearchFollowUp(
+  src: Sourcegraph,
+  conversationId: number,
+  body: DeepSearchRequestBody,
+): Promise<DeepSearchConversation> {
+  const fetchFn = getProxiedFetch(src.proxy);
+  const headers = await buildDeepSearchHeaders(src);
+  const requestBody: DeepSearchRequestBody = {
+    ...body,
+    conversation_id: conversationId,
+  };
+
+  const resp = await fetchFn(`${src.instance}/.api/deepsearch/v1/${conversationId}/questions`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(requestBody),
+  });
+
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => "");
+    throw new Error(`Deep Search follow-up POST failed (${resp.status}): ${text || resp.statusText}`);
+  }
+
+  return (await resp.json()) as DeepSearchConversation;
 }
 
 export async function listDeepSearchConversations(src: Sourcegraph): Promise<DeepSearchConversation[]> {
